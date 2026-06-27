@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     sidebarToggle.addEventListener('click', function() {
       sidebar.classList.toggle('collapsed');
       if (mainContent) mainContent.classList.toggle('expanded');
+      if (sidebar.classList.contains('collapsed')) {
+        document.querySelectorAll('.has-sub').forEach(function(el) {
+          el.classList.remove('open');
+        });
+      }
     });
   }
 
@@ -16,6 +21,16 @@ document.addEventListener('DOMContentLoaded', function() {
       sidebar.classList.toggle('show');
     });
   }
+
+  document.querySelectorAll('.sidebar-toggle').forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      var parent = this.closest('.has-sub');
+      if (parent) {
+        parent.classList.toggle('open');
+      }
+    });
+  });
 
   document.querySelectorAll('.edit-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {

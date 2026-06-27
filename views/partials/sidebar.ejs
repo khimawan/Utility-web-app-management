@@ -6,48 +6,72 @@
     </button>
   </div>
   <ul class="sidebar-nav">
-    <li class="nav-item">
-      <a href="/awal" class="nav-link<%= typeof page !== 'undefined' && page === 'awal' ? ' active' : '' %>">
+
+    <li class="nav-item has-sub<%= typeof page !== 'undefined' && ['awal','summary','warnings','works','spareparts','member'].includes(page) ? ' open' : '' %>">
+      <a href="#" class="nav-link sidebar-toggle">
         <i class="bi bi-house-door"></i><span>Halaman Awal</span>
+        <i class="bi bi-chevron-down arrow"></i>
       </a>
+      <ul class="sub-menu">
+        <li><a href="/awal" class="nav-link<%= typeof page !== 'undefined' && page === 'awal' ? ' active' : '' %>">Profil Utility</a></li>
+        <li><a href="/awal/summary" class="nav-link<%= typeof page !== 'undefined' && page === 'summary' ? ' active' : '' %>">Summary Data</a></li>
+        <li><a href="/awal/warnings" class="nav-link<%= typeof page !== 'undefined' && page === 'warnings' ? ' active' : '' %>">Warning Mesin</a></li>
+        <li><a href="/awal/works" class="nav-link<%= typeof page !== 'undefined' && page === 'works' ? ' active' : '' %>">List Pekerjaan</a></li>
+        <li><a href="/awal/spareparts" class="nav-link<%= typeof page !== 'undefined' && page === 'spareparts' ? ' active' : '' %>">List Sparepart</a></li>
+        <li><a href="/awal/member" class="nav-link<%= typeof page !== 'undefined' && page === 'member' ? ' active' : '' %>">Member & Jadwal</a></li>
+      </ul>
     </li>
-    <li class="nav-item">
-      <a href="/awal/summary" class="nav-link<%= typeof page !== 'undefined' && page === 'summary' ? ' active' : '' %>">
-        <i class="bi bi-graph-up"></i><span>Summary Data</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="/awal/warnings" class="nav-link<%= typeof page !== 'undefined' && page === 'warnings' ? ' active' : '' %>">
-        <i class="bi bi-exclamation-triangle"></i><span>Warning & Pekerjaan</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="/awal/spareparts" class="nav-link<%= typeof page !== 'undefined' && page === 'spareparts' ? ' active' : '' %>">
-        <i class="bi bi-box-seam"></i><span>List Sparepart</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="/awal/member" class="nav-link<%= typeof page !== 'undefined' && page === 'member' ? ' active' : '' %>">
-        <i class="bi bi-people"></i><span>Member & Jadwal</span>
-      </a>
-    </li>
-    <li class="sidebar-divider"></li>
-    <li class="nav-item">
-      <a href="/job1" class="nav-link<%= typeof page !== 'undefined' && page === 'job1' ? ' active' : '' %>">
+
+    <li class="nav-item has-sub<%= typeof page !== 'undefined' && page === 'job1' ? ' open' : '' %>">
+      <a href="#" class="nav-link sidebar-toggle">
         <i class="bi bi-gear"></i><span>Job 1 - Operator WTP</span>
+        <i class="bi bi-chevron-down arrow"></i>
       </a>
+      <ul class="sub-menu">
+        <li><a href="/job1" class="nav-link<%= typeof page !== 'undefined' && page === 'job1' ? ' active' : '' %>">Profil Job 1</a></li>
+        <li><a href="/job1/checklist/wtp" class="nav-link">Checklist WTP</a></li>
+        <li><a href="/job1/checklist/boiler" class="nav-link">Checklist Boiler</a></li>
+        <li><a href="/job1/checklist/kompressor01" class="nav-link">Checklist Kompressor 01</a></li>
+        <li><a href="/job1/checklist/kompressor02" class="nav-link">Checklist Kompressor 02</a></li>
+        <li><a href="/job1/warning" class="nav-link">Input Warning</a></li>
+        <li><a href="/job1/instructions" class="nav-link">Working Instruction</a></li>
+      </ul>
     </li>
-    <li class="nav-item">
-      <a href="/job2" class="nav-link<%= typeof page !== 'undefined' && page === 'job2' ? ' active' : '' %>">
+
+    <li class="nav-item has-sub<%= typeof page !== 'undefined' && page === 'job2' ? ' open' : '' %>">
+      <a href="#" class="nav-link sidebar-toggle">
         <i class="bi bi-gear"></i><span>Job 2 - Operator N2</span>
+        <i class="bi bi-chevron-down arrow"></i>
       </a>
+      <ul class="sub-menu">
+        <li><a href="/job2" class="nav-link<%= typeof page !== 'undefined' && page === 'job2' ? ' active' : '' %>">Profil Job 2</a></li>
+        <li><a href="/job2/checklist/n2_generator" class="nav-link">Checklist N2 Generator</a></li>
+        <li><a href="/job2/checklist/kompressor03" class="nav-link">Checklist Kompressor 03</a></li>
+        <li><a href="/job2/checklist/kompressor04" class="nav-link">Checklist Kompressor 04</a></li>
+        <li><a href="/job2/checklist/lvmdp" class="nav-link">Checklist LVMDP</a></li>
+        <li><a href="/job2/checklist/air_tandon" class="nav-link">Checklist Air Tandon</a></li>
+        <li><a href="/job2/warning" class="nav-link">Input Warning</a></li>
+        <li><a href="/job2/instructions" class="nav-link">Working Instruction</a></li>
+      </ul>
     </li>
-    <li class="nav-item">
-      <a href="/job3" class="nav-link<%= typeof page !== 'undefined' && page === 'job3' ? ' active' : '' %>">
+
+    <li class="nav-item has-sub<%= typeof page !== 'undefined' && page === 'job3' ? ' open' : '' %>">
+      <a href="#" class="nav-link sidebar-toggle">
         <i class="bi bi-gear"></i><span>Job 3 - Facility</span>
+        <i class="bi bi-chevron-down arrow"></i>
       </a>
+      <ul class="sub-menu">
+        <li><a href="/job3" class="nav-link<%= typeof page !== 'undefined' && page === 'job3' ? ' active' : '' %>">Profil Job 3</a></li>
+        <li><a href="/job3/checklist/pemakaian_air" class="nav-link">Checklist Pemakaian Air</a></li>
+        <li><a href="/job3/checklist/pemakaian_gas" class="nav-link">Checklist Pemakaian Gas</a></li>
+        <li><a href="/job3/checklist/suhu_trafo" class="nav-link">Checklist Suhu Trafo</a></li>
+        <li><a href="/job3/checklist/listrik_trafo" class="nav-link">Checklist Listrik Trafo</a></li>
+        <li><a href="/job3/works" class="nav-link">Input Pekerjaan</a></li>
+      </ul>
     </li>
+
     <li class="sidebar-divider"></li>
+
     <li class="nav-item">
       <a href="/rangkuman" class="nav-link<%= typeof page !== 'undefined' && page === 'rangkuman' ? ' active' : '' %>">
         <i class="bi bi-clipboard-data"></i><span>Rangkuman</span>
@@ -58,13 +82,21 @@
         <i class="bi bi-box"></i><span>Alat & Bahan</span>
       </a>
     </li>
+
     <% if (typeof user !== 'undefined' && user && user.position === 'admin') { %>
     <li class="sidebar-divider"></li>
-    <li class="nav-item">
-      <a href="/admin" class="nav-link<%= typeof page !== 'undefined' && page === 'admin' ? ' active' : '' %>">
-        <i class="bi bi-shield-lock"></i><span>Admin</span>
+    <li class="nav-item has-sub<%= typeof page !== 'undefined' && page === 'admin' ? ' open' : '' %>">
+      <a href="#" class="nav-link sidebar-toggle">
+        <i class="bi bi-shield-lock"></i><span>Admin Panel</span>
+        <i class="bi bi-chevron-down arrow"></i>
       </a>
+      <ul class="sub-menu">
+        <li><a href="/admin" class="nav-link<%= typeof page !== 'undefined' && page === 'admin' ? ' active' : '' %>">Management Member</a></li>
+        <li><a href="/admin#schedules" class="nav-link">Management Jadwal</a></li>
+        <li><a href="/admin#templates" class="nav-link">Checklist Templates</a></li>
+      </ul>
     </li>
     <% } %>
+
   </ul>
 </nav>

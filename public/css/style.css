@@ -14,7 +14,9 @@ body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh;
 .sidebar.collapsed { width: 70px; }
 .sidebar.collapsed .sidebar-brand { font-size: 14px; }
 .sidebar.collapsed .nav-link span { display: none; }
+.sidebar.collapsed .nav-link .arrow { display: none; }
 .sidebar.collapsed .sidebar-divider { display: none; }
+.sidebar.collapsed .sub-menu { display: none; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .sidebar-brand { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; }
 .sidebar-nav { list-style: none; padding: 10px 0; margin: 0; }
@@ -23,6 +25,14 @@ body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh;
 .sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.1); color: white; }
 .sidebar-nav .nav-link.active { background: rgba(255,255,255,0.2); color: white; font-weight: 600; }
 .sidebar-nav .nav-link i { font-size: 18px; margin-right: 12px; width: 20px; text-align: center; }
+.sidebar-nav .nav-link .arrow { margin-left: auto; margin-right: 0; font-size: 12px; transition: transform 0.3s; }
+.sidebar-nav .has-sub.open > .nav-link .arrow { transform: rotate(180deg); }
+.sidebar-nav .sub-menu { list-style: none; padding: 0; margin: 0; max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.sidebar-nav .has-sub.open > .sub-menu { max-height: 600px; }
+.sidebar-nav .sub-menu li { margin: 0; }
+.sidebar-nav .sub-menu li .nav-link { padding: 7px 15px 7px 47px; font-size: 13px; color: rgba(255,255,255,0.6); border-radius: 6px; }
+.sidebar-nav .sub-menu li .nav-link:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.sidebar-nav .sub-menu li .nav-link.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
 .sidebar-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 10px 15px; }
 .main-content { margin-left: 260px; min-height: 100vh; transition: margin 0.3s; }
 .main-content.expanded { margin-left: 70px; }
