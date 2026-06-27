@@ -126,6 +126,26 @@ router.post('/works', isAuthenticated, async (req, res) => {
   }
 });
 
+router.post('/works/:id', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { work_date, area, description, repair_notes, repair_percentage, member_ids } = req.body;
+    dbRun(
+      `UPDATE works SET work_date=?, area=?, description=?, repair_notes=?, repair_percentage=? WHERE id=?`,
+      [work_date, area, description, repair_notes || '', repair_percentage || 0, parseInt(id)]
+    );
+    dbRun('DELETE FROM work_members WHERE work_id = ?', [parseInt(id)]);
+    const ids = Array.isArray(member_ids) ? member_ids : (member_ids ? [member_ids] : []);
+    ids.forEach(mid => {
+      dbRun('INSERT INTO work_members (work_id, member_id) VALUES (?, ?)', [parseInt(id), parseInt(mid)]);
+    });
+    res.redirect('/job3/works');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 router.post('/works/:id/delete', isAuthenticated, async (req, res) => {
   try {
     dbRun('DELETE FROM works WHERE id = ?', [parseInt(req.params.id)]);

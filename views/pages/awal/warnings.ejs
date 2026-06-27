@@ -17,10 +17,9 @@
                 <th>Tanggal</th>
                 <th>Mesin</th>
                 <th>Deskripsi</th>
-                <th>Foto</th>
                 <th>Member</th>
-                <th>Catatan Perbaikan</th>
-                <th>Progres (%)</th>
+                <th>Catatan</th>
+                <th>Progres</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -30,7 +29,6 @@
                 <td><%= w.warning_date %></td>
                 <td><span class="badge bg-warning text-dark"><%= w.machine_name %></span></td>
                 <td><%= w.description %></td>
-                <td><% if (w.photo_url) { %><img src="<%= w.photo_url %>" width="50" height="50" style="object-fit:cover;border-radius:4px;"><% } else { %>-<% } %></td>
                 <td><%= w.member_names || '-' %></td>
                 <td><%= w.repair_notes || '-' %></td>
                 <td>
@@ -39,13 +37,25 @@
                   </div>
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary me-1 edit-warning" data-id="<%= w.id %>" data-date="<%= w.warning_date %>" data-machine="<%= w.machine_name %>" data-desc="<%= w.description %>" data-notes="<%= w.repair_notes %>" data-percentage="<%= w.repair_percentage %>"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-primary me-1 edit-warning"
+                    data-id="<%= w.id %>"
+                    data-date="<%= w.warning_date %>"
+                    data-machine="<%= w.machine_name %>"
+                    data-desc="<%= w.description %>"
+                    data-notes="<%= w.repair_notes || '' %>"
+                    data-percentage="<%= w.repair_percentage %>"
+                    data-memberids="<%= w.member_names || '' %>">
+                    <i class="bi bi-pencil"></i>
+                  </button>
                   <form method="POST" action="/awal/warnings/<%= w.id %>/delete" style="display:inline;" class="delete-btn-form">
                     <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                   </form>
                 </td>
               </tr>
               <% }); %>
+              <% if (warnings.length === 0) { %>
+              <tr><td colspan="7" class="text-center text-muted">Belum ada data warning</td></tr>
+              <% } %>
             </tbody>
           </table>
         </div>
@@ -82,12 +92,17 @@
                 <textarea name="description" class="form-control" rows="3" required></textarea>
               </div>
               <div class="mb-3">
-                <label class="form-label">Member</label>
-                <select name="member_ids" class="form-select" multiple required>
+                <label class="form-label">Pilih Member</label>
+                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
                   <% members.forEach(function(m) { %>
-                  <option value="<%= m.id %>"><%= m.name %></option>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="member_ids" value="<%= m.id %>" id="add_member_<%= m.id %>">
+                    <label class="form-check-label" for="add_member_<%= m.id %>">
+                      <%= m.name %> <span class="badge bg-secondary ms-1"><%= m.job || 'N/A' %></span>
+                    </label>
+                  </div>
                   <% }); %>
-                </select>
+                </div>
               </div>
               <div class="mb-3">
                 <label class="form-label">Catatan Perbaikan</label>
@@ -106,15 +121,96 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="editWarningModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" id="editWarningForm">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Warning</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Tanggal</label>
+                <input type="date" name="warning_date" class="form-control" id="edit_warning_date" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nama Mesin</label>
+                <select name="machine_name" class="form-select" id="edit_warning_machine" required>
+                  <option value="wtp">WTP</option>
+                  <option value="boiler">Boiler</option>
+                  <option value="n2_generator">N2 Generator</option>
+                  <option value="kompressor01">Kompressor 01</option>
+                  <option value="kompressor02">Kompressor 02</option>
+                  <option value="kompressor03">Kompressor 03</option>
+                  <option value="kompressor04">Kompressor 04</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Deskripsi Warning</label>
+                <textarea name="description" class="form-control" rows="3" id="edit_warning_desc" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Pilih Member</label>
+                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                  <% members.forEach(function(m) { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="member_ids" value="<%= m.id %>" id="edit_wmember_<%= m.id %>">
+                    <label class="form-check-label" for="edit_wmember_<%= m.id %>">
+                      <%= m.name %> <span class="badge bg-secondary ms-1"><%= m.job || 'N/A' %></span>
+                    </label>
+                  </div>
+                  <% }); %>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Catatan Perbaikan</label>
+                <textarea name="repair_notes" class="form-control" rows="2" id="edit_warning_notes"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Persentase Perbaikan (%)</label>
+                <input type="number" name="repair_percentage" class="form-control" min="0" max="100" id="edit_warning_percentage">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 document.querySelectorAll('.edit-warning').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    const id = this.dataset.id;
-    // Simple redirect to open modal with data
-    alert('Edit warning ID: ' + id + '. Fitur edit lengkap tersedia di halaman job masing-masing.');
+    document.getElementById('editWarningForm').action = '/awal/warnings/' + this.dataset.id;
+    document.getElementById('edit_warning_date').value = this.dataset.date;
+    document.getElementById('edit_warning_machine').value = this.dataset.machine;
+    document.getElementById('edit_warning_desc').value = this.dataset.desc;
+    document.getElementById('edit_warning_notes').value = this.dataset.notes;
+    document.getElementById('edit_warning_percentage').value = this.dataset.percentage;
+
+    document.querySelectorAll('#editWarningModal input[name="member_ids"]').forEach(function(cb) {
+      cb.checked = false;
+    });
+
+    var memberNames = this.dataset.memberids;
+    if (memberNames) {
+      var names = memberNames.split(', ');
+      names.forEach(function(name) {
+        document.querySelectorAll('#editWarningModal .form-check-label').forEach(function(label) {
+          if (label.textContent.trim().startsWith(name.trim())) {
+            label.previousElementSibling.checked = true;
+          }
+        });
+      });
+    }
+
+    new bootstrap.Modal(document.getElementById('editWarningModal')).show();
   });
 });
 </script>
