@@ -1,0 +1,198 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-box-seam me-2"></i>List Sparepart</h4>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSparepartModal">
+        <i class="bi bi-plus-circle me-1"></i>Tambah Sparepart
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Nama Barang</th>
+                <th>Spesifikasi</th>
+                <th>Jumlah</th>
+                <th>Jenis</th>
+                <th>Urgensi</th>
+                <th>Foto</th>
+                <th>Progress</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% spareparts.forEach(function(s) { %>
+              <tr class="<%= s.urgency === 'urgent' ? 'table-warning' : '' %>">
+                <td><%= s.request_date %></td>
+                <td><strong><%= s.item_name %></strong></td>
+                <td><%= s.specification || '-' %></td>
+                <td><%= s.quantity %></td>
+                <td><span class="badge bg-info"><%= s.category %></span></td>
+                <td><span class="badge <%= s.urgency === 'urgent' ? 'bg-danger' : 'bg-secondary' %>"><%= s.urgency %></span></td>
+                <td><% if (s.photo_url) { %><img src="<%= s.photo_url %>" width="50" height="50" style="object-fit:cover;border-radius:4px;"><% } else { %>-<% } %></td>
+                <td>
+                  <% if (s.progress === 'barang_sampai') { %>
+                    <span class="badge bg-success">Barang Sampai</span>
+                  <% } else if (s.progress === 'sedang_dipesan') { %>
+                    <span class="badge bg-warning text-dark">Sedang Dipesan</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary">Belum Dipesan</span>
+                  <% } %>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-1 edit-sparepart" data-id="<%= s.id %>" data-name="<%= s.item_name %>" data-spec="<%= s.specification %>" data-qty="<%= s.quantity %>" data-cat="<%= s.category %>" data-urgency="<%= s.urgency %>" data-progress="<%= s.progress %>"><i class="bi bi-pencil"></i></button>
+                  <form method="POST" action="/awal/spareparts/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addSparepartModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/awal/spareparts">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Sparepart</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Tanggal</label>
+                <input type="date" name="request_date" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nama Barang</label>
+                <input type="text" name="item_name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Spesifikasi</label>
+                <textarea name="specification" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Jumlah</label>
+                  <input type="number" name="quantity" class="form-control" min="1" value="1" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Jenis</label>
+                  <select name="category" class="form-select" required>
+                    <option value="alat">Alat</option>
+                    <option value="part">Part</option>
+                    <option value="bahan">Bahan</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Urgensi</label>
+                  <select name="urgency" class="form-select" required>
+                    <option value="urgent">Urgent</option>
+                    <option value="tidak">Tidak</option>
+                  </select>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Progress</label>
+                  <select name="progress" class="form-select">
+                    <option value="belum_dipesan">Belum Dipesan</option>
+                    <option value="sedang_dipesan">Sedang Dipesan</option>
+                    <option value="barang_sampai">Barang Sampai</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editSparepartModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" id="editSparepartForm">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Sparepart</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Nama Barang</label>
+                <input type="text" name="item_name" class="form-control" id="edit_name" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Spesifikasi</label>
+                <textarea name="specification" class="form-control" rows="2" id="edit_spec"></textarea>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Jumlah</label>
+                  <input type="number" name="quantity" class="form-control" id="edit_qty" min="1" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Jenis</label>
+                  <select name="category" class="form-select" id="edit_cat" required>
+                    <option value="alat">Alat</option>
+                    <option value="part">Part</option>
+                    <option value="bahan">Bahan</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Urgensi</label>
+                  <select name="urgency" class="form-select" id="edit_urgency" required>
+                    <option value="urgent">Urgent</option>
+                    <option value="tidak">Tidak</option>
+                  </select>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Progress</label>
+                  <select name="progress" class="form-select" id="edit_progress">
+                    <option value="belum_dipesan">Belum Dipesan</option>
+                    <option value="sedang_dipesan">Sedang Dipesan</option>
+                    <option value="barang_sampai">Barang Sampai</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-sparepart').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('editSparepartForm').action = '/awal/spareparts/' + this.dataset.id;
+    document.getElementById('edit_name').value = this.dataset.name;
+    document.getElementById('edit_spec').value = this.dataset.spec || '';
+    document.getElementById('edit_qty').value = this.dataset.qty;
+    document.getElementById('edit_cat').value = this.dataset.cat;
+    document.getElementById('edit_urgency').value = this.dataset.urgency;
+    document.getElementById('edit_progress').value = this.dataset.progress;
+    new bootstrap.Modal(document.getElementById('editSparepartModal')).show();
+  });
+});
+</script>
+<%- include('../../partials/footer') %>

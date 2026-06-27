@@ -1,0 +1,103 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clipboard-check me-2"></i>List Pekerjaan</h4>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWorkModal">
+        <i class="bi bi-plus-circle me-1"></i>Tambah Pekerjaan
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Area</th>
+                <th>Deskripsi</th>
+                <th>Foto</th>
+                <th>Member</th>
+                <th>Catatan Perbaikan</th>
+                <th>Progres (%)</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% works.forEach(function(w) { %>
+              <tr>
+                <td><%= w.work_date %></td>
+                <td><%= w.area %></td>
+                <td><%= w.description %></td>
+                <td><% if (w.photo_url) { %><img src="<%= w.photo_url %>" width="50" height="50" style="object-fit:cover;border-radius:4px;"><% } else { %>-<% } %></td>
+                <td><%= w.member_names || '-' %></td>
+                <td><%= w.repair_notes || '-' %></td>
+                <td>
+                  <div class="progress" style="height: 20px; width: 100px;">
+                    <div class="progress-bar bg-success" style="width: <%= w.repair_percentage %>%"><%= w.repair_percentage %>%</div>
+                  </div>
+                </td>
+                <td>
+                  <form method="POST" action="/awal/works/<%= w.id %>/delete" style="display:inline;" class="delete-btn-form">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addWorkModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/awal/works">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Pekerjaan</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Tanggal</label>
+                <input type="date" name="work_date" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Area Pekerjaan</label>
+                <input type="text" name="area" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Deskripsi Pekerjaan</label>
+                <textarea name="description" class="form-control" rows="3" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Member</label>
+                <select name="member_ids" class="form-select" multiple required>
+                  <% members.forEach(function(m) { %>
+                  <option value="<%= m.id %>"><%= m.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Catatan Perbaikan</label>
+                <textarea name="repair_notes" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Persentase Perbaikan (%)</label>
+                <input type="number" name="repair_percentage" class="form-control" min="0" max="100" value="0">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

@@ -1,0 +1,107 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-list-check me-2"></i>Checklist Templates</h4>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+        <i class="bi bi-plus-circle me-1"></i>Tambah Parameter
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr><th>Kategori</th><th>Parameter</th><th>Tipe</th><th>Unit</th><th>Min</th><th>Max</th><th>Aktif</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+              <% templates.forEach(function(t) { %>
+              <tr>
+                <td><span class="badge bg-info"><%= t.category %></span></td>
+                <td><%= t.parameter_name %></td>
+                <td><%= t.parameter_type %></td>
+                <td><%= t.unit || '-' %></td>
+                <td><%= t.min_value != null ? t.min_value : '-' %></td>
+                <td><%= t.max_value != null ? t.max_value : '-' %></td>
+                <td><span class="badge <%= t.is_active ? 'bg-success' : 'bg-secondary' %>"><%= t.is_active ? 'Yes' : 'No' %></span></td>
+                <td>
+                  <form method="POST" action="/admin/checklist-templates/<%= t.id %>/delete" style="display:inline;" class="delete-btn-form">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addTemplateModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/admin/checklist-templates">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Parameter Checklist</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Kategori</label>
+                <select name="category" class="form-select" required>
+                  <option value="wtp">WTP</option>
+                  <option value="boiler">Boiler</option>
+                  <option value="kompressor01">Kompressor 01</option>
+                  <option value="kompressor02">Kompressor 02</option>
+                  <option value="kompressor03">Kompressor 03</option>
+                  <option value="kompressor04">Kompressor 04</option>
+                  <option value="n2_generator">N2 Generator</option>
+                  <option value="lvmdp">LVMDP</option>
+                  <option value="air_tandon">Air Tandon</option>
+                  <option value="pemakaian_air">Pemakaian Air</option>
+                  <option value="pemakaian_gas">Pemakaian Gas</option>
+                  <option value="suhu_trafo">Suhu Trafo</option>
+                  <option value="listrik_trafo">Listrik Trafo</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nama Parameter</label>
+                <input type="text" name="parameter_name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tipe</label>
+                <select name="parameter_type" class="form-select" required>
+                  <option value="number">Number</option>
+                  <option value="text">Text</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Unit</label>
+                <input type="text" name="unit" class="form-control">
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Min Value</label>
+                  <input type="number" step="any" name="min_value" class="form-control">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Max Value</label>
+                  <input type="number" step="any" name="max_value" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

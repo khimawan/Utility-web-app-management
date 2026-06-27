@@ -1,0 +1,41 @@
+<nav class="top-navbar">
+  <div class="d-flex align-items-center">
+    <button id="sidebarToggleMobile" class="btn btn-sm btn-outline-secondary me-3 d-md-none">
+      <i class="bi bi-list"></i>
+    </button>
+    <ul class="nav nav-tabs main-nav">
+      <li class="nav-item">
+        <a href="/awal" class="nav-link<%= typeof page !== 'undefined' && (page === 'awal' || page === 'summary' || page === 'warnings' || page === 'spareparts' || page === 'member') ? ' active' : '' %>">Halaman Awal</a>
+      </li>
+      <li class="nav-item">
+        <a href="/job1" class="nav-link<%= typeof page !== 'undefined' && page === 'job1' ? ' active' : '' %>">Job 1 (WTP)</a>
+      </li>
+      <li class="nav-item">
+        <a href="/job2" class="nav-link<%= typeof page !== 'undefined' && page === 'job2' ? ' active' : '' %>">Job 2 (N2)</a>
+      </li>
+      <li class="nav-item">
+        <a href="/job3" class="nav-link<%= typeof page !== 'undefined' && page === 'job3' ? ' active' : '' %>">Job 3 (Facility)</a>
+      </li>
+      <li class="nav-item">
+        <a href="/rangkuman" class="nav-link<%= typeof page !== 'undefined' && page === 'rangkuman' ? ' active' : '' %>">Rangkuman</a>
+      </li>
+      <li class="nav-item">
+        <a href="/inventory" class="nav-link<%= typeof page !== 'undefined' && page === 'inventory' ? ' active' : '' %>">Alat & Bahan</a>
+      </li>
+      <% if (typeof user !== 'undefined' && user && user.position === 'admin') { %>
+      <li class="nav-item">
+        <a href="/admin" class="nav-link<%= typeof page !== 'undefined' && page === 'admin' ? ' active' : '' %>">Admin</a>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+  <div class="d-flex align-items-center">
+    <span class="me-3 text-muted">
+      <i class="bi bi-person-circle"></i> <%= typeof user !== 'undefined' && user ? user.name : '' %>
+      <span class="badge bg-secondary ms-1"><%= typeof user !== 'undefined' && user ? user.position : '' %></span>
+    </span>
+    <a href="/logout" class="btn btn-sm btn-outline-danger">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </div>
+</nav>

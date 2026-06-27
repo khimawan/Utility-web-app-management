@@ -1,0 +1,70 @@
+<nav id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h4 class="sidebar-brand">UTILITY</h4>
+    <button id="sidebarToggle" class="btn btn-sm btn-outline-light">
+      <i class="bi bi-list"></i>
+    </button>
+  </div>
+  <ul class="sidebar-nav">
+    <li class="nav-item">
+      <a href="/awal" class="nav-link<%= typeof page !== 'undefined' && page === 'awal' ? ' active' : '' %>">
+        <i class="bi bi-house-door"></i><span>Halaman Awal</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/awal/summary" class="nav-link<%= typeof page !== 'undefined' && page === 'summary' ? ' active' : '' %>">
+        <i class="bi bi-graph-up"></i><span>Summary Data</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/awal/warnings" class="nav-link<%= typeof page !== 'undefined' && page === 'warnings' ? ' active' : '' %>">
+        <i class="bi bi-exclamation-triangle"></i><span>Warning & Pekerjaan</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/awal/spareparts" class="nav-link<%= typeof page !== 'undefined' && page === 'spareparts' ? ' active' : '' %>">
+        <i class="bi bi-box-seam"></i><span>List Sparepart</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/awal/member" class="nav-link<%= typeof page !== 'undefined' && page === 'member' ? ' active' : '' %>">
+        <i class="bi bi-people"></i><span>Member & Jadwal</span>
+      </a>
+    </li>
+    <li class="sidebar-divider"></li>
+    <li class="nav-item">
+      <a href="/job1" class="nav-link<%= typeof page !== 'undefined' && page === 'job1' ? ' active' : '' %>">
+        <i class="bi bi-gear"></i><span>Job 1 - Operator WTP</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/job2" class="nav-link<%= typeof page !== 'undefined' && page === 'job2' ? ' active' : '' %>">
+        <i class="bi bi-gear"></i><span>Job 2 - Operator N2</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/job3" class="nav-link<%= typeof page !== 'undefined' && page === 'job3' ? ' active' : '' %>">
+        <i class="bi bi-gear"></i><span>Job 3 - Facility</span>
+      </a>
+    </li>
+    <li class="sidebar-divider"></li>
+    <li class="nav-item">
+      <a href="/rangkuman" class="nav-link<%= typeof page !== 'undefined' && page === 'rangkuman' ? ' active' : '' %>">
+        <i class="bi bi-clipboard-data"></i><span>Rangkuman</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/inventory" class="nav-link<%= typeof page !== 'undefined' && page === 'inventory' ? ' active' : '' %>">
+        <i class="bi bi-box"></i><span>Alat & Bahan</span>
+      </a>
+    </li>
+    <% if (typeof user !== 'undefined' && user && user.position === 'admin') { %>
+    <li class="sidebar-divider"></li>
+    <li class="nav-item">
+      <a href="/admin" class="nav-link<%= typeof page !== 'undefined' && page === 'admin' ? ' active' : '' %>">
+        <i class="bi bi-shield-lock"></i><span>Admin</span>
+      </a>
+    </li>
+    <% } %>
+  </ul>
+</nav>

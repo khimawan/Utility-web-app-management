@@ -1,0 +1,123 @@
+web app digunakan untuk summary data, analisis hasil data, dan management pekerjaan yang ada di divisi utility.
+- terdapatnya management member
+- terdapatnya sistem pos untuk mengatur alat, part dan bahan.
+- terdapatnya 3 job utama : operator wtp, operator n2 dan facility.
+- tersapatnya sistem monitoring realtime yang ditampilkan dalam diagram garis.
+- buatkan database untuk mengcover semua data yang ada.
+- admin dapat mengakses semua input atau bagian edit yang dapat di akses member.
+- bagian foto dapat di upload langsung pada checklist, tabel atau list yang ada di web app.
+- web terdiri dari berserapa halaman dengan sub halaman masing-masing.
+- halaman web dapat dipilih di bagian atas web.
+- bagian sub halaman dapat dicari di bagian index halaman di area samping kiri dengan menu yang dapat disembunyikan.
+
+
+1. Halaman Log-in
+- terdiri dari form username dan password.
+- adanya note di bawah yg bertuliskan "jika lupa username atau password harap hubungi admin".
+- jika username dan password benar maka akan lanjut ke halaman awal.
+
+2. Halaman Awal
+- leading page profil utility
+    * deskripsi mengenai tim utility.
+    * apa saja jobdesk utility.
+    * profil member utility.
+    * kumpulan foto utility.
+    * data di atas dapat di edit oleh admin.
+- sub halaman 1 (summary data)
+    * summary dapat dikelompokkan mulai dari rentang hari, minggu dan bulan.
+    * data default berupa data seminggu terakhir yang ditampilkan pada halaman secara realtime dengan diagram garis.
+    * data ditampilkan dalam bentuk diagram garis untuk setiap parameter yang tercantum pada setiap checklist dan dikelompokkan berdasarkan setiap checklist (checklist wtp, checklist boiler, checklist kompressor01, checklist kompressor02, checklist kompressor03, checklist kompressor04, checklist n2 generator, checklist LVMDP, checklist air tandon, checklist pemakaian air, checklist pemakaian gas, checklist suhu trafo, dan checklist listrik trafo).
+    * data yang diolah menjadi diagram garis adalah paremeter yang menggunakan angka, sedangkan selain angka hanya ditunjukkan persentase dalam diagram pie.
+    * masing-masing kelompok checklist dapat ditentukan data yang diambil untuk grafik berdasarkan perolehan data dalam kurun 1 minggu, atau 1 bulan, atau 1 tahun.
+    * ketika banyak grafik yang ditampilkan, grafik dapat ditaruh di bawah agar bisa di scroll.
+    * data grafik dan data dalam tabel setiap checklist dapat di download berupa file xls,json, atau pdf.
+    * semua tabel dapat diedit, didownload dan diupload sebagai input database yang dapat ditambahkan langsung ke grafik secara realtime.
+- sub halaman 2 (list warning mesin dan pekerjaan)
+    * terdapatnya list warning berupa tabel dengan format : tanggal input warning, nama mesin (wtp/boiler/n2 generator/kompressor01/kompressor02/kompressor03/kompressor04), deskripsi warning, foto, nama member(bisa lebih dari 1 member dan minimal 1 member), catatan perbaikan terakhir, dan persentase perbaikan (%).
+    * list warning mesin dapat di input pada checklist member.
+    * list warning dapat ditambah, dihapus, atau di edit setiap member.
+    * terdapatnya list pekerjaan berupa tabel dengan format : tanggal input pekarjaan, area pekerjaan, deskripsi pekerjaan, foto, nama member(bisa lebih dari 1 member dan minimal 1 member), catatan perbaikan terakhir, dan persentase perbaikan (%).
+    * list pekerjaan dapat diinput, ditambahkan, diedit, atau dihapus langsung pada tabel oleh setiap member.
+    * data dalam tabel setiap list dapat di download berupa file xls,json, atau pdf.
+    * list warning dan list pekerjaan dapat di scroll jika tampilan tidak mencukupi pada resolusi layar.
+    * list warning dan list pekerjaan dapat didownload dalam bentuk xls/format microsoft excel dan dapat di upload kembali ke halaman ini sebagai update database berdasarkan template file yang telah didownload.
+- sub halaman 3 (list sparepart)
+    * list sparepart pada tabel berupa : nama barang, spesifikasi barang, jumlah, jenis barang (alat/part/bahan), urgensi (urgent/tidak), foto, progress (belum dipesan/sedang dipesan/barang sampai).
+    * utamakan list barang teratas berdasarkan waktu dan barang yang urgeent
+    * barang yang telah sampai dimasukkan ke data alat dan bahan sesuai kategori (alat/part/bahan).
+    * list sparepart dapat didownload dalam bentuk xls/format microsoft excel dan dapat di upload kembali ke halaman ini sebagai update database berdasarkan template file yang telah didownload.
+- sub halaman 4 (list member dan jobdesk)
+    * tabel jadual berupa list dengan format : shift (1/2/3), nama member, job (operator wtp, operator N2, dan facility )
+    * tabel terdapat pilihan opsi hari untuk melihat pada tanggal yang lain terdapat jadual apa saja yang tertera.
+    * dibawahnya terdapat tabel list seluruh member yang ada, pada tabel ini berisikan : nama member.
+
+3. Halaman job 1 (operator wtp)
+- awal halaman diberikan profil job 1.
+    * deskripsi job operator wtp.
+    * jobdesk operator wtp.
+    * profil mesin (foto dan deskripsi) wtp, boiler, dan kompressor.
+    * data di atas dapat di edit oleh admin.
+- sub halaman (checklist wtp).
+- sub halaman (checklist boiler).
+- sub halaman (checklist kompressor01 dan checklist kompressor02).
+- sub halaman (form input warning mesin).
+    * form warning mesin berisikan input list : tanggal input warning, nama mesin (wtp/boiler/n2 generator/kompressor01/kompressor02/kompressor03/kompressor04), deskripsi warning, foto, catatan perbaikan terakhir, dan persentase perbaikan (%).
+- sub halaman (working instruction).
+    * working instruction (wtp, boiler dan kompressor) berupa button yang bisa mengarahkan ke file pdf yang dapat ditampilkan di web app.
+    * working instruction dapat di upload, edit, tambahkan atau dihapus oleh admin.
+
+4. Halaman job 2 (operator n2)
+- awal halaman diberikan profil job 2.
+    * deskripsi job operator n2.
+    * jobdesk operator n2.
+    * profil mesin (foto dan deskripsi) n2 generator, dan kompressor.
+    * data di atas dapat di edit oleh admin.
+- sub halaman (checklist n2 generator).
+- sub halaman (checklist kompressor03 dan checklist kompressor04).
+- sub halaman (checklist LVMDP).
+- sub halaman (checklist air tandon).
+- sub halaman (form input warning mesin).
+    * form warning mesin berisikan input list : tanggal input warning, nama mesin (wtp/boiler/n2 generator/kompressor01/kompressor02/kompressor03/kompressor04), deskripsi warning, foto, catatan perbaikan terakhir, dan persentase perbaikan (%).
+- sub halaman (working instruction).
+    * working instruction (n2 generator dan kompressor) berupa button yang bisa mengarahkan ke file pdf yang dapat ditampilkan di web app.
+    * working instruction dapat di upload, edit, tambahkan atau dihapus oleh admin.
+
+5. Halaman job 3 (facility)
+- awal halaman diberikan profil job 3.
+    * deskripsi job facility.
+    * jobdesk facility.
+    * scope pekerjaan facility (foto dan deskripsi).
+    * data di atas dapat di edit oleh admin.
+- sub halaman (checklist pemakaian air).
+- sub halaman (checklist pemakaian gas).
+- sub halaman (checklist suhu trafo).
+- sub halaman (checklist listrik travo).
+- sub halaman (form input pekerjaan).
+    * terdapatnya input list pekerjaan berupa tabel dengan format : tanggal input pekarjaan, area pekerjaan, deskripsi pekerjaan, foto, catatan perbaikan terakhir, dan persentase perbaikan (%).
+
+6. Halaman Rangkuman
+- list semua kegiatan yang dilakukan job 1-3 dalam sehari (3 shift).
+- list kegatan dapat ditampilkan pada tabel 1 dengan konten : shift (1/2/3), nama member, job 1/2/3 (operator wtp, operator n2, facility), list yang dikerjakan (pengisian checklist, penyelesaian pekerjaan), waktu dikerjakan.
+- list kegatan dapat ditampilkan pada tabel 2 dengan konten : pekerjaan apa saja yang telah selesai, manpower (siapa saja member yang mengerjakan), waktu pengerjaan, persentase pekerjaan terakhir, dan catatan khusus pekerjaan.
+- list kegiatan 1 dan 2 dapat di download menjadi summary dalam bentuk pdf, json atau excel secara terpisah menjadi 1 file atau dengan file terpisah masing-masing kegiatan.
+
+7. Halaman Alat dan Bahan
+- halaman berisi list barang (alat, part, bahan).
+- list alat ditampilkan dalam bentuk tabel alat berupa : jenis (alat), nama alat, spesifikasi, jumlah, dan foto.
+- list part ditampilkan dalam bentuk tabel part berupa : jenis (part), nama part, spesifikasi, jumlah, dan foto.
+- list bahan ditampilkan dalam bentuk tabel bahan berupa : jenis (bahan), nama bahan, spesifikasi, jumlah, dan foto.
+- semua list dapat ditambahkan, dikurangi maupun di edit oleh semua member dengan klick opsi edit pada ujung tabel.
+- list tabel dapat di download menjadi summary dalam bentuk pdf, json atau excel secara terpisah menjadi 1 file atau dengan file terpisah masing-masing tabel.
+
+8. Halaman Admin
+- hanya akun admin yg dapat melihat halaman ini.
+- terdapat list keseluruhan member ditampilkan dalam tabel dengan format : nama, usrname, password, posisi (member/admin).
+- admin dapat menambahkan atau menghapus member, dan memberikan username dan password untuk akun member (management member).
+- admin dapat memanagement list jadual berdasarkan tanggal.
+- list edit jadual ditampilkan dalam bentuk tabel dengan format : jadual (tanggal), shift (1/2/3), member yang masuk (bisa lebih dari 1 member atau tidak ada member yang lembur pada shift tersebut), dan job member (operator wtp, operator n2, facility).
+- admin dapat mebuat, mengubah atau menghapus checklist wtp, boiler, kompressor, n2 generator, LVMDP, air tandon, pemakaian air, pemakaian gas, suhu trafo, dan listrik trafo) langsung pada setiap halaman cheklist.
+- akun awal sebagai berikut :
+    * username admin : adminaja
+    * password admin : adminaja
+    * username member01 : member01
+    * password member01 : member01

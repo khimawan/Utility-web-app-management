@@ -1,0 +1,336 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-shield-lock me-2"></i>Admin Panel</h4>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#members">Members</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#schedules">Jadwal</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#templates">Checklist Templates</a>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="members">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between">
+            <h5>Daftar Members</h5>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+              <i class="bi bi-plus-circle me-1"></i>Tambah Member
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr><th>Nama</th><th>Username</th><th>Password</th><th>Posisi</th><th>Job</th><th>Status</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                  <% members.forEach(function(m) { %>
+                  <tr>
+                    <td><strong><%= m.name %></strong></td>
+                    <td><%= m.username %></td>
+                    <td>****</td>
+                    <td><span class="badge <%= m.position === 'admin' ? 'bg-danger' : 'bg-primary' %>"><%= m.position %></span></td>
+                    <td><%= m.job || '-' %></td>
+                    <td><span class="badge <%= m.is_active ? 'bg-success' : 'bg-secondary' %>"><%= m.is_active ? 'Active' : 'Inactive' %></span></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1 edit-member" data-id="<%= m.id %>" data-name="<%= m.name %>" data-username="<%= m.username %>" data-position="<%= m.position %>" data-job="<%= m.job || '' %>"><i class="bi bi-pencil"></i></button>
+                      <% if (m.username !== 'adminaja') { %>
+                      <form method="POST" action="/admin/members/<%= m.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="schedules">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between">
+            <h5>Kelola Jadwal</h5>
+            <form method="GET" action="/admin" class="d-flex gap-2">
+              <input type="hidden" name="tab" value="schedules">
+              <input type="date" name="date" class="form-control form-control-sm" value="<%= new Date().toISOString().split('T')[0] %>">
+              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+            </form>
+          </div>
+          <div class="card-body">
+            <form method="POST" action="/admin/schedules" class="row g-2 mb-3">
+              <input type="hidden" name="schedule_date" value="<%= new Date().toISOString().split('T')[0] %>">
+              <div class="col-md-2">
+                <select name="shift" class="form-select form-select-sm" required>
+                  <option value="1">Shift 1</option>
+                  <option value="2">Shift 2</option>
+                  <option value="3">Shift 3</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select name="member_id" class="form-select form-select-sm" required>
+                  <% members.filter(function(m) { return m.position === 'member'; }).forEach(function(m) { %>
+                  <option value="<%= m.id %>"><%= m.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select name="job" class="form-select form-select-sm" required>
+                  <option value="operator_wtp">Operator WTP</option>
+                  <option value="operator_n2">Operator N2</option>
+                  <option value="facility">Facility</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-plus-circle me-1"></i>Tambah</button>
+              </div>
+            </form>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead><tr><th>Shift</th><th>Member</th><th>Job</th><th>Aksi</th></tr></thead>
+                <tbody>
+                  <% var scheduleList = typeof schedules !== 'undefined' ? schedules : []; %>
+                  <% scheduleList.forEach(function(s) { %>
+                  <tr>
+                    <td><span class="badge bg-primary">Shift <%= s.shift %></span></td>
+                    <td><%= s.member_name %></td>
+                    <td><%= s.job %></td>
+                    <td>
+                      <form method="POST" action="/admin/schedules/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="templates">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between">
+            <h5>Checklist Templates</h5>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+              <i class="bi bi-plus-circle me-1"></i>Tambah Parameter
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr><th>Kategori</th><th>Parameter</th><th>Tipe</th><th>Unit</th><th>Min</th><th>Max</th><th>Aktif</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                  <% var templateList = typeof templates !== 'undefined' ? templates : []; %>
+                  <% templateList.forEach(function(t) { %>
+                  <tr>
+                    <td><span class="badge bg-info"><%= t.category %></span></td>
+                    <td><%= t.parameter_name %></td>
+                    <td><%= t.parameter_type %></td>
+                    <td><%= t.unit || '-' %></td>
+                    <td><%= t.min_value != null ? t.min_value : '-' %></td>
+                    <td><%= t.max_value != null ? t.max_value : '-' %></td>
+                    <td><span class="badge <%= t.is_active ? 'bg-success' : 'bg-secondary' %>"><%= t.is_active ? 'Yes' : 'No' %></span></td>
+                    <td>
+                      <form method="POST" action="/admin/checklist-templates/<%= t.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addMemberModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/admin/members">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Member</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Nama</label>
+                <input type="text" name="name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="text" name="password" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Posisi</label>
+                <select name="position" class="form-select">
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Job</label>
+                <select name="job" class="form-select">
+                  <option value="">-</option>
+                  <option value="operator_wtp">Operator WTP</option>
+                  <option value="operator_n2">Operator N2</option>
+                  <option value="facility">Facility</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editMemberModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" id="editMemberForm">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Member</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Nama</label>
+                <input type="text" name="name" class="form-control" id="edit_member_name" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" id="edit_member_username" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password (kosongkan jika tidak diubah)</label>
+                <input type="text" name="password" class="form-control" id="edit_member_password">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Posisi</label>
+                <select name="position" class="form-select" id="edit_member_position">
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Job</label>
+                <select name="job" class="form-select" id="edit_member_job">
+                  <option value="">-</option>
+                  <option value="operator_wtp">Operator WTP</option>
+                  <option value="operator_n2">Operator N2</option>
+                  <option value="facility">Facility</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addTemplateModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/admin/checklist-templates">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Parameter Checklist</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Kategori</label>
+                <select name="category" class="form-select" required>
+                  <option value="wtp">WTP</option>
+                  <option value="boiler">Boiler</option>
+                  <option value="kompressor01">Kompressor 01</option>
+                  <option value="kompressor02">Kompressor 02</option>
+                  <option value="kompressor03">Kompressor 03</option>
+                  <option value="kompressor04">Kompressor 04</option>
+                  <option value="n2_generator">N2 Generator</option>
+                  <option value="lvmdp">LVMDP</option>
+                  <option value="air_tandon">Air Tandon</option>
+                  <option value="pemakaian_air">Pemakaian Air</option>
+                  <option value="pemakaian_gas">Pemakaian Gas</option>
+                  <option value="suhu_trafo">Suhu Trafo</option>
+                  <option value="listrik_trafo">Listrik Trafo</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nama Parameter</label>
+                <input type="text" name="parameter_name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tipe</label>
+                <select name="parameter_type" class="form-select" required>
+                  <option value="number">Number</option>
+                  <option value="text">Text</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Unit</label>
+                <input type="text" name="unit" class="form-control">
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Min Value</label>
+                  <input type="number" step="any" name="min_value" class="form-control">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Max Value</label>
+                  <input type="number" step="any" name="max_value" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-member').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('editMemberForm').action = '/admin/members/' + this.dataset.id;
+    document.getElementById('edit_member_name').value = this.dataset.name;
+    document.getElementById('edit_member_username').value = this.dataset.username;
+    document.getElementById('edit_member_position').value = this.dataset.position;
+    document.getElementById('edit_member_job').value = this.dataset.job;
+    new bootstrap.Modal(document.getElementById('editMemberModal')).show();
+  });
+});
+</script>
+<%- include('../../partials/footer') %>

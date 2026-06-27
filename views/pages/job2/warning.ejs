@@ -1,0 +1,81 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-exclamation-triangle me-2"></i>Input Warning Mesin - Job 2</h4>
+      <a href="/job2" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header"><h5>Form Warning</h5></div>
+          <div class="card-body">
+            <form method="POST" action="/job2/warning">
+              <div class="mb-3">
+                <label class="form-label">Tanggal</label>
+                <input type="date" name="warning_date" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nama Mesin</label>
+                <select name="machine_name" class="form-select" required>
+                  <% machines.forEach(function(m) { %>
+                  <option value="<%= m %>"><%= m.toUpperCase() %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Deskripsi Warning</label>
+                <textarea name="description" class="form-control" rows="3" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Member</label>
+                <select name="member_ids" class="form-select" multiple required>
+                  <% members.forEach(function(m) { %>
+                  <option value="<%= m.id %>"><%= m.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Catatan Perbaikan</label>
+                <textarea name="repair_notes" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Persentase Perbaikan (%)</label>
+                <input type="number" name="repair_percentage" class="form-control" min="0" max="100" value="0">
+              </div>
+              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i>Simpan Warning</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header"><h5>Riwayat Warning</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr><th>Tanggal</th><th>Mesin</th><th>Deskripsi</th><th>Progres</th></tr>
+                </thead>
+                <tbody>
+                  <% warnings.forEach(function(w) { %>
+                  <tr>
+                    <td><%= w.warning_date %></td>
+                    <td><span class="badge bg-warning text-dark"><%= w.machine_name %></span></td>
+                    <td><%= w.description %></td>
+                    <td><div class="progress" style="height:18px;width:80px;"><div class="progress-bar bg-success" style="width:<%= w.repair_percentage %>%"><%= w.repair_percentage %>%</div></div></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

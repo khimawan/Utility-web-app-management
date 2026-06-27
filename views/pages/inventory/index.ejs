@@ -1,0 +1,208 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-box me-2"></i>Alat & Bahan</h4>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
+        <i class="bi bi-plus-circle me-1"></i>Tambah Item
+      </button>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#alat">Alat (<%= alat.length %>)</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#part">Part (<%= part.length %>)</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#bahan">Bahan (<%= bahan.length %>)</a>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="alat">
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr><th>Jenis</th><th>Nama</th><th>Spesifikasi</th><th>Jumlah</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                  <% alat.forEach(function(a) { %>
+                  <tr>
+                    <td><span class="badge bg-primary">Alat</span></td>
+                    <td><strong><%= a.item_name %></strong></td>
+                    <td><%= a.specification || '-' %></td>
+                    <td><%= a.quantity %></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1 edit-item" data-id="<%= a.id %>" data-name="<%= a.item_name %>" data-spec="<%= a.specification %>" data-qty="<%= a.quantity %>" data-cat="alat"><i class="bi bi-pencil"></i></button>
+                      <form method="POST" action="/inventory/<%= a.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (alat.length === 0) { %>
+                  <tr><td colspan="5" class="text-center text-muted">Belum ada data alat</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="part">
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr><th>Jenis</th><th>Nama</th><th>Spesifikasi</th><th>Jumlah</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                  <% part.forEach(function(p) { %>
+                  <tr>
+                    <td><span class="badge bg-info">Part</span></td>
+                    <td><strong><%= p.item_name %></strong></td>
+                    <td><%= p.specification || '-' %></td>
+                    <td><%= p.quantity %></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1 edit-item" data-id="<%= p.id %>" data-name="<%= p.item_name %>" data-spec="<%= p.specification %>" data-qty="<%= p.quantity %>" data-cat="part"><i class="bi bi-pencil"></i></button>
+                      <form method="POST" action="/inventory/<%= p.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (part.length === 0) { %>
+                  <tr><td colspan="5" class="text-center text-muted">Belum ada data part</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="bahan">
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr><th>Jenis</th><th>Nama</th><th>Spesifikasi</th><th>Jumlah</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                  <% bahan.forEach(function(b) { %>
+                  <tr>
+                    <td><span class="badge bg-success">Bahan</span></td>
+                    <td><strong><%= b.item_name %></strong></td>
+                    <td><%= b.specification || '-' %></td>
+                    <td><%= b.quantity %></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1 edit-item" data-id="<%= b.id %>" data-name="<%= b.item_name %>" data-spec="<%= b.specification %>" data-qty="<%= b.quantity %>" data-cat="bahan"><i class="bi bi-pencil"></i></button>
+                      <form method="POST" action="/inventory/<%= b.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (bahan.length === 0) { %>
+                  <tr><td colspan="5" class="text-center text-muted">Belum ada data bahan</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addItemModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/inventory">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Item</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Kategori</label>
+                <select name="category" class="form-select" required>
+                  <option value="alat">Alat</option>
+                  <option value="part">Part</option>
+                  <option value="bahan">Bahan</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nama Item</label>
+                <input type="text" name="item_name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Spesifikasi</label>
+                <textarea name="specification" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Jumlah</label>
+                <input type="number" name="quantity" class="form-control" min="0" value="0" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editItemModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" id="editItemForm">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Item</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Nama Item</label>
+                <input type="text" name="item_name" class="form-control" id="edit_item_name" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Spesifikasi</label>
+                <textarea name="specification" class="form-control" rows="2" id="edit_item_spec"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Jumlah</label>
+                <input type="number" name="quantity" class="form-control" id="edit_item_qty" min="0" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-item').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('editItemForm').action = '/inventory/' + this.dataset.id;
+    document.getElementById('edit_item_name').value = this.dataset.name;
+    document.getElementById('edit_item_spec').value = this.dataset.spec || '';
+    document.getElementById('edit_item_qty').value = this.dataset.qty;
+    new bootstrap.Modal(document.getElementById('editItemModal')).show();
+  });
+});
+</script>
+<%- include('../../partials/footer') %>

@@ -1,0 +1,105 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header">
+      <h4><i class="bi bi-house-door me-2"></i>Halaman Awal - Profil Utility</h4>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-info-circle me-2"></i>Profil Tim Utility</h3>
+      <% profile.forEach(function(p) { %>
+        <% if (p.section === 'team_profile') { %>
+          <p class="text-muted"><%= p.description %></p>
+        <% } %>
+      <% }); %>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-list-task me-2"></i>Jobdesk Utility</h3>
+      <% profile.forEach(function(p) { %>
+        <% if (p.section === 'jobdesk') { %>
+          <p class="text-muted"><%= p.description %></p>
+        <% } %>
+      <% }); %>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-people me-2"></i>Profil Member</h3>
+      <div class="row">
+        <% members.forEach(function(m) { %>
+        <div class="col-md-3 mb-3">
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="mb-2">
+                <i class="bi bi-person-circle" style="font-size: 48px; color: #1e3c72;"></i>
+              </div>
+              <h6 class="card-title"><%= m.name %></h6>
+              <span class="badge bg-secondary"><%= m.job || 'N/A' %></span>
+            </div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-images me-2"></i>Kumpulan Foto Utility</h3>
+      <% if (photos.length > 0) { %>
+      <div class="photo-grid">
+        <% photos.forEach(function(p) { %>
+        <div>
+          <img src="<%= p.photo_url %>" alt="<%= p.title || 'Foto' %>" onerror="this.src='https://via.placeholder.com/200'">
+          <% if (p.caption) { %><p class="text-muted small mt-1"><%= p.caption %></p><% } %>
+        </div>
+        <% }); %>
+      </div>
+      <% } else { %>
+      <p class="text-muted">Belum ada foto yang diupload.</p>
+      <% } %>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-grid me-2"></i>Sub Halaman</h3>
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <a href="/awal/summary" class="card text-decoration-none h-100">
+            <div class="card-body text-center">
+              <i class="bi bi-graph-up" style="font-size: 48px; color: #1e3c72;"></i>
+              <h5 class="mt-2">Summary Data</h5>
+              <p class="text-muted small">Diagram garis & pie chart untuk setiap checklist</p>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="/awal/warnings" class="card text-decoration-none h-100">
+            <div class="card-body text-center">
+              <i class="bi bi-exclamation-triangle" style="font-size: 48px; color: #ffc107;"></i>
+              <h5 class="mt-2">Warning & Pekerjaan</h5>
+              <p class="text-muted small">List warning mesin dan pekerjaan</p>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="/awal/spareparts" class="card text-decoration-none h-100">
+            <div class="card-body text-center">
+              <i class="bi bi-box-seam" style="font-size: 48px; color: #28a745;"></i>
+              <h5 class="mt-2">List Sparepart</h5>
+              <p class="text-muted small">Request barang alat, part & bahan</p>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="/awal/member" class="card text-decoration-none h-100">
+            <div class="card-body text-center">
+              <i class="bi bi-calendar-check" style="font-size: 48px; color: #6f42c1;"></i>
+              <h5 class="mt-2">Member & Jadwal</h5>
+              <p class="text-muted small">Jadwal shift dan daftar member</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

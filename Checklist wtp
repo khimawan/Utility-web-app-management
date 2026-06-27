@@ -1,0 +1,39 @@
+Wtp checklist
+
+- pilih pic : memilih member
+- shift : 1/2/3
+- jam monitoring :
+
+predictive
+- Status operasional : Running/Off
+# jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi untuk di submit
+- arus listrik dan temperature motor hpp
+- motor distribusi GD7
+- pompa distribusi GD4
+- pompa booster
+- premate dan reject membran RO
+- MMF: Inlet pressure
+- catrige pressure
+- membran pressure
+- nilai tds #nilai max 200 untuk hasil yg bagus
+- nilai conductivity
+- chemical wtp : cukup/kurang/other(deskripsi)
+- level tandon RO1 : %
+- level tandon RO2
+- level tandon RO GD4 : full/perlu pengisian
+- Backwash MMF
+- kondisi air jika sudah di backwash
+    * sebelum (keruh/jernih)
+    * sesudah (keruh/jernih)
+- Regenerasi Softener WTP : Sudah/Belum
+- CIP : >10 Kg/cm^2 = warning untuk melakukan CIP membran RO
+- status mesin UV : on/off
+
+
+Preventive
+- penggantian membran RO : sudah/masih bisa dipakai & comment member #penggantian berkala pertahun
+- penggantian media softener
+- penggantian media carbon filter
+- penggantian media manganese zeloit
+- penggantian catrige filter
+- input foto dokumentasi

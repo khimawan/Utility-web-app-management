@@ -1,0 +1,390 @@
+const initSqlJs = require('sql.js');
+const fs = require('fs');
+const path = require('path');
+
+const DB_PATH = path.join(__dirname, '..', 'data', 'utility.db');
+
+let db = null;
+
+async function getDb() {
+  if (db) return db;
+
+  const SQL = await initSqlJs();
+  const dir = path.dirname(DB_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  if (fs.existsSync(DB_PATH)) {
+    const buf = fs.readFileSync(DB_PATH);
+    db = new SQL.Database(buf);
+  } else {
+    db = new SQL.Database();
+    initSchema(db);
+    saveDb();
+  }
+
+  return db;
+}
+
+function saveDb() {
+  if (!db) return;
+  const data = db.export();
+  const buffer = Buffer.from(data);
+  fs.writeFileSync(DB_PATH, buffer);
+}
+
+function initSchema(db) {
+  db.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    position TEXT NOT NULL DEFAULT 'member',
+    job TEXT,
+    is_active INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS utility_profile (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    section TEXT NOT NULL,
+    title TEXT,
+    description TEXT,
+    photo_url TEXT,
+    sort_order INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS job_descriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job_type TEXT NOT NULL,
+    title TEXT,
+    description TEXT,
+    sort_order INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS machines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    job_type TEXT NOT NULL,
+    description TEXT,
+    photo_url TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS schedules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    schedule_date TEXT NOT NULL,
+    shift TEXT NOT NULL,
+    member_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    job TEXT NOT NULL,
+    created_by INTEGER REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(schedule_date, shift, member_id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    parameter_name TEXT NOT NULL,
+    parameter_type TEXT NOT NULL DEFAULT 'number',
+    unit TEXT,
+    min_value REAL,
+    max_value REAL,
+    default_value TEXT,
+    is_active INTEGER DEFAULT 1,
+    sort_order INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    entry_date TEXT NOT NULL,
+    shift TEXT NOT NULL,
+    machine_id INTEGER REFERENCES machines(id),
+    input_by INTEGER REFERENCES users(id),
+    notes TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_values (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_id INTEGER REFERENCES checklist_entries(id) ON DELETE CASCADE,
+    template_id INTEGER REFERENCES checklist_templates(id),
+    parameter_value TEXT,
+    photo_url TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS warnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    warning_date TEXT NOT NULL,
+    machine_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    photo_url TEXT,
+    repair_notes TEXT,
+    repair_percentage REAL DEFAULT 0,
+    status TEXT DEFAULT 'open',
+    input_by INTEGER REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS warning_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    warning_id INTEGER REFERENCES warnings(id) ON DELETE CASCADE,
+    member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(warning_id, member_id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS works (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    work_date TEXT NOT NULL,
+    area TEXT NOT NULL,
+    description TEXT NOT NULL,
+    photo_url TEXT,
+    repair_notes TEXT,
+    repair_percentage REAL DEFAULT 0,
+    status TEXT DEFAULT 'open',
+    input_by INTEGER REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS work_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    work_id INTEGER REFERENCES works(id) ON DELETE CASCADE,
+    member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(work_id, member_id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS spareparts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_date TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    specification TEXT,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    category TEXT NOT NULL,
+    urgency TEXT NOT NULL DEFAULT 'tidak',
+    photo_url TEXT,
+    progress TEXT DEFAULT 'belum_dipesan',
+    input_by INTEGER REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS inventory_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    specification TEXT,
+    quantity INTEGER NOT NULL DEFAULT 0,
+    photo_url TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS working_instructions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    job_type TEXT NOT NULL,
+    related_machines TEXT,
+    file_url TEXT NOT NULL,
+    description TEXT,
+    uploaded_by INTEGER REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS gallery_photos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    photo_url TEXT NOT NULL,
+    caption TEXT,
+    uploaded_by INTEGER REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS activity_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    activity_type TEXT NOT NULL,
+    reference_id INTEGER,
+    reference_table TEXT,
+    member_id INTEGER REFERENCES users(id),
+    shift TEXT,
+    job TEXT,
+    description TEXT,
+    activity_date TEXT NOT NULL,
+    activity_time TEXT DEFAULT (datetime('now')),
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  // Seed data
+  db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Administrator', 'adminaja', 'adminaja', 'admin', NULL)`);
+  db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Member 01', 'member01', 'member01', 'member', 'operator_wtp')`);
+
+  const machines = [
+    ['WTP', 'operator_wtp', 'Water Treatment Plant'],
+    ['Boiler', 'operator_wtp', 'Boiler System'],
+    ['Kompressor 01', 'operator_wtp', 'Kompressor 01'],
+    ['Kompressor 02', 'operator_wtp', 'Kompressor 02'],
+    ['N2 Generator', 'operator_n2', 'Nitrogen Generator'],
+    ['Kompressor 03', 'operator_n2', 'Kompressor 03'],
+    ['Kompressor 04', 'operator_n2', 'Kompressor 04'],
+    ['LVMDP', 'operator_n2', 'Low Voltage Main Distribution Panel'],
+    ['Air Tandon', 'operator_n2', 'Air Tandon / Water Tank']
+  ];
+  machines.forEach(m => {
+    db.run('INSERT INTO machines (name, job_type, description) VALUES (?, ?, ?)', m);
+  });
+
+  const templates = [
+    ['wtp', 'Tekanan Air Input', 'number', 'bar', 0, 10, 1],
+    ['wtp', 'Tekanan Air Output', 'number', 'bar', 0, 10, 2],
+    ['wtp', 'Flow Rate', 'number', 'm3/h', 0, 500, 3],
+    ['wtp', 'Turbidity Input', 'number', 'NTU', 0, 100, 4],
+    ['wtp', 'Turbidity Output', 'number', 'NTU', 0, 10, 5],
+    ['wtp', 'pH Air Input', 'number', '', 0, 14, 6],
+    ['wtp', 'pH Air Output', 'number', '', 0, 14, 7],
+    ['wtp', 'Kondisi Pompa', 'text', '', null, null, 8],
+    ['wtp', 'Kondisi Valve', 'text', '', null, null, 9],
+    ['wtp', 'Level Chemical', 'text', '', null, null, 10],
+    ['wtp', 'Catatan', 'text', '', null, null, 11],
+    ['boiler', 'Tekanan Uap', 'number', 'bar', 0, 20, 1],
+    ['boiler', 'Suhu Air Input', 'number', 'C', 0, 100, 2],
+    ['boiler', 'Suhu Air Output', 'number', 'C', 0, 200, 3],
+    ['boiler', 'Level Air Boiler', 'number', '%', 0, 100, 4],
+    ['boiler', 'Kondensi', 'text', '', null, null, 5],
+    ['boiler', 'Pompa Feed Water', 'text', '', null, null, 6],
+    ['boiler', 'Burner Status', 'text', '', null, null, 7],
+    ['boiler', 'Kondisi Pipa', 'text', '', null, null, 8],
+    ['boiler', 'Catatan', 'text', '', null, null, 9],
+    ['kompressor01', 'Tekanan Output', 'number', 'bar', 0, 15, 1],
+    ['kompressor01', 'Suhu Udara Output', 'number', 'C', 0, 100, 2],
+    ['kompressor01', 'Level Oli', 'number', '%', 0, 100, 3],
+    ['kompressor01', 'Suhu Oli', 'number', 'C', 0, 120, 4],
+    ['kompressor01', 'Kondisi Filter', 'text', '', null, null, 5],
+    ['kompressor01', 'Kondisi Belt/Pulley', 'text', '', null, null, 6],
+    ['kompressor01', 'Drain Condensate', 'text', '', null, null, 7],
+    ['kompressor01', 'Catatan', 'text', '', null, null, 8],
+    ['kompressor02', 'Tekanan Output', 'number', 'bar', 0, 15, 1],
+    ['kompressor02', 'Suhu Udara Output', 'number', 'C', 0, 100, 2],
+    ['kompressor02', 'Level Oli', 'number', '%', 0, 100, 3],
+    ['kompressor02', 'Suhu Oli', 'number', 'C', 0, 120, 4],
+    ['kompressor02', 'Kondisi Filter', 'text', '', null, null, 5],
+    ['kompressor02', 'Kondisi Belt/Pulley', 'text', '', null, null, 6],
+    ['kompressor02', 'Drain Condensate', 'text', '', null, null, 7],
+    ['kompressor02', 'Catatan', 'text', '', null, null, 8],
+    ['kompressor03', 'Tekanan Output', 'number', 'bar', 0, 15, 1],
+    ['kompressor03', 'Suhu Udara Output', 'number', 'C', 0, 100, 2],
+    ['kompressor03', 'Level Oli', 'number', '%', 0, 100, 3],
+    ['kompressor03', 'Suhu Oli', 'number', 'C', 0, 120, 4],
+    ['kompressor03', 'Kondisi Filter', 'text', '', null, null, 5],
+    ['kompressor03', 'Kondisi Belt/Pulley', 'text', '', null, null, 6],
+    ['kompressor03', 'Drain Condensate', 'text', '', null, null, 7],
+    ['kompressor03', 'Catatan', 'text', '', null, null, 8],
+    ['kompressor04', 'Tekanan Output', 'number', 'bar', 0, 15, 1],
+    ['kompressor04', 'Suhu Udara Output', 'number', 'C', 0, 100, 2],
+    ['kompressor04', 'Level Oli', 'number', '%', 0, 100, 3],
+    ['kompressor04', 'Suhu Oli', 'number', 'C', 0, 120, 4],
+    ['kompressor04', 'Kondisi Filter', 'text', '', null, null, 5],
+    ['kompressor04', 'Kondisi Belt/Pulley', 'text', '', null, null, 6],
+    ['kompressor04', 'Drain Condensate', 'text', '', null, null, 7],
+    ['kompressor04', 'Catatan', 'text', '', null, null, 8],
+    ['n2_generator', 'Purity N2', 'number', '%', 90, 100, 1],
+    ['n2_generator', 'Flow Rate N2', 'number', 'Nm3/h', 0, 500, 2],
+    ['n2_generator', 'Tekanan Output N2', 'number', 'bar', 0, 10, 3],
+    ['n2_generator', 'Tekanan Input Udara', 'number', 'bar', 0, 10, 4],
+    ['n2_generator', 'Suhu Output N2', 'number', 'C', 0, 60, 5],
+    ['n2_generator', 'Kondisi Membran/Zeolite', 'text', '', null, null, 6],
+    ['n2_generator', 'Kondisi Valve', 'text', '', null, null, 7],
+    ['n2_generator', 'Level Oli Separator', 'text', '', null, null, 8],
+    ['n2_generator', 'Catatan', 'text', '', null, null, 9],
+    ['lvmdp', 'Tegangan R (Volt)', 'number', 'V', 350, 450, 1],
+    ['lvmdp', 'Tegangan S (Volt)', 'number', 'V', 350, 450, 2],
+    ['lvmdp', 'Tegangan T (Volt)', 'number', 'V', 350, 450, 3],
+    ['lvmdp', 'Arus R (Ampere)', 'number', 'A', 0, 2000, 4],
+    ['lvmdp', 'Arus S (Ampere)', 'number', 'A', 0, 2000, 5],
+    ['lvmdp', 'Arus T (Ampere)', 'number', 'A', 0, 2000, 6],
+    ['lvmdp', 'Frekuensi', 'number', 'Hz', 49, 51, 7],
+    ['lvmdp', 'Power Factor', 'number', '', 0, 1, 8],
+    ['lvmdp', 'Kondisi Panel', 'text', '', null, null, 9],
+    ['lvmdp', 'Suhu Panel', 'number', 'C', 0, 80, 10],
+    ['lvmdp', 'Catatan', 'text', '', null, null, 11],
+    ['air_tandon', 'Level Air Tandon', 'number', '%', 0, 100, 1],
+    ['air_tandon', 'Tekanan Pompa', 'number', 'bar', 0, 10, 2],
+    ['air_tandon', 'Kondisi Pompa', 'text', '', null, null, 3],
+    ['air_tandon', 'Kondisi Pipa', 'text', '', null, null, 4],
+    ['air_tandon', 'Kualitas Air', 'text', '', null, null, 5],
+    ['air_tandon', 'Catatan', 'text', '', null, null, 6],
+    ['pemakaian_air', 'Meteran Air Awal', 'number', 'm3', 0, 999999, 1],
+    ['pemakaian_air', 'Meteran Air Akhir', 'number', 'm3', 0, 999999, 2],
+    ['pemakaian_air', 'Total Pemakaian', 'number', 'm3', 0, 999999, 3],
+    ['pemakaian_air', 'Catatan', 'text', '', null, null, 4],
+    ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 1],
+    ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 2],
+    ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 3],
+    ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 4],
+    ['pemakaian_gas', 'Catatan', 'text', '', null, null, 5],
+    ['suhu_trafo', 'Suhu Trafo Fasa R', 'number', 'C', 0, 150, 1],
+    ['suhu_trafo', 'Suhu Trafo Fasa S', 'number', 'C', 0, 150, 2],
+    ['suhu_trafo', 'Suhu Trafo Fasa T', 'number', 'C', 0, 150, 3],
+    ['suhu_trafo', 'Suhu Oil', 'number', 'C', 0, 100, 4],
+    ['suhu_trafo', 'Kondisi Trafo', 'text', '', null, null, 5],
+    ['suhu_trafo', 'Catatan', 'text', '', null, null, 6],
+    ['listrik_trafo', 'Tegangan Primer', 'number', 'kV', 0, 30, 1],
+    ['listrik_trafo', 'Tegangan Sekunder', 'number', 'V', 350, 450, 2],
+    ['listrik_trafo', 'Arus Primer', 'number', 'A', 0, 1000, 3],
+    ['listrik_trafo', 'Arus Sekunder', 'number', 'A', 0, 5000, 4],
+    ['listrik_trafo', 'Daya (kVA)', 'number', 'kVA', 0, 5000, 5],
+    ['listrik_trafo', 'Power Factor', 'number', '', 0, 1, 6],
+    ['listrik_trafo', 'Frekuensi', 'number', 'Hz', 49, 51, 7],
+    ['listrik_trafo', 'Kondisi Trafo', 'text', '', null, null, 8],
+    ['listrik_trafo', 'Catatan', 'text', '', null, null, 9],
+  ];
+  templates.forEach(t => {
+    db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+  });
+
+  db.run(`INSERT INTO job_descriptions (job_type, title, description, sort_order) VALUES ('operator_wtp', 'Operator WTP', 'Bertanggung jawab atas operasional Water Treatment Plant, Boiler, dan Kompressor.', 1)`);
+  db.run(`INSERT INTO job_descriptions (job_type, title, description, sort_order) VALUES ('operator_n2', 'Operator N2', 'Bertanggung jawab atas operasional N2 Generator, Kompressor, LVMDP, dan Air Tandon.', 2)`);
+  db.run(`INSERT INTO job_descriptions (job_type, title, description, sort_order) VALUES ('facility', 'Facility', 'Bertanggung jawab atas pemakaian air, gas, suhu trafo, listrik trafo, dan pekerjaan facility.', 3)`);
+
+  db.run(`INSERT INTO utility_profile (section, title, description, sort_order) VALUES ('team_profile', 'Profil Tim Utility', 'Tim utility bertanggung jawab untuk memastikan kelancaran operasional seluruh sistem pendukung di area produksi.', 1)`);
+  db.run(`INSERT INTO utility_profile (section, title, description, sort_order) VALUES ('jobdesk', 'Jobdesk Utility', 'Tim utility terdiri dari 3 job utama: Operator WTP, Operator N2, dan Facility.', 2)`);
+}
+
+// Helper: run query that returns rows
+function dbAll(sql, params = []) {
+  const d = db.exec(sql, params);
+  if (d.length === 0) return [];
+  const columns = d[0].columns;
+  return d[0].values.map(row => {
+    const obj = {};
+    columns.forEach((col, i) => obj[col] = row[i]);
+    return obj;
+  });
+}
+
+// Helper: run query that returns first row
+function dbGet(sql, params = []) {
+  const rows = dbAll(sql, params);
+  return rows.length > 0 ? rows[0] : null;
+}
+
+// Helper: run statement
+function dbRun(sql, params = []) {
+  db.run(sql, params);
+  saveDb();
+  return { lastID: db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] };
+}
+
+module.exports = { getDb, saveDb, dbAll, dbGet, dbRun };

@@ -1,0 +1,151 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-graph-up me-2"></i>Summary Data</h4>
+      <div class="d-flex gap-2">
+        <select id="periodSelect" class="form-select form-select-sm" style="width: 150px;">
+          <option value="week">1 Minggu</option>
+          <option value="month">1 Bulan</option>
+          <option value="year">1 Tahun</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <% categories.forEach(function(cat) { %>
+      <div class="col-12 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="text-capitalize"><%= cat.replace(/_/g, ' ') %></h5>
+            <button class="btn btn-sm btn-outline-primary" onclick="loadCategoryData('<%= cat %>')">
+              <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="chart-container">
+                  <canvas id="chart_<%= cat %>"></canvas>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="chart-container">
+                  <canvas id="pie_<%= cat %>"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive mt-3">
+              <table class="table table-sm table-striped" id="table_<%= cat %>">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>Parameter</th>
+                    <th>Nilai</th>
+                    <th>Satuan</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<script>
+const categories = <%- JSON.stringify(categories) %>;
+const templates = <%- JSON.stringify(templates) %>;
+
+categories.forEach(function(cat) {
+  loadCategoryData(cat);
+});
+
+function loadCategoryData(category) {
+  const period = document.getElementById('periodSelect').value;
+  fetch('/awal/api/summary-data?category=' + category + '&period=' + period)
+    .then(r => r.json())
+    .then(data => {
+      updateChart(category, data);
+      updateTable(category, data);
+    })
+    .catch(err => console.error(err));
+}
+
+function updateChart(category, data) {
+  const numericParams = {};
+  const textParams = {};
+
+  data.forEach(function(row) {
+    if (row.parameter_type === 'number') {
+      if (!numericParams[row.parameter_name]) numericParams[row.parameter_name] = [];
+      numericParams[row.parameter_name].push({ date: row.entry_date, value: parseFloat(row.parameter_value) || 0 });
+    } else {
+      if (!textParams[row.parameter_name]) textParams[row.parameter_name] = {};
+      const val = row.parameter_value || 'N/A';
+      textParams[row.parameter_name][val] = (textParams[row.parameter_name][val] || 0) + 1;
+    }
+  });
+
+  const colors = ['#1e3c72', '#2a5298', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'];
+  const datasets = [];
+  let labels = [...new Set(data.map(r => r.entry_date))].sort();
+
+  Object.keys(numericParams).forEach(function(param, i) {
+    const values = {};
+    numericParams[param].forEach(function(v) { values[v.date] = v.value; });
+    datasets.push({
+      label: param,
+      data: labels.map(function(l) { return values[l] || 0; }),
+      borderColor: colors[i % colors.length],
+      tension: 0.3,
+      fill: false
+    });
+  });
+
+  const canvasId = 'chart_' + category;
+  const existing = Chart.getChart(canvasId);
+  if (existing) existing.destroy();
+
+  if (datasets.length > 0) {
+    createLineChart(canvasId, labels, datasets);
+  }
+
+  const pieCanvasId = 'pie_' + category;
+  const existingPie = Chart.getChart(pieCanvasId);
+  if (existingPie) existingPie.destroy();
+
+  const pieLabels = [];
+  const pieData = [];
+  Object.keys(textParams).forEach(function(param) {
+    Object.keys(textParams[param]).forEach(function(val) {
+      pieLabels.push(param + ': ' + val);
+      pieData.push(textParams[param][val]);
+    });
+  });
+
+  if (pieLabels.length > 0) {
+    createPieChart(pieCanvasId, pieLabels, pieData);
+  }
+}
+
+function updateTable(category, data) {
+  const tbody = document.querySelector('#table_' + category + ' tbody');
+  tbody.innerHTML = '';
+  data.forEach(function(row) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + row.entry_date + '</td><td>' + row.shift + '</td><td>' + row.parameter_name + '</td><td>' + row.parameter_value + '</td><td>' + (row.unit || '') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('periodSelect').addEventListener('change', function() {
+  categories.forEach(function(cat) { loadCategoryData(cat); });
+});
+</script>
+<%- include('../../partials/footer') %>

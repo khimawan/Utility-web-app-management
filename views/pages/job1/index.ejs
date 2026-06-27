@@ -1,0 +1,115 @@
+<%- include('../../partials/header') %>
+<div class="main-content">
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header">
+      <h4><i class="bi bi-gear me-2"></i>Job 1 - Operator WTP</h4>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-info-circle me-2"></i>Deskripsi Job Operator WTP</h3>
+      <% if (description.length > 0) { %>
+        <p class="text-muted"><%= description[0].description %></p>
+      <% } %>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-list-task me-2"></i>Jobdesk Operator WTP</h3>
+      <% if (description.length > 0) { %>
+        <p class="text-muted"><%= description[0].description %></p>
+      <% } %>
+    </div>
+
+    <div class="profile-section">
+      <h3><i class="bi bi-cpu me-2"></i>Profil Mesin</h3>
+      <div class="row">
+        <% machines.forEach(function(m) { %>
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <div class="card-body text-center">
+              <i class="bi bi-cpu" style="font-size: 48px; color: #1e3c72;"></i>
+              <h5 class="mt-2"><%= m.name %></h5>
+              <p class="text-muted small"><%= m.description %></p>
+            </div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <a href="/job1/checklist/wtp" class="card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-clipboard-check" style="font-size: 36px; color: #28a745;"></i>
+            <h5 class="mt-2">Checklist WTP</h5>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 mb-3">
+        <a href="/job1/checklist/boiler" class="card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-clipboard-check" style="font-size: 36px; color: #28a745;"></i>
+            <h5 class="mt-2">Checklist Boiler</h5>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 mb-3">
+        <a href="/job1/checklist/kompressor01" class="card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-clipboard-check" style="font-size: 36px; color: #28a745;"></i>
+            <h5 class="mt-2">Checklist Kompressor 01</h5>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 mb-3">
+        <a href="/job1/checklist/kompressor02" class="card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-clipboard-check" style="font-size: 36px; color: #28a745;"></i>
+            <h5 class="mt-2">Checklist Kompressor 02</h5>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 mb-3">
+        <a href="/job1/warning" class="card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-exclamation-triangle" style="font-size: 36px; color: #ffc107;"></i>
+            <h5 class="mt-2">Input Warning Mesin</h5>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 mb-3">
+        <a href="/job1/instructions" class="card text-decoration-none">
+          <div class="card-body text-center">
+            <i class="bi bi-file-earmark-pdf" style="font-size: 36px; color: #dc3545;"></i>
+            <h5 class="mt-2">Working Instruction</h5>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <% if (warnings.length > 0) { %>
+    <div class="card">
+      <div class="card-header"><h5>Warning Terbaru</h5></div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead><tr><th>Tanggal</th><th>Mesin</th><th>Deskripsi</th><th>Progres</th></tr></thead>
+            <tbody>
+              <% warnings.forEach(function(w) { %>
+              <tr>
+                <td><%= w.warning_date %></td>
+                <td><span class="badge bg-warning text-dark"><%= w.machine_name %></span></td>
+                <td><%= w.description %></td>
+                <td><div class="progress" style="height:18px;width:80px;"><div class="progress-bar bg-success" style="width:<%= w.repair_percentage %>%"><%= w.repair_percentage %>%</div></div></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../../partials/footer') %>
