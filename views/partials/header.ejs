@@ -10,5 +10,7 @@
   <link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
+<% if (typeof user !== 'undefined' && user) { %>
 <%- include('sidebar') %>
 <div class="main-content">
+<% } %>
