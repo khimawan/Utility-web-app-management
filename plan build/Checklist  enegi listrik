@@ -1,0 +1,21 @@
+Checklist energi listrik
+
+ubah nama checklist listrik trafo menjadi Checklist energi listrik, kemudian ubah isi checklist mengikuti list pertanyaan berikut :
+- Pilih PIC : Memilih member
+- Shift : 1/2/3
+- Jam monitoring :
+- Tanggal monitoring :
+- 147 KVA
+    * KWH WBP (kWh):
+    * KWH LWBP (kWh):
+- 197 KVA
+    * KWH WBP (kWh):
+    * KWH LWBP (kWh):
+- 555 KVA
+    * KWH WBP (kWh):
+    * KWH LWBP (kWh):
+- PF Capacitor Bank 125 KVAR : (nilai maximal 1)
+- PF Capacitor Bank 150 KVAR : (nilai maximal 1)
+- PF Capacitor Bank 300 KVAR : (nilai maximal 1)
+- Berikan tombol submit dan clear form pada bawah checklist
+

@@ -11,35 +11,108 @@
         <div class="card">
           <div class="card-header"><h5>Input Checklist</h5></div>
           <div class="card-body">
-            <form method="POST" action="/job3/checklist/<%= category %>">
-              <div class="mb-3">
-                <label class="form-label">Tanggal</label>
-                <input type="date" name="entry_date" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Shift</label>
-                <select name="shift" class="form-select" required>
-                  <option value="1">Shift 1</option>
-                  <option value="2">Shift 2</option>
-                  <option value="3">Shift 3</option>
-                </select>
-              </div>
-              <% templates.forEach(function(t) { %>
-              <div class="mb-3">
-                <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
-                <% if (t.parameter_type === 'number') { %>
-                  <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+            <form method="POST" action="/job3/checklist/<%= category %>" id="checklistForm">
+              <% if (category === 'pemakaian_air' || category === 'energi_listrik') { %>
+                <div class="mb-3">
+                  <label class="form-label">Pilih PIC</label>
+                  <select name="machine_id" class="form-select" required>
+                    <option value="">-- Pilih PIC --</option>
+                    <% members.forEach(function(m) { %>
+                      <option value="<%= m.id %>"><%= m.name %></option>
+                    <% }); %>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Shift</label>
+                  <select name="shift" class="form-select" required>
+                    <option value="1">Shift 1</option>
+                    <option value="2">Shift 2</option>
+                    <option value="3">Shift 3</option>
+                  </select>
+                </div>
+
+                <% if (category === 'energi_listrik') { %>
+                  <% templates.forEach(function(t) { %>
+                    <% if (t.parameter_name.indexOf('147 KVA') >= 0 && t.sort_order === 3) { %>
+                      <hr class="my-3">
+                      <h6 class="text-primary fw-bold">147 KVA</h6>
+                    <% } else if (t.parameter_name.indexOf('197 KVA') >= 0 && t.sort_order === 5) { %>
+                      <hr class="my-3">
+                      <h6 class="text-primary fw-bold">197 KVA</h6>
+                    <% } else if (t.parameter_name.indexOf('555 KVA') >= 0 && t.sort_order === 7) { %>
+                      <hr class="my-3">
+                      <h6 class="text-primary fw-bold">555 KVA</h6>
+                    <% } else if (t.parameter_name.indexOf('Capacitor Bank') >= 0 && t.sort_order === 9) { %>
+                      <hr class="my-3">
+                      <h6 class="text-primary fw-bold">Capacitor Bank</h6>
+                    <% } %>
+                  <div class="mb-3">
+                    <label class="form-label"><%= t.parameter_name.replace('147 KVA - ', '').replace('197 KVA - ', '').replace('555 KVA - ', '') %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                    <% if (t.parameter_type === 'date') { %>
+                      <input type="date" name="values" class="form-control">
+                    <% } else if (t.parameter_type === 'time') { %>
+                      <input type="time" name="values" class="form-control">
+                    <% } else if (t.parameter_type === 'number') { %>
+                      <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+                    <% } else { %>
+                      <input type="text" name="values" class="form-control">
+                    <% } %>
+                    <input type="hidden" name="templates" value="<%= t.id %>">
+                  </div>
+                  <% }); %>
                 <% } else { %>
-                  <input type="text" name="values" class="form-control">
+                  <% templates.forEach(function(t) { %>
+                  <div class="mb-3">
+                    <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                    <% if (t.parameter_type === 'date') { %>
+                      <input type="date" name="values" class="form-control">
+                    <% } else if (t.parameter_type === 'time') { %>
+                      <input type="time" name="values" class="form-control">
+                    <% } else if (t.parameter_type === 'number') { %>
+                      <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+                    <% } else { %>
+                      <input type="text" name="values" class="form-control">
+                    <% } %>
+                    <input type="hidden" name="templates" value="<%= t.id %>">
+                  </div>
+                  <% }); %>
                 <% } %>
-                <input type="hidden" name="templates" value="<%= t.id %>">
-              </div>
-              <% }); %>
-              <div class="mb-3">
-                <label class="form-label">Catatan</label>
-                <textarea name="notes" class="form-control" rows="2"></textarea>
-              </div>
-              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i>Simpan Checklist</button>
+
+                <hr class="my-3">
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
+                  <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('checklistForm').reset()"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+                </div>
+              <% } else { %>
+                <div class="mb-3">
+                  <label class="form-label">Tanggal</label>
+                  <input type="date" name="entry_date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Shift</label>
+                  <select name="shift" class="form-select" required>
+                    <option value="1">Shift 1</option>
+                    <option value="2">Shift 2</option>
+                    <option value="3">Shift 3</option>
+                  </select>
+                </div>
+                <% templates.forEach(function(t) { %>
+                <div class="mb-3">
+                  <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                  <% if (t.parameter_type === 'number') { %>
+                    <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+                  <% } else { %>
+                    <input type="text" name="values" class="form-control">
+                  <% } %>
+                  <input type="hidden" name="templates" value="<%= t.id %>">
+                </div>
+                <% }); %>
+                <div class="mb-3">
+                  <label class="form-label">Catatan</label>
+                  <textarea name="notes" class="form-control" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i>Simpan Checklist</button>
+              <% } %>
             </form>
           </div>
         </div>
@@ -52,13 +125,24 @@
             <div class="table-responsive">
               <table class="table table-sm table-striped">
                 <thead>
-                  <tr><th>Tanggal</th><th>Shift</th><th>Oleh</th><th>Aksi</th></tr>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <% if (category === 'pemakaian_air' || category === 'energi_listrik') { %>
+                      <th>PIC</th>
+                    <% } %>
+                    <th>Oleh</th>
+                    <th>Aksi</th>
+                  </tr>
                 </thead>
                 <tbody>
                   <% entries.forEach(function(e) { %>
                   <tr>
                     <td><%= e.entry_date %></td>
                     <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                    <% if (category === 'pemakaian_air' || category === 'energi_listrik') { %>
+                      <td><%= e.pic_name || '-' %></td>
+                    <% } %>
                     <td><%= e.input_by_name %></td>
                     <td>
                       <form method="POST" action="/job3/checklist/entry/<%= e.id %>/delete" style="display:inline;" class="delete-btn-form">
@@ -68,7 +152,9 @@
                   </tr>
                   <% }); %>
                   <% if (entries.length === 0) { %>
-                  <tr><td colspan="4" class="text-center text-muted">Belum ada data</td></tr>
+                  <tr>
+                    <td colspan="<%= (category === 'pemakaian_air' || category === 'energi_listrik') ? 5 : 4 %>" class="text-center text-muted">Belum ada data</td>
+                  </tr>
                   <% } %>
                 </tbody>
               </table>

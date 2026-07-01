@@ -19,7 +19,7 @@ router.get('/summary', isAuthenticated, async (req, res) => {
   try {
     const categories = [
       'wtp', 'boiler', 'kompressor01', 'kompressor02', 'kompressor03', 'kompressor04',
-      'n2_generator', 'lvmdp', 'air_tandon', 'pemakaian_air', 'pemakaian_gas', 'suhu_trafo', 'listrik_trafo'
+      'n2_generator', 'lvmdp', 'air_tandon', 'pemakaian_air', 'pemakaian_gas', 'suhu_trafo', 'energi_listrik'
     ];
     const templates = dbAll('SELECT * FROM checklist_templates WHERE is_active = 1 ORDER BY category, sort_order');
     res.render('pages/awal/summary', { categories, templates });

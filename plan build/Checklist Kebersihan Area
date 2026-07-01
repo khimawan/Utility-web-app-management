@@ -1,0 +1,15 @@
+Checklist Kebersihan Area
+
+- Pilih PIC : Memilih member (dapat dipilih lebih dari 1 dalam bentuk checklist)
+- Shift : 1/2/3
+- Jam monitoring :
+- Tanggal monitoring :
+- Lokasi : Ruang N2 Generator, Kompressor, WTP dan PRS GD4/ Ruang N2 Generator, Kompressor, LVMDP GD6/ Area WTP, Boiler, Kompressor, PRS GD7/ Mini Workshop, Office Utility.
+- Kondisi Area Kerja
+    * Lantai bersih : Good/Not Good
+    * Genangan air : Good/Not Good
+    * Sarang laba-laba : Good/Not Good
+    * Barang berantakan : Good/Not Good
+- Input dokumentasi :
+# Input berupa pload file foto jpeg/png
+- Berikan tombol submit dan clear form pada bawah checklist

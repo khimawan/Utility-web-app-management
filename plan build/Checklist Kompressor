@@ -1,0 +1,47 @@
+Checklist Kompressor
+
+- Pilih PIC : Memilih member
+- Shift : 1/2/3
+- Jam monitoring :
+- Tanggal monitoring :
+- Pilih opsi pengecekan : Predictive maintenence/ Preventive maintenence
+# jika memilih predictive maintenence akan terbuka list untuk input data predictive maintenence, sedangkan jika memilih preventive maintenence akan muncul kolompreventive maintenence
+
+
+Predictive Maintenence
+- status operasional : Running/Off
+# jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi dan dapat langsung ke button submit
+- Air Compressor : Air Compressor 01,Air Compressor 02,Air Compressor 03,Air Compressor 04.
+# Air compressor dapat dipilih 1 atau 2 dalam bentuk checklist
+# jika memilih lebih dari 1 air compressor checklist dari mode hingga drayer terdapat 2 kolom input sesuai dengan kompressor yang dipiih.
+- Mode : Load/Iddle/Standby
+- Running Hour :
+- System Pressure (bar):
+- Flow Rate (Nm^3/h):
+- Motor Temperature ('C):
+- Oil Temperature ('C):
+- Bunyi Abnormal : Ya/Tidak
+- Kebocoran Oli : Ya/Tidak
+- Alaram : Ya/Tidak
+# jika memilih tidak, terdapat input alaram dalam bentuk input text
+- Drayer
+    * Status : On/Off
+    * Humidity & Temperature : Red/Green
+- Berikan tombol submit dan clear form pada bawah checklist
+
+Preventive Maintenence
+- Change Filter Mat (3000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Oil Change (3000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Change Oil Filter (3000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Change Air Filter (3000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Change Belt/Coupling (3000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Change Oil Separator (6000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Check Ecodrain (6000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Bearing Lube Drive Motor (6000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Change Bearing (6000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Check Electrical (9000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Bearing Lube (12000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Check Valve (12000 h): Sudah/Part tidak tersedia/Running Hour belum tercapai
+- Input dokumentasi :
+# input dokumentasi berupa pload file foto jpeg/png
+- Berikan tombol submit dan clear form pada bawah checklist

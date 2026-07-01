@@ -32,18 +32,20 @@ router.get('/checklist/:category', isAuthenticated, async (req, res) => {
     if (!job2Categories.includes(category)) return res.status(404).send('Not Found');
     const templates = dbAll('SELECT * FROM checklist_templates WHERE category = ? AND is_active = 1 ORDER BY sort_order', [category]);
     const entries = dbAll(`
-      SELECT ce.*, u.name as input_by_name
+      SELECT ce.*, u.name as input_by_name, pu.name as pic_name
       FROM checklist_entries ce
       LEFT JOIN users u ON ce.input_by = u.id
+      LEFT JOIN users pu ON ce.machine_id = pu.id
       WHERE ce.category = ?
       ORDER BY ce.entry_date DESC, ce.shift
       LIMIT 50
     `, [category]);
+    const members = dbAll("SELECT * FROM users WHERE position = 'member' AND is_active = 1 ORDER BY name");
     const categoryNames = {
       n2_generator: 'Checklist N2 Generator', kompressor03: 'Checklist Kompressor 03',
       kompressor04: 'Checklist Kompressor 04', lvmdp: 'Checklist LVMDP', air_tandon: 'Checklist Air Tandon'
     };
-    res.render('pages/job2/checklist', { category, categoryName: categoryNames[category], templates, entries });
+    res.render('pages/job2/checklist', { category, categoryName: categoryNames[category], templates, entries, members });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');
@@ -53,10 +55,23 @@ router.get('/checklist/:category', isAuthenticated, async (req, res) => {
 router.post('/checklist/:category', isAuthenticated, async (req, res) => {
   try {
     const { category } = req.params;
-    const { entry_date, shift, notes, templates, values } = req.body;
+    const { entry_date, shift, notes, templates, values, machine_id } = req.body;
+    let finalEntryDate = entry_date;
+    if (category === 'lvmdp' && !entry_date) {
+      const tplIds = Array.isArray(templates) ? templates : (templates ? [templates] : []);
+      const vals = Array.isArray(values) ? values : (values ? [values] : []);
+      for (let i = 0; i < tplIds.length; i++) {
+        const tpl = dbGet('SELECT * FROM checklist_templates WHERE id = ?', [parseInt(tplIds[i])]);
+        if (tpl && tpl.parameter_type === 'date' && vals[i]) {
+          finalEntryDate = vals[i];
+          break;
+        }
+      }
+    }
+    if (!finalEntryDate) finalEntryDate = new Date().toISOString().slice(0, 10);
     const entry = dbRun(
-      `INSERT INTO checklist_entries (category, entry_date, shift, input_by, notes) VALUES (?, ?, ?, ?, ?)`,
-      [category, entry_date, shift, req.session.user.id, notes || '']
+      `INSERT INTO checklist_entries (category, entry_date, shift, machine_id, input_by, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+      [category, finalEntryDate, shift, machine_id || null, req.session.user.id, notes || '']
     );
     const entryId = entry.lastID;
     const tplIds = Array.isArray(templates) ? templates : (templates ? [templates] : []);

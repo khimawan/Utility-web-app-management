@@ -1,0 +1,49 @@
+Checklist LVMDP
+
+
+ubah checklist LVMDP dengan mengikuti pertanyaan sebagai berikut
+- Pilih PIC : Memilih member
+- Shift : 1/2/3
+- Jam monitoring :
+- Tanggal monitoring :
+- LVMDP 147 KVA
+    * P Total (kW):
+    * Q Total (kVAR):
+    * S Total (kVA):
+    * V Average (V):
+    * I Average (A):
+    * PF :
+    # input PF nilai decimal maximal 5 angka dibelakang koma
+    * Apakah voltage setiap phase balance : Ya/Tidak
+    * Apakah Ampere setiap phase balance : Ya/Tidak
+- LVMDP 197 KVA
+    * P Total (kW):
+    * Q Total (kVAR):
+    * S Total (kVA):
+    * V Average (V):
+    * I Average (A):
+    * PF :
+    # input PF nilai decimal maximal 5 angka dibelakang koma
+    * Apakah voltage setiap phase balance : Ya/Tidak
+    * Apakah Ampere setiap phase balance : Ya/Tidak
+- LVMDP 555 KVA
+    * P Total (kW):
+    * Q Total (kVAR):
+    * S Total (kVA):
+    * V Average (V):
+    * I Average (A):
+    * PF :
+    # input PF nilai decimal maximal 5 angka dibelakang koma
+    * Apakah voltage setiap phase balance : Ya/Tidak
+    * Apakah Ampere setiap phase balance : Ya/Tidak
+- Trafo 630 KVA
+    * Temperature busbar ('C):
+    * Temperature oil ('C):
+    * Indikasi Level oli : Cukup/Kurang
+    * Kebocoran oli gasket/seal busbar : Ada/Tidak
+- Trafo 2000 KVA
+    * Temperature busbar ('C):
+    * Temperature oil ('C):
+    * Indikasi Level oli : Cukup/Kurang
+    * Kebocoran oli gasket/seal busbar : Ada/Tidak
+- Berikan tombol submit dan clear form pada bawah checklist

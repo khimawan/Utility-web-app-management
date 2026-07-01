@@ -2,63 +2,131 @@
   <%- include('../../partials/topnav') %>
   <div class="page-content">
     <div class="page-header">
-      <h4><i class="bi bi-people me-2"></i>Member & Jadwal</h4>
+      <h4><i class="bi bi-calendar-week me-2"></i>Halaman Jadwal Member</h4>
     </div>
 
     <div class="row">
-      <div class="col-md-8">
-        <div class="card">
+      <div class="col-md-7">
+        <div class="card mb-3">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5>Jadwal Shift</h5>
-            <div class="d-flex gap-2">
-              <form method="GET" action="/awal/member" class="d-flex gap-2">
-                <input type="date" name="date" class="form-control form-control-sm" value="<%= selectedDate %>">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
-              </form>
-            </div>
+            <form method="GET" action="/awal/member" class="d-flex gap-2">
+              <input type="date" name="date" class="form-control form-control-sm" value="<%= selectedDate %>">
+              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+            </form>
           </div>
           <div class="card-body">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Shift</th>
-                  <th>Nama Member</th>
-                  <th>Job</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% ['1','2','3'].forEach(function(shift) { %>
-                  <% schedules.filter(function(s) { return s.shift === shift; }).forEach(function(s) { %>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
                   <tr>
+                    <th>Shift</th>
+                    <th>Nama Member</th>
+                    <th>Job</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% ['1','2','3'].forEach(function(shift) { %>
+                    <% schedules.filter(function(s) { return s.shift === shift; }).forEach(function(s, idx) { %>
+                    <tr>
+                      <% if (idx === 0) { %>
+                        <td rowspan="<%= schedules.filter(function(s) { return s.shift === shift; }).length %>">
+                          <span class="badge bg-primary">Shift <%= shift %></span>
+                        </td>
+                      <% } %>
+                      <td><%= s.member_name || '-' %></td>
+                      <td><span class="badge bg-info"><%= s.job %></span></td>
+                    </tr>
+                    <% }); %>
+                    <% if (schedules.filter(function(s) { return s.shift === shift; }).length === 0) { %>
+                    <tr>
+                      <td><span class="badge bg-primary">Shift <%= shift %></span></td>
+                      <td colspan="2" class="text-muted">Tidak ada jadwal</td>
+                    </tr>
+                    <% } %>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5>List Pengajuan Lembur</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>Jenis</th>
+                    <th>Member</th>
+                    <th>Job</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% submissions.forEach(function(s) { %>
+                  <tr>
+                    <td><%= s.overtime_date %></td>
                     <td><span class="badge bg-primary">Shift <%= s.shift %></span></td>
-                    <td><%= s.member_name || '-' %></td>
+                    <td><%= s.schedule_type %></td>
+                    <td><%= s.member_names || '-' %></td>
                     <td><span class="badge bg-info"><%= s.job %></span></td>
                     <td>
-                      <form method="POST" action="/awal/member/schedule/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
-                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                      </form>
+                      <% if (s.status === 'pending') { %>
+                        <span class="badge bg-warning">Menunggu</span>
+                      <% } else if (s.status === 'approved') { %>
+                        <span class="badge bg-success">Disetujui</span>
+                      <% } else { %>
+                        <span class="badge bg-danger">Ditolak</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (s.status === 'pending') { %>
+                        <form method="POST" action="/awal/member/overtime/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
+                          <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                      <% } %>
                     </td>
                   </tr>
                   <% }); %>
-                <% }); %>
-                <% if (schedules.length === 0) { %>
-                <tr><td colspan="4" class="text-center text-muted">Tidak ada jadwal untuk tanggal ini</td></tr>
-                <% } %>
-              </tbody>
-            </table>
+                  <% if (submissions.length === 0) { %>
+                  <tr><td colspan="7" class="text-center text-muted">Belum ada pengajuan lembur</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="col-md-4">
-        <div class="card">
+      <div class="col-md-5">
+        <div class="card mb-3">
           <div class="card-header">
-            <h5>Tambah Jadwal</h5>
+            <h5>Ajukan Lembur</h5>
           </div>
           <div class="card-body">
-            <form method="POST" action="/awal/member/schedule">
-              <input type="hidden" name="schedule_date" value="<%= selectedDate %>">
+            <form method="POST" action="/awal/member/overtime" id="overtimeForm">
+              <div class="mb-3">
+                <label class="form-label">Pilih Member</label>
+                <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                  <% members.forEach(function(m) { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="member_ids" value="<%= m.id %>" id="member_<%= m.id %>">
+                    <label class="form-check-label" for="member_<%= m.id %>"><%= m.name %></label>
+                  </div>
+                  <% }); %>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tanggal Lembur</label>
+                <input type="date" name="overtime_date" class="form-control" required>
+              </div>
               <div class="mb-3">
                 <label class="form-label">Shift</label>
                 <select name="shift" class="form-select" required>
@@ -68,22 +136,28 @@
                 </select>
               </div>
               <div class="mb-3">
-                <label class="form-label">Member</label>
-                <select name="member_id" class="form-select" required>
-                  <% members.forEach(function(m) { %>
-                  <option value="<%= m.id %>"><%= m.name %></option>
-                  <% }); %>
+                <label class="form-label">Schedule Lembur</label>
+                <select name="schedule_type" class="form-select" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="H+6 (Hari Sabtu/1/2 Hari Kerja)">H+6 (Hari Sabtu/1/2 Hari Kerja)</option>
+                  <option value="Libur Khusus (Hari Minggu/Libur Nasional)">Libur Khusus (Hari Minggu/Libur Nasional)</option>
+                  <option value="Hari Biasa (Overtime)">Hari Biasa (Overtime)</option>
                 </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Job</label>
                 <select name="job" class="form-select" required>
-                  <option value="operator_wtp">Operator WTP</option>
-                  <option value="operator_n2">Operator N2</option>
-                  <option value="facility">Facility</option>
+                  <option value="">-- Pilih --</option>
+                  <option value="Operator WTP">Operator WTP</option>
+                  <option value="Operator N2">Operator N2</option>
+                  <option value="Facility">Facility</option>
+                  <option value="Opsional">Opsional</option>
                 </select>
               </div>
-              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-circle me-1"></i>Tambah</button>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-send me-1"></i>Submit</button>
+                <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('overtimeForm').reset()"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+              </div>
             </form>
           </div>
         </div>

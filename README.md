@@ -1,6 +1,6 @@
 # =====================================================
 # UTILITY MANAGEMENT WEBAPP
-# Database Setup Guide
+# Database Setup Guide & Deployment
 # =====================================================
 
 # =====================================================
@@ -109,4 +109,44 @@
 # DATABASE_ERD.md   - ERD text documentation
 # ERD_DIAGRAM.md    - Mermaid ERD diagram
 # README.md         - This file
+# =====================================================
+
+# =====================================================
+# DEPLOYMENT WITH DOCKER
+# =====================================================
+# This application uses SQLite (sql.js) and runs on Node.js/Express.
+# Docker deployment is recommended for production.
+
+# PREREQUISITES FOR DOCKER DEPLOYMENT:
+# - Docker installed on your system
+# - Docker Compose installed (optional, but recommended)
+
+# DEPLOYMENT STEPS:
+# ---------------------------------------------------
+# 1. Build and run with Docker Compose (Recommended):
+#    docker-compose up -d
+#
+#    The application will be available at http://localhost:3000
+#
+# 2. Or build and run with Docker directly:
+#    docker build -t utility-management-app .
+#    docker run -p 3000:3000 -v $(pwd)/data:/app/data utility-management-app
+#
+# 3. Stop the application:
+#    docker-compose down
+#
+# DATABASE PERSISTENCE:
+# ---------------------------------------------------
+# The SQLite database is stored in the ./data directory.
+# This directory is mounted as a volume in Docker to persist data across container restarts.
+#
+# DEFAULT ACCOUNTS:
+# ---------------------------------------------------
+# ADMIN:
+#   Username: adminaja
+#   Password: adminaja
+#
+# MEMBER:
+#   Username: member01
+#   Password: member01
 # =====================================================

@@ -1,0 +1,250 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clock-history me-2"></i>Management Lembur</h4>
+      <a href="/admin" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-7">
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5>Jadwal Management</h5>
+            <form method="GET" action="/admin/overtime" class="d-flex gap-2">
+              <input type="date" name="date" class="form-control form-control-sm" value="<%= selectedDate %>">
+              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+            </form>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Jadwal (Tanggal)</th>
+                    <th>Shift</th>
+                    <th>Member</th>
+                    <th>Job</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% ['1','2','3'].forEach(function(shift) { %>
+                    <% var shiftSchedules = schedules.filter(function(s) { return s.shift === shift; }); %>
+                    <% if (shiftSchedules.length === 0) { %>
+                    <tr>
+                      <td><%= selectedDate %></td>
+                      <td><span class="badge bg-primary">Shift <%= shift %></span></td>
+                      <td class="text-muted">Tidak ada member</td>
+                      <td>-</td>
+                      <td></td>
+                    </tr>
+                    <% } else { %>
+                      <% shiftSchedules.forEach(function(s, idx) { %>
+                      <tr>
+                        <% if (idx === 0) { %>
+                          <td rowspan="<%= shiftSchedules.length %>"><%= s.schedule_date %></td>
+                          <td rowspan="<%= shiftSchedules.length %>"><span class="badge bg-primary">Shift <%= shift %></span></td>
+                        <% } %>
+                        <td><%= s.member_name %></td>
+                        <td><span class="badge bg-info"><%= s.job %></span></td>
+                        <td>
+                          <form method="POST" action="/admin/overtime/schedule/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                          </form>
+                        </td>
+                      </tr>
+                      <% }); %>
+                    <% } %>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <hr>
+            <h6>Tambah Jadwal</h6>
+            <form method="POST" action="/admin/overtime/schedule" class="row g-2 mt-1">
+              <input type="hidden" name="schedule_date" value="<%= selectedDate %>">
+              <div class="col-md-2">
+                <select name="shift" class="form-select form-select-sm" required>
+                  <option value="1">Shift 1</option>
+                  <option value="2">Shift 2</option>
+                  <option value="3">Shift 3</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select name="member_id" class="form-select form-select-sm" required>
+                  <% members.forEach(function(m) { %>
+                  <option value="<%= m.id %>"><%= m.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select name="job" class="form-select form-select-sm" required>
+                  <option value="operator_wtp">Operator WTP</option>
+                  <option value="operator_n2">Operator N2</option>
+                  <option value="facility">Facility</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-plus-circle me-1"></i>Tambah</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5>List Pengajuan Lembur</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>Jenis</th>
+                    <th>Member</th>
+                    <th>Job</th>
+                    <th>Diajukan Oleh</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% submissions.forEach(function(s) { %>
+                  <tr>
+                    <td><%= s.overtime_date %></td>
+                    <td><span class="badge bg-primary">Shift <%= s.shift %></span></td>
+                    <td><%= s.schedule_type %></td>
+                    <td><%= s.member_names || '-' %></td>
+                    <td>
+                      <% if (s.job === 'Opsional' && s.status === 'pending') { %>
+                        <span class="badge bg-warning">Opsional</span>
+                      <% } else if (s.assigned_job) { %>
+                        <span class="badge bg-success"><%= s.assigned_job %></span>
+                      <% } else { %>
+                        <span class="badge bg-info"><%= s.job %></span>
+                      <% } %>
+                    </td>
+                    <td><%= s.submitted_by_name %></td>
+                    <td>
+                      <% if (s.status === 'pending') { %>
+                        <span class="badge bg-warning">Menunggu</span>
+                      <% } else if (s.status === 'approved') { %>
+                        <span class="badge bg-success">Disetujui</span>
+                      <% } else { %>
+                        <span class="badge bg-danger">Ditolak</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (s.status === 'pending') { %>
+                        <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target="#approveModal<%= s.id %>">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger me-1" data-bs-toggle="modal" data-bs-target="#rejectModal<%= s.id %>">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      <% } %>
+                      <form method="POST" action="/admin/overtime/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
+                  </tr>
+
+                  <% if (s.status === 'pending') { %>
+                  <div class="modal fade" id="approveModal<%= s.id %>" tabindex="-1">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <form method="POST" action="/admin/overtime/<%= s.id %>/approve">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Setujui Pengajuan Lembur</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                          </div>
+                          <div class="modal-body">
+                            <p>Member: <strong><%= s.member_names %></strong></p>
+                            <p>Tanggal: <strong><%= s.overtime_date %></strong> | Shift: <strong><%= s.shift %></strong></p>
+                            <p>Jenis: <strong><%= s.schedule_type %></strong></p>
+                            <% if (s.job === 'Opsional') { %>
+                            <div class="mb-3">
+                              <label class="form-label">Tentukan Job untuk Member</label>
+                              <select name="assigned_job" class="form-select" required>
+                                <option value="">-- Pilih Job --</option>
+                                <option value="operator_wtp">Operator WTP</option>
+                                <option value="operator_n2">Operator N2</option>
+                                <option value="facility">Facility</option>
+                              </select>
+                            </div>
+                            <% } %>
+                            <div class="mb-3">
+                              <label class="form-label">Catatan Admin</label>
+                              <textarea name="admin_notes" class="form-control" rows="2"></textarea>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success">Setujui</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="modal fade" id="rejectModal<%= s.id %>" tabindex="-1">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <form method="POST" action="/admin/overtime/<%= s.id %>/reject">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Tolak Pengajuan Lembur</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                          </div>
+                          <div class="modal-body">
+                            <p>Member: <strong><%= s.member_names %></strong></p>
+                            <p>Tanggal: <strong><%= s.overtime_date %></strong> | Shift: <strong><%= s.shift %></strong></p>
+                            <div class="mb-3">
+                              <label class="form-label">Alasan Penolakan</label>
+                              <textarea name="admin_notes" class="form-control" rows="2"></textarea>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Tolak</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <% } %>
+
+                  <% }); %>
+                  <% if (submissions.length === 0) { %>
+                  <tr><td colspan="8" class="text-center text-muted">Belum ada pengajuan lembur</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header">
+            <h5>Daftar Member</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <% members.forEach(function(m) { %>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <%= m.name %>
+                <span class="badge bg-secondary"><%= m.job || 'N/A' %></span>
+              </li>
+              <% }); %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

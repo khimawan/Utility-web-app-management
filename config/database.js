@@ -16,6 +16,11 @@ async function getDb() {
   if (fs.existsSync(DB_PATH)) {
     const buf = fs.readFileSync(DB_PATH);
     db = new SQL.Database(buf);
+    // Migration: update pemakaian_air templates to new air sumur format
+    migratePemakaianAir();
+    migrateLvmdp();
+    migrateEnergiListrik();
+    migrateOvertimeTables();
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -84,8 +89,7 @@ function initSchema(db) {
     job TEXT NOT NULL,
     created_by INTEGER REFERENCES users(id),
     created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    UNIQUE(schedule_date, shift, member_id)
+    updated_at TEXT DEFAULT (datetime('now'))
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS checklist_templates (
@@ -164,6 +168,27 @@ function initSchema(db) {
     work_id INTEGER REFERENCES works(id) ON DELETE CASCADE,
     member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(work_id, member_id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS overtime_submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    overtime_date TEXT NOT NULL,
+    shift TEXT NOT NULL,
+    schedule_type TEXT NOT NULL,
+    job TEXT NOT NULL,
+    assigned_job TEXT,
+    status TEXT DEFAULT 'pending',
+    submitted_by INTEGER REFERENCES users(id),
+    admin_notes TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS overtime_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    submission_id INTEGER REFERENCES overtime_submissions(id) ON DELETE CASCADE,
+    member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(submission_id, member_id)
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS spareparts (
@@ -325,10 +350,14 @@ function initSchema(db) {
     ['air_tandon', 'Kondisi Pipa', 'text', '', null, null, 4],
     ['air_tandon', 'Kualitas Air', 'text', '', null, null, 5],
     ['air_tandon', 'Catatan', 'text', '', null, null, 6],
-    ['pemakaian_air', 'Meteran Air Awal', 'number', 'm3', 0, 999999, 1],
-    ['pemakaian_air', 'Meteran Air Akhir', 'number', 'm3', 0, 999999, 2],
-    ['pemakaian_air', 'Total Pemakaian', 'number', 'm3', 0, 999999, 3],
-    ['pemakaian_air', 'Catatan', 'text', '', null, null, 4],
+    ['pemakaian_air', 'Jam Monitoring', 'time', '', null, null, 1],
+    ['pemakaian_air', 'Tanggal Monitoring', 'date', '', null, null, 2],
+    ['pemakaian_air', 'Meretan Sibel 01', 'number', 'M³', 0, 999999, 3],
+    ['pemakaian_air', 'Meretan Sibel 02', 'number', 'M³', 0, 999999, 4],
+    ['pemakaian_air', 'Meretan Sibel 03', 'number', 'M³', 0, 999999, 5],
+    ['pemakaian_air', 'Meretan Sibel 04', 'number', 'M³', 0, 999999, 6],
+    ['pemakaian_air', 'Meretan Sibel 05', 'number', 'M³', 0, 999999, 7],
+    ['pemakaian_air', 'Meretan Sibel 06', 'number', 'M³', 0, 999999, 8],
     ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 1],
     ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 2],
     ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 3],
@@ -362,6 +391,150 @@ function initSchema(db) {
   db.run(`INSERT INTO utility_profile (section, title, description, sort_order) VALUES ('jobdesk', 'Jobdesk Utility', 'Tim utility terdiri dari 3 job utama: Operator WTP, Operator N2, dan Facility.', 2)`);
 }
 
+function migratePemakaianAir() {
+  try {
+    const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_air'");
+    if (existing[0] && existing[0].cnt > 0) {
+      const hasNewFields = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_air' AND parameter_name = 'Meretan Sibel 01'");
+      if (hasNewFields[0] && hasNewFields[0].cnt > 0) return;
+      db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'pemakaian_air')");
+      db.run("DELETE FROM checklist_templates WHERE category = 'pemakaian_air'");
+    }
+    const newTemplates = [
+      ['pemakaian_air', 'Jam Monitoring', 'time', '', null, null, 1],
+      ['pemakaian_air', 'Tanggal Monitoring', 'date', '', null, null, 2],
+      ['pemakaian_air', 'Meretan Sibel 01', 'number', 'M³', 0, 999999, 3],
+      ['pemakaian_air', 'Meretan Sibel 02', 'number', 'M³', 0, 999999, 4],
+      ['pemakaian_air', 'Meretan Sibel 03', 'number', 'M³', 0, 999999, 5],
+      ['pemakaian_air', 'Meretan Sibel 04', 'number', 'M³', 0, 999999, 6],
+      ['pemakaian_air', 'Meretan Sibel 05', 'number', 'M³', 0, 999999, 7],
+      ['pemakaian_air', 'Meretan Sibel 06', 'number', 'M³', 0, 999999, 8],
+    ];
+    newTemplates.forEach(t => {
+      db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+    });
+    saveDb();
+    console.log('Migration: pemakaian_air templates updated to air sumur format');
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateLvmdp() {
+  try {
+    const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'lvmdp'");
+    if (existing[0] && existing[0].cnt > 0) {
+      const hasNewFields = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'lvmdp' AND parameter_name = 'Jam Monitoring'");
+      if (hasNewFields[0] && hasNewFields[0].cnt > 0) return;
+      db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'lvmdp')");
+      db.run("DELETE FROM checklist_templates WHERE category = 'lvmdp'");
+    }
+    const newTemplates = [
+      ['lvmdp', 'Jam Monitoring', 'time', '', null, null, 1],
+      ['lvmdp', 'Tanggal Monitoring', 'date', '', null, null, 2],
+      ['lvmdp', 'LVMDP 147 KVA - P Total', 'number', 'kW', 0, 999999, 3],
+      ['lvmdp', 'LVMDP 147 KVA - Q Total', 'number', 'kVAR', 0, 999999, 4],
+      ['lvmdp', 'LVMDP 147 KVA - S Total', 'number', 'kVA', 0, 999999, 5],
+      ['lvmdp', 'LVMDP 147 KVA - V Average', 'number', 'V', 0, 999999, 6],
+      ['lvmdp', 'LVMDP 147 KVA - I Average', 'number', 'A', 0, 999999, 7],
+      ['lvmdp', 'LVMDP 147 KVA - PF', 'number', '', 0, 1, 8],
+      ['lvmdp', 'LVMDP 147 KVA - Voltage Balance', 'select', '', null, null, 9],
+      ['lvmdp', 'LVMDP 147 KVA - Ampere Balance', 'select', '', null, null, 10],
+      ['lvmdp', 'LVMDP 197 KVA - P Total', 'number', 'kW', 0, 999999, 11],
+      ['lvmdp', 'LVMDP 197 KVA - Q Total', 'number', 'kVAR', 0, 999999, 12],
+      ['lvmdp', 'LVMDP 197 KVA - S Total', 'number', 'kVA', 0, 999999, 13],
+      ['lvmdp', 'LVMDP 197 KVA - V Average', 'number', 'V', 0, 999999, 14],
+      ['lvmdp', 'LVMDP 197 KVA - I Average', 'number', 'A', 0, 999999, 15],
+      ['lvmdp', 'LVMDP 197 KVA - PF', 'number', '', 0, 1, 16],
+      ['lvmdp', 'LVMDP 197 KVA - Voltage Balance', 'select', '', null, null, 17],
+      ['lvmdp', 'LVMDP 197 KVA - Ampere Balance', 'select', '', null, null, 18],
+      ['lvmdp', 'LVMDP 555 KVA - P Total', 'number', 'kW', 0, 999999, 19],
+      ['lvmdp', 'LVMDP 555 KVA - Q Total', 'number', 'kVAR', 0, 999999, 20],
+      ['lvmdp', 'LVMDP 555 KVA - S Total', 'number', 'kVA', 0, 999999, 21],
+      ['lvmdp', 'LVMDP 555 KVA - V Average', 'number', 'V', 0, 999999, 22],
+      ['lvmdp', 'LVMDP 555 KVA - I Average', 'number', 'A', 0, 999999, 23],
+      ['lvmdp', 'LVMDP 555 KVA - PF', 'number', '', 0, 1, 24],
+      ['lvmdp', 'LVMDP 555 KVA - Voltage Balance', 'select', '', null, null, 25],
+      ['lvmdp', 'LVMDP 555 KVA - Ampere Balance', 'select', '', null, null, 26],
+      ['lvmdp', 'Trafo 630 KVA - Temperature Busbar', 'number', '°C', 0, 200, 27],
+      ['lvmdp', 'Trafo 630 KVA - Temperature Oil', 'number', '°C', 0, 200, 28],
+      ['lvmdp', 'Trafo 630 KVA - Level Oli', 'select_oli', '', null, null, 29],
+      ['lvmdp', 'Trafo 630 KVA - Kebocoran Oli', 'select_bocor', '', null, null, 30],
+      ['lvmdp', 'Trafo 2000 KVA - Temperature Busbar', 'number', '°C', 0, 200, 31],
+      ['lvmdp', 'Trafo 2000 KVA - Temperature Oil', 'number', '°C', 0, 200, 32],
+      ['lvmdp', 'Trafo 2000 KVA - Level Oli', 'select_oli', '', null, null, 33],
+      ['lvmdp', 'Trafo 2000 KVA - Kebocoran Oli', 'select_bocor', '', null, null, 34],
+    ];
+    newTemplates.forEach(t => {
+      db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+    });
+    saveDb();
+    console.log('Migration: lvmdp templates updated to new format');
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateEnergiListrik() {
+  try {
+    const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'listrik_trafo'");
+    const existingNew = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'energi_listrik'");
+    if (existingNew[0] && existingNew[0].cnt > 0) return;
+    if (existing[0] && existing[0].cnt > 0) {
+      db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'listrik_trafo')");
+      db.run("DELETE FROM checklist_templates WHERE category = 'listrik_trafo'");
+      db.run("UPDATE checklist_entries SET category = 'energi_listrik' WHERE category = 'listrik_trafo'");
+    }
+    const newTemplates = [
+      ['energi_listrik', 'Jam Monitoring', 'time', '', null, null, 1],
+      ['energi_listrik', 'Tanggal Monitoring', 'date', '', null, null, 2],
+      ['energi_listrik', '147 KVA - KWH WBP', 'number', 'kWh', 0, 999999, 3],
+      ['energi_listrik', '147 KVA - KWH LWBP', 'number', 'kWh', 0, 999999, 4],
+      ['energi_listrik', '197 KVA - KWH WBP', 'number', 'kWh', 0, 999999, 5],
+      ['energi_listrik', '197 KVA - KWH LWBP', 'number', 'kWh', 0, 999999, 6],
+      ['energi_listrik', '555 KVA - KWH WBP', 'number', 'kWh', 0, 999999, 7],
+      ['energi_listrik', '555 KVA - KWH LWBP', 'number', 'kWh', 0, 999999, 8],
+      ['energi_listrik', 'PF Capacitor Bank 125 KVAR', 'number', '', 0, 1, 9],
+      ['energi_listrik', 'PF Capacitor Bank 150 KVAR', 'number', '', 0, 1, 10],
+      ['energi_listrik', 'PF Capacitor Bank 300 KVAR', 'number', '', 0, 1, 11],
+    ];
+    newTemplates.forEach(t => {
+      db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+    });
+    saveDb();
+    console.log('Migration: energi_listrik templates updated');
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateOvertimeTables() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS overtime_submissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      overtime_date TEXT NOT NULL,
+      shift TEXT NOT NULL,
+      schedule_type TEXT NOT NULL,
+      job TEXT NOT NULL,
+      assigned_job TEXT,
+      status TEXT DEFAULT 'pending',
+      submitted_by INTEGER REFERENCES users(id),
+      admin_notes TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS overtime_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      submission_id INTEGER REFERENCES overtime_submissions(id) ON DELETE CASCADE,
+      member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(submission_id, member_id)
+    )`);
+    saveDb();
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
 // Helper: run query that returns rows
 function dbAll(sql, params = []) {
   const d = db.exec(sql, params);
@@ -383,8 +556,9 @@ function dbGet(sql, params = []) {
 // Helper: run statement
 function dbRun(sql, params = []) {
   db.run(sql, params);
+  const lastID = db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0];
   saveDb();
-  return { lastID: db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] };
+  return { lastID };
 }
 
 module.exports = { getDb, saveDb, dbAll, dbGet, dbRun };

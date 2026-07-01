@@ -1,0 +1,48 @@
+Checklist n2 generator
+
+- Pilih pic : memilih member
+- Shift : 1/2/3
+- Jam monitoring :
+- Tanggal monitoring :
+- Pilih opsi pengecekan : Predictive Maintenence/Preventive Maintenence
+# jika memilih predictive maintenence akan terbuka list untuk input data predictive maintenence, sedangkan jika memilih preventive maintenence akan muncul kolompreventive maintenence
+
+Predictive Maintenence
+- status operasional : Running/Off
+# jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi dan dapat langsung ke button submit
+- Pilih mesin : N2 Generator GD6 01 / N2 Generator GD6 02 / N2 Generator GD4 01 / N2 Generator GD4 02
+- Temperature area ('C):
+- Running hour (hour):
+- Pressure (Mpa):
+- Frequency
+    * Minimal (Hz):
+    * Maximal (Hz):
+- Power
+    * Minimal (kW):
+    * Maximal (kW):
+- Drayer
+    * Temperature High ('C):
+    * Temperature Low ('C):
+- Purify
+    * purify (%):
+    * Flow purify (Liter/Minute):
+- Gas Cylinder
+    * Compressor (Mpa):
+    * Drayer (Mpa):
+    * Absorption A (Mpa):
+    * Absorption B (Mpa):
+    * Nitrogen (Mpa):
+    * Filter (Mpa):
+- Berikan tombol submit dan clear form pada bawah checklist
+
+Preventive Maintenence
+- Change Air Filter Element (6 month): (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- Change Oil Filter Element (6 month): (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- Change Oil Water Separator (6 month): (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- Change Air Filter Element T (12 month): (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- Change Air Filter Element A (12 month): (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- Change Air Filter Element X (12 month): (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- Check Electromagnetic valve : (Sudah/Part tidak tersedia/Belum mencapai Lifetime)
+- input foto dokumentasi :
+# input dokumentasi berupa pload file foto jpeg/png
+- Berikan tombol submit dan clear form pada bawah checklist

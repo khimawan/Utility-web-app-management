@@ -1,0 +1,15 @@
+Form Pengajuan Pekerjaan Utility
+
+- Nama Pemohon :
+- Jabatan :
+- No. Whatsapp yang dapat dihubungi :
+- Area Kerja :
+- Detail area kerja : GD1/GD2/GD3/GD4/GD5/GD6/GD7
+- Issue :
+- Level priority : High/Medium/Low
+- Dokumentasi :
+# input dokumentasi berupa pload file foto jpeg/png
+- Berikan tombol submit dan clear form pada bawah checklist
+
+
+- link untuk trace pekerjaan

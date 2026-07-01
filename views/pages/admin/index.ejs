@@ -10,9 +10,6 @@
         <a class="nav-link active" data-bs-toggle="tab" href="#members">Members</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#schedules">Jadwal</a>
-      </li>
-      <li class="nav-item">
         <a class="nav-link" data-bs-toggle="tab" href="#templates">Checklist Templates</a>
       </li>
     </ul>
@@ -48,68 +45,6 @@
                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                       </form>
                       <% } %>
-                    </td>
-                  </tr>
-                  <% }); %>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tab-pane fade" id="schedules">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between">
-            <h5>Kelola Jadwal</h5>
-            <form method="GET" action="/admin" class="d-flex gap-2">
-              <input type="hidden" name="tab" value="schedules">
-              <input type="date" name="date" class="form-control form-control-sm" value="<%= new Date().toISOString().split('T')[0] %>">
-              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
-            </form>
-          </div>
-          <div class="card-body">
-            <form method="POST" action="/admin/schedules" class="row g-2 mb-3">
-              <input type="hidden" name="schedule_date" value="<%= new Date().toISOString().split('T')[0] %>">
-              <div class="col-md-2">
-                <select name="shift" class="form-select form-select-sm" required>
-                  <option value="1">Shift 1</option>
-                  <option value="2">Shift 2</option>
-                  <option value="3">Shift 3</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <select name="member_id" class="form-select form-select-sm" required>
-                  <% members.filter(function(m) { return m.position === 'member'; }).forEach(function(m) { %>
-                  <option value="<%= m.id %>"><%= m.name %></option>
-                  <% }); %>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <select name="job" class="form-select form-select-sm" required>
-                  <option value="operator_wtp">Operator WTP</option>
-                  <option value="operator_n2">Operator N2</option>
-                  <option value="facility">Facility</option>
-                </select>
-              </div>
-              <div class="col-md-2">
-                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-plus-circle me-1"></i>Tambah</button>
-              </div>
-            </form>
-            <div class="table-responsive">
-              <table class="table table-sm table-striped">
-                <thead><tr><th>Shift</th><th>Member</th><th>Job</th><th>Aksi</th></tr></thead>
-                <tbody>
-                  <% var scheduleList = typeof schedules !== 'undefined' ? schedules : []; %>
-                  <% scheduleList.forEach(function(s) { %>
-                  <tr>
-                    <td><span class="badge bg-primary">Shift <%= s.shift %></span></td>
-                    <td><%= s.member_name %></td>
-                    <td><%= s.job %></td>
-                    <td>
-                      <form method="POST" action="/admin/schedules/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
-                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                      </form>
                     </td>
                   </tr>
                   <% }); %>
@@ -278,7 +213,7 @@
                   <option value="pemakaian_air">Pemakaian Air</option>
                   <option value="pemakaian_gas">Pemakaian Gas</option>
                   <option value="suhu_trafo">Suhu Trafo</option>
-                  <option value="listrik_trafo">Listrik Trafo</option>
+                  <option value="energi_listrik">Energi Listrik</option>
                 </select>
               </div>
               <div class="mb-3">

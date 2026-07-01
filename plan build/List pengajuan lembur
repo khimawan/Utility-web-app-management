@@ -1,0 +1,29 @@
+ubah list tambah jadual pada halaman awal member dan jadual menjadi List pengajuan lembur
+# list ini menggantikan list input jadual yang ada pada halaman awal
+# list ini digunakan member untuk mengajukan jadual yang dapat di setujui oleh admin
+# berikan list yang telah di input member ke halaman admin dalam bentuk list dengan adanya opsi untuk persetujuan dari admin untuk jadual terupload pada halaman awal
+# list pengajuan dapat dibuat seperti list berikut:
+
+- Pilih member : Memilih member
+# member dapat dipilih lebih dari 1 dalam bentuk checklist
+- Tanggal lembur :
+- Shift : 1/2/3
+- Schedule lembur : H+6 (Hari sabtu atau 1/2 hari kerja) / Libur Khusus (Hari minggu/libur nasional) / Hari biasa (Overtime)
+- Job : Operator WTP/ Operator N2/ Facility/ Opsional
+# jika memilih opsional, maka admin dapat memberikan role job pada member yang di input pada halaman admin sebelum pengajuan list diterima
+- Berikan tombol submit dan clear form pada bawah checklist
+
+ubah judul pengajuan lembur pada halaman awal menjadi halaman jadual member tanpa mengurangi format isi pada halaman.
+kemudian tambahkan tabel berikut :
+- tabel jadual berupa list dengan format : shift (1/2/3), nama member, job (operator wtp, operator N2, dan facility )
+# tabel terdapat pilihan opsi hari untuk melihat pada tanggal yang lain terdapat jadual apa saja yang tertera.
+
+Pada halaman admin ubah judul persetujuan lembur mrnjdi management lembur tanpa mengurangi isi halaman
+# tambahkan jadual management pada halaman admin sebagai berikut :
+- admin dapat memanagement list jadual berdasarkan tanggal.
+- list edit jadual ditampilkan dalam bentuk tabel dengan format : jadual (tanggal), shift (1/2/3), member yang masuk (bisa lebih dari 1 member atau tidak ada member yang lembur pada shift tersebut), dan job member (operator wtp, operator n2, facility).
+- admin juga dapat merubah semua jadual member yang sudah di submit berdasarkan tanggal
+
+
+
+tambahkan input pengajuan jadual

@@ -1,34 +1,45 @@
 Wtp checklist
 
-- pilih pic : memilih member
-- shift : 1/2/3
-- jam monitoring :
+- Pilih pic : memilih member
+- Shift : 1/2/3
+- Jam monitoring :
+- Tanggal monitoring :
+- Pilih jenis kegiatan : Predictive Maintenence/ Preventive Maintenence
 
-predictive
+Predictive Maintenence
 - Status operasional : Running/Off
 # jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi untuk di submit
-- arus listrik dan temperature motor hpp
-- motor distribusi GD7
-- pompa distribusi GD4
-- pompa booster
+- Motor HPP
+    * Arus Listrik (A):
+    * Temperature ('C):
+- Motor Distribusi GD7
+    * Arus Listrik (A):
+    * Temperature ('C):
+- Pompa Distribusi GD4
+    * Arus Listrik (A):
+    * Temperature ('C):
+- Pompa Booster
+    * Arus Listrik (A):
+    * Temperature ('C):
 - premate dan reject membran RO
 - MMF: Inlet pressure
 - catrige pressure
 - membran pressure
-- nilai tds #nilai max 200 untuk hasil yg bagus
+- nilai tds
+# nilai max 200 untuk hasil yg bagus
 - nilai conductivity
 - chemical wtp : cukup/kurang/other(deskripsi)
-- level tandon RO1 : %
-- level tandon RO2
+- level tandon RO1 (%):
+- level tandon RO2 (%):
 - level tandon RO GD4 : full/perlu pengisian
 - Backwash MMF
 - kondisi air jika sudah di backwash
-    * sebelum (keruh/jernih)
-    * sesudah (keruh/jernih)
+    * sebelum : keruh/jernih
+    * sesudah : keruh/jernih
 - Regenerasi Softener WTP : Sudah/Belum
 - CIP : >10 Kg/cm^2 = warning untuk melakukan CIP membran RO
 - status mesin UV : on/off
-
+- Berikan tombol submit dan clear form pada bawah checklist
 
 Preventive
 - penggantian membran RO : sudah/masih bisa dipakai & comment member #penggantian berkala pertahun
@@ -37,3 +48,5 @@ Preventive
 - penggantian media manganese zeloit
 - penggantian catrige filter
 - input foto dokumentasi
+# input dokumentasi berupa pload file foto jpeg/png
+- Berikan tombol submit dan clear form pada bawah checklist
