@@ -26,4 +26,18 @@ Pada halaman admin ubah judul persetujuan lembur mrnjdi management lembur tanpa 
 
 
 
-tambahkan input pengajuan jadual
+-----------
+
+input jadual dan lembur
+
+- Pilih member : Memilih member
+# member dapat dipilih lebih dari 1 dalam bentuk checklist
+- Tanggal lembur :
+- Shift : 1/2/3
+- Schedule lembur : H+6 (Hari sabtu atau 1/2 hari kerja) / Libur Khusus (Hari minggu/libur nasional) / Hari biasa (Overtime) +(tidak lembur)/ Masuk biasa
+- Job : Operator WTP/ Operator N2/ Facility/ Opsional
+# jika memilih opsional, maka admin dapat memberikan role job pada member yang di input pada halaman admin sebelum pengajuan list diterima
+- Alasan :
+# berikan alasan berupa text yang hanya dapat dilihat admin ketika akan menyetujuin input jadual
+- Berikan tombol submit dan clear form pada bawah checklist
+
