@@ -1,0 +1,475 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clipboard-check me-2"></i>Checklist WTP</h4>
+      <a href="/job1" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header"><h5>Input Checklist WTP</h5></div>
+          <div class="card-body">
+            <form method="POST" action="/job1/checklist/wtp" enctype="multipart/form-data" id="wtpForm">
+
+              <!-- PIC -->
+              <div class="mb-3">
+                <label class="form-label">PIC</label>
+                <input type="text" class="form-control" value="<%= user.name %>" readonly>
+                <input type="hidden" name="member_id" value="<%= user.id %>">
+              </div>
+
+              <!-- Shift -->
+              <div class="mb-3">
+                <label class="form-label">Shift</label>
+                <select name="shift" class="form-select" required>
+                  <option value="1">Shift 1</option>
+                  <option value="2">Shift 2</option>
+                  <option value="3">Shift 3</option>
+                </select>
+              </div>
+
+              <!-- Jam Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Jam Monitoring</label>
+                <input type="time" name="jam_monitoring" class="form-control">
+              </div>
+
+              <!-- Tanggal Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Tanggal Monitoring</label>
+                <input type="date" name="tanggal_monitoring" class="form-control" required>
+              </div>
+
+              <!-- Jenis Kegiatan -->
+              <div class="mb-3">
+                <label class="form-label">Pilih Jenis Kegiatan</label>
+                <select name="jenis_kegiatan" class="form-select" id="jenisKegiatan" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="predictive">Predictive Maintenance</option>
+                  <option value="preventive">Preventive Maintenance</option>
+                </select>
+              </div>
+
+              <hr>
+
+              <!-- ==================== PREDICTIVE SECTION ==================== -->
+              <div id="predictiveSection" style="display:none;">
+                <h6 class="text-primary fw-bold mb-3"><i class="bi bi-gear me-1"></i>Predictive Maintenance</h6>
+
+                <!-- Status Operasional -->
+                <div class="mb-3">
+                  <label class="form-label">Status Operasional</label>
+                  <select name="status_operasional" class="form-select" id="statusOperasional">
+                    <option value="">-- Pilih --</option>
+                    <option value="Running">Running</option>
+                    <option value="Off">Off</option>
+                  </select>
+                </div>
+
+                <div id="predictiveFields">
+                  <!-- Pompa Distribusi GD4 -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Pompa Distribusi GD4</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Arus Listrik (A)</label>
+                          <input type="number" step="any" name="pompa_gd4_arus" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Temperature (&deg;C)</label>
+                          <input type="number" step="any" name="pompa_gd4_temp" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pompa Booster -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Pompa Booster</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Arus Listrik (A)</label>
+                          <input type="number" step="any" name="pompa_booster_arus" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Temperature (&deg;C)</label>
+                          <input type="number" step="any" name="pompa_booster_temp" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Motor HPP -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Motor HPP</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Arus Listrik (A)</label>
+                          <input type="number" step="any" name="motor_hpp_arus" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Temperature (&deg;C)</label>
+                          <input type="number" step="any" name="motor_hpp_temp" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Motor Distribusi GD7 -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Motor Distribusi GD7</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Arus Listrik (A)</label>
+                          <input type="number" step="any" name="motor_gd7_arus" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Temperature (&deg;C)</label>
+                          <input type="number" step="any" name="motor_gd7_temp" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr>
+
+                  <!-- Premate & Reject Membran RO -->
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <label class="form-label">Premate Membran RO (LPM)</label>
+                      <input type="number" step="any" name="premate_membran_ro" class="form-control">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Reject Membran RO (LPM)</label>
+                      <input type="number" step="any" name="reject_membran_ro" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Pressure -->
+                  <div class="mb-3">
+                    <label class="form-label">MMF Inlet Pressure (Kg/cm&sup2;)</label>
+                    <input type="number" step="any" name="mmf_inlet_pressure" class="form-control">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Catridge Pressure (Kg/cm&sup2;)</label>
+                    <input type="number" step="any" name="catridge_pressure" class="form-control">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Membran Pressure (Kg/cm&sup2;)</label>
+                    <input type="number" step="any" name="membran_pressure" class="form-control" id="membranPressure">
+                    <div id="warningMembran" class="text-danger small mt-1" style="display:none;">
+                      <i class="bi bi-exclamation-triangle"></i> Pressure membran lebih dari 10 Kg/cm&sup2;! Segera lakukan CIP membran RO.
+                    </div>
+                  </div>
+
+                  <!-- TDS & Conductivity -->
+                  <div class="mb-3">
+                    <label class="form-label">Nilai TDS</label>
+                    <input type="number" step="any" name="nilai_tds" class="form-control" id="nilaiTds">
+                    <div id="warningTds" class="text-danger small mt-1" style="display:none;">
+                      <i class="bi bi-exclamation-triangle"></i> TDS terlalu tinggi! Nilai di atas 200.
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Nilai Conductivity</label>
+                    <input type="number" step="any" name="nilai_conductivity" class="form-control">
+                  </div>
+
+                  <!-- Chemical WTP -->
+                  <div class="mb-3">
+                    <label class="form-label">Chemical WTP</label>
+                    <select name="chemical_wtp" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="Cukup">Cukup</option>
+                      <option value="Kurang">Kurang</option>
+                    </select>
+                  </div>
+
+                  <!-- Level Tandon -->
+                  <div class="row mb-3">
+                    <div class="col-4">
+                      <label class="form-label">Level Tandon RO1 (%)</label>
+                      <input type="number" step="any" min="0" max="100" name="level_tandon_ro1" class="form-control">
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label">Level Tandon RO2 (%)</label>
+                      <input type="number" step="any" min="0" max="100" name="level_tandon_ro2" class="form-control">
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label">Level Tandon RO GD4</label>
+                      <select name="level_tandon_ro_gd4" class="form-select">
+                        <option value="">-- Pilih --</option>
+                        <option value="Full">Full</option>
+                        <option value="Perlu pengisian">Perlu pengisian</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Backwash MMF -->
+                  <div class="mb-3">
+                    <label class="form-label">Backwash MMF</label>
+                    <select name="backwash_mmf" class="form-select" id="backwashMmf">
+                      <option value="">-- Pilih --</option>
+                      <option value="Sudah">Sudah</option>
+                      <option value="Belum">Belum</option>
+                    </select>
+                  </div>
+
+                  <!-- Kondisi Air saat Backwash (conditional) -->
+                  <div id="kondisiAirBackwash" style="display:none;">
+                    <div class="card mb-3 border-warning">
+                      <div class="card-header py-2 bg-warning text-dark"><h6 class="mb-0">Kondisi Air Saat Backwash</h6></div>
+                      <div class="card-body py-2">
+                        <div class="row">
+                          <div class="col-6">
+                            <label class="form-label small">Sebelum</label>
+                            <select name="backwash_sebelum" class="form-select form-select-sm">
+                              <option value="">-- Pilih --</option>
+                              <option value="Keruh">Keruh</option>
+                              <option value="Jernih">Jernih</option>
+                            </select>
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label small">Sesudah</label>
+                            <select name="backwash_sesudah" class="form-select form-select-sm">
+                              <option value="">-- Pilih --</option>
+                              <option value="Keruh">Keruh</option>
+                              <option value="Jernih">Jernih</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Regenerasi Softener -->
+                  <div class="mb-3">
+                    <label class="form-label">Regenerasi Softener WTP</label>
+                    <select name="regenerasi_softener" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="Sudah">Sudah</option>
+                      <option value="Belum">Belum</option>
+                    </select>
+                  </div>
+
+                  <!-- Status Mesin UV -->
+                  <div class="mb-3">
+                    <label class="form-label">Status Mesin UV</label>
+                    <select name="status_mesin_uv" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="On">On</option>
+                      <option value="Off">Off</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==================== PREVENTIVE SECTION ==================== -->
+              <div id="preventiveSection" style="display:none;">
+                <h6 class="text-success fw-bold mb-3"><i class="bi bi-tools me-1"></i>Preventive Maintenance</h6>
+
+                <!-- Penggantian Membran RO -->
+                <div class="mb-3">
+                  <label class="form-label">Penggantian Membran RO</label>
+                  <select name="penggantian_membran_ro" class="form-select preventive-select" data-comment="commentMembranRo">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Masih OK">Masih OK</option>
+                  </select>
+                  <div id="commentMembranRo" class="mt-1" style="display:none;">
+                    <input type="text" name="penggantian_membran_ro_comment" class="form-control form-control-sm" placeholder="Kondisi membran RO saat ini...">
+                  </div>
+                </div>
+
+                <!-- Penggantian Media Softener -->
+                <div class="mb-3">
+                  <label class="form-label">Penggantian Media Softener</label>
+                  <select name="penggantian_media_softener" class="form-select preventive-select" data-comment="commentMediaSoftener">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Masih OK">Masih OK</option>
+                  </select>
+                  <div id="commentMediaSoftener" class="mt-1" style="display:none;">
+                    <input type="text" name="penggantian_media_softener_comment" class="form-control form-control-sm" placeholder="Kondisi media softener saat ini...">
+                  </div>
+                </div>
+
+                <!-- Penggantian Media Carbon Filter -->
+                <div class="mb-3">
+                  <label class="form-label">Penggantian Media Carbon Filter</label>
+                  <select name="penggantian_media_carbon" class="form-select preventive-select" data-comment="commentMediaCarbon">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Masih OK">Masih OK</option>
+                  </select>
+                  <div id="commentMediaCarbon" class="mt-1" style="display:none;">
+                    <input type="text" name="penggantian_media_carbon_comment" class="form-control form-control-sm" placeholder="Kondisi media carbon filter saat ini...">
+                  </div>
+                </div>
+
+                <!-- Penggantian Media Manganese Zeolite -->
+                <div class="mb-3">
+                  <label class="form-label">Penggantian Media Manganese Zeolite</label>
+                  <select name="penggantian_media_mn_zeloit" class="form-select preventive-select" data-comment="commentMediaMnZeloit">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Masih OK">Masih OK</option>
+                  </select>
+                  <div id="commentMediaMnZeloit" class="mt-1" style="display:none;">
+                    <input type="text" name="penggantian_media_mn_zeloit_comment" class="form-control form-control-sm" placeholder="Kondisi media manganese zeolite saat ini...">
+                  </div>
+                </div>
+
+                <!-- Penggantian Catridge Filter -->
+                <div class="mb-3">
+                  <label class="form-label">Penggantian Catridge Filter</label>
+                  <select name="penggantian_catridge_filter" class="form-select preventive-select" data-comment="commentCatridgeFilter">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Masih OK">Masih OK</option>
+                  </select>
+                  <div id="commentCatridgeFilter" class="mt-1" style="display:none;">
+                    <input type="text" name="penggantian_catridge_filter_comment" class="form-control form-control-sm" placeholder="Kondisi catridge filter saat ini...">
+                  </div>
+                </div>
+
+                <!-- Foto Dokumentasi -->
+                <div class="mb-3">
+                  <label class="form-label">Foto Dokumentasi (JPEG/PNG)</label>
+                  <input type="file" name="foto_dokumentasi" class="form-control" accept=".jpg,.jpeg,.png">
+                  <div class="form-text">Format: JPG, JPEG, atau PNG. Maks 5MB.</div>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div id="formButtons" style="display:none;">
+                <hr>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
+                  <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('wtpForm').reset(); resetForm();"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header"><h5>Riwayat Checklist WTP</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>PIC</th>
+                    <th>Jenis</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% entries.forEach(function(e) { %>
+                  <tr>
+                    <td><%= e.tanggal_monitoring || '-' %></td>
+                    <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                    <td><%= e.member_name %></td>
+                    <td><span class="badge <%= e.jenis_kegiatan === 'predictive' ? 'bg-info' : 'bg-success' %>"><%= e.jenis_kegiatan === 'predictive' ? 'Predictive' : 'Preventive' %></span></td>
+                    <td>
+                      <% if (e.status_operasional) { %>
+                        <span class="badge <%= e.status_operasional === 'Running' ? 'bg-success' : 'bg-secondary' %>"><%= e.status_operasional %></span>
+                      <% } else { %>
+                        <span class="badge bg-light text-dark">-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="/job1/checklist/wtp/<%= e.id %>/delete" class="btn btn-sm btn-outline-danger delete-btn"><i class="bi bi-trash"></i></a>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (entries.length === 0) { %>
+                  <tr><td colspan="6" class="text-center text-muted">Belum ada data</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const jenisKegiatan = document.getElementById('jenisKegiatan');
+  const predictiveSection = document.getElementById('predictiveSection');
+  const preventiveSection = document.getElementById('preventiveSection');
+  const predictiveFields = document.getElementById('predictiveFields');
+  const statusOperasional = document.getElementById('statusOperasional');
+  const formButtons = document.getElementById('formButtons');
+  const backwashMmf = document.getElementById('backwashMmf');
+  const kondisiAirBackwash = document.getElementById('kondisiAirBackwash');
+  const membranPressure = document.getElementById('membranPressure');
+  const warningMembran = document.getElementById('warningMembran');
+  const nilaiTds = document.getElementById('nilaiTds');
+  const warningTds = document.getElementById('warningTds');
+
+  function resetForm() {
+    predictiveSection.style.display = 'none';
+    preventiveSection.style.display = 'none';
+    predictiveFields.style.display = 'block';
+    kondisiAirBackwash.style.display = 'none';
+    formButtons.style.display = 'none';
+    warningMembran.style.display = 'none';
+    warningTds.style.display = 'none';
+    document.querySelectorAll('.preventive-select').forEach(function(sel) {
+      var commentId = sel.getAttribute('data-comment');
+      if (commentId) document.getElementById(commentId).style.display = 'none';
+    });
+  }
+
+  jenisKegiatan.addEventListener('change', function() {
+    var val = this.value;
+    predictiveSection.style.display = val === 'predictive' ? 'block' : 'none';
+    preventiveSection.style.display = val === 'preventive' ? 'block' : 'none';
+    formButtons.style.display = val ? 'block' : 'none';
+  });
+
+  statusOperasional.addEventListener('change', function() {
+    predictiveFields.style.display = this.value === 'Off' ? 'none' : 'block';
+  });
+
+  backwashMmf.addEventListener('change', function() {
+    kondisiAirBackwash.style.display = this.value === 'Belum' ? 'block' : 'none';
+  });
+
+  membranPressure.addEventListener('input', function() {
+    var val = parseFloat(this.value);
+    warningMembran.style.display = (!isNaN(val) && val > 10) ? 'block' : 'none';
+  });
+
+  nilaiTds.addEventListener('input', function() {
+    var val = parseFloat(this.value);
+    warningTds.style.display = (!isNaN(val) && val > 200) ? 'block' : 'none';
+  });
+
+  document.querySelectorAll('.preventive-select').forEach(function(sel) {
+    sel.addEventListener('change', function() {
+      var commentId = this.getAttribute('data-comment');
+      var commentDiv = document.getElementById(commentId);
+      commentDiv.style.display = this.value === 'Masih OK' ? 'block' : 'none';
+    });
+  });
+});
+</script>
+
+<%- include('../../partials/footer') %>

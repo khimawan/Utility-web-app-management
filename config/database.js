@@ -21,6 +21,10 @@ async function getDb() {
     migrateLvmdp();
     migrateEnergiListrik();
     migrateOvertimeTables();
+    migrateChecklistWtp();
+    migrateChecklistBoiler();
+    migrateChecklistN2();
+    migrateChecklistKompressor();
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -250,6 +254,155 @@ function initSchema(db) {
     activity_date TEXT NOT NULL,
     activity_time TEXT DEFAULT (datetime('now')),
     created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_wtp (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    member_id INTEGER REFERENCES users(id),
+    shift TEXT NOT NULL,
+    jam_monitoring TEXT,
+    tanggal_monitoring TEXT,
+    jenis_kegiatan TEXT NOT NULL,
+    status_operasional TEXT,
+    pompa_gd4_arus REAL,
+    pompa_gd4_temp REAL,
+    pompa_booster_arus REAL,
+    pompa_booster_temp REAL,
+    motor_hpp_arus REAL,
+    motor_hpp_temp REAL,
+    motor_gd7_arus REAL,
+    motor_gd7_temp REAL,
+    premate_membran_ro REAL,
+    reject_membran_ro REAL,
+    mmf_inlet_pressure REAL,
+    catridge_pressure REAL,
+    membran_pressure REAL,
+    nilai_tds REAL,
+    nilai_conductivity REAL,
+    chemical_wtp TEXT,
+    level_tandon_ro1 REAL,
+    level_tandon_ro2 REAL,
+    level_tandon_ro_gd4 TEXT,
+    backwash_mmf TEXT,
+    backwash_sebelum TEXT,
+    backwash_sesudah TEXT,
+    regenerasi_softener TEXT,
+    status_mesin_uv TEXT,
+    penggantian_membran_ro TEXT,
+    penggantian_membran_ro_comment TEXT,
+    penggantian_media_softener TEXT,
+    penggantian_media_softener_comment TEXT,
+    penggantian_media_carbon TEXT,
+    penggantian_media_carbon_comment TEXT,
+    penggantian_media_mn_zeloit TEXT,
+    penggantian_media_mn_zeloit_comment TEXT,
+    penggantian_catridge_filter TEXT,
+    penggantian_catridge_filter_comment TEXT,
+    foto_url TEXT,
+    photo_url TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_boiler (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    member_id INTEGER REFERENCES users(id),
+    shift TEXT NOT NULL,
+    jam_monitoring TEXT,
+    tanggal_monitoring TEXT,
+    jenis_kegiatan TEXT NOT NULL,
+    status_operasional TEXT,
+    boiler_capacity TEXT,
+    steam_pressure REAL,
+    flue_gas_temp REAL,
+    feed_water_temp REAL,
+    scale_monitor_temp REAL,
+    pressure_gas REAL,
+    pressure_header REAL,
+    garam_softener TEXT,
+    chemical_boiler TEXT,
+    blowdown TEXT,
+    cleaning_strainer TEXT,
+    preventive_maintener TEXT,
+    preventive_aktivitas TEXT,
+    preventive_deskripsi TEXT,
+    preventive_foto_url TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_n2 (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    member_id INTEGER REFERENCES users(id),
+    shift TEXT NOT NULL,
+    jam_monitoring TEXT,
+    tanggal_monitoring TEXT,
+    jenis_kegiatan TEXT NOT NULL,
+    status_operasional TEXT,
+    pilih_mesin TEXT,
+    temperature_area REAL,
+    running_hour REAL,
+    pressure REAL,
+    freq_min REAL,
+    freq_max REAL,
+    power_min REAL,
+    power_max REAL,
+    drayer_temp_high REAL,
+    drayer_temp_low REAL,
+    purify_percent REAL,
+    purify_flow REAL,
+    gas_compressor REAL,
+    gas_drayer REAL,
+    gas_absorption_a REAL,
+    gas_absorption_b REAL,
+    gas_nitrogen REAL,
+    gas_filter REAL,
+    change_air_filter_6 TEXT,
+    change_oil_filter_6 TEXT,
+    change_oil_water_sep_6 TEXT,
+    change_air_filter_t_12 TEXT,
+    change_air_filter_a_12 TEXT,
+    change_air_filter_x_12 TEXT,
+    check_electromagnetic TEXT,
+    foto_url TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS checklist_kompressor (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    member_id INTEGER REFERENCES users(id),
+    shift TEXT NOT NULL,
+    jam_monitoring TEXT,
+    tanggal_monitoring TEXT,
+    jenis_kegiatan TEXT NOT NULL,
+    status_operasional TEXT,
+    air_compressor TEXT,
+    mode TEXT,
+    running_hour REAL,
+    system_pressure REAL,
+    flow_rate REAL,
+    motor_temperature REAL,
+    oil_temperature REAL,
+    bunyi_abnormal TEXT,
+    kebocoran_oli TEXT,
+    drayer_status TEXT,
+    drayer_humidity_temp TEXT,
+    change_filter_mat TEXT,
+    oil_change TEXT,
+    change_oil_filter TEXT,
+    change_air_filter TEXT,
+    change_belt_coupling TEXT,
+    change_oil_separator TEXT,
+    check_ecodrain TEXT,
+    bearing_lube_drive TEXT,
+    change_bearing TEXT,
+    check_electrical TEXT,
+    bearing_lube TEXT,
+    check_valve TEXT,
+    foto_url TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
   )`);
 
   // Seed data
@@ -528,6 +681,183 @@ function migrateOvertimeTables() {
       submission_id INTEGER REFERENCES overtime_submissions(id) ON DELETE CASCADE,
       member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       UNIQUE(submission_id, member_id)
+    )`);
+    saveDb();
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateChecklistWtp() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS checklist_wtp (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id INTEGER REFERENCES users(id),
+      shift TEXT NOT NULL,
+      jam_monitoring TEXT,
+      tanggal_monitoring TEXT,
+      jenis_kegiatan TEXT NOT NULL,
+      status_operasional TEXT,
+      pompa_gd4_arus REAL,
+      pompa_gd4_temp REAL,
+      pompa_booster_arus REAL,
+      pompa_booster_temp REAL,
+      motor_hpp_arus REAL,
+      motor_hpp_temp REAL,
+      motor_gd7_arus REAL,
+      motor_gd7_temp REAL,
+      premate_membran_ro REAL,
+      reject_membran_ro REAL,
+      mmf_inlet_pressure REAL,
+      catridge_pressure REAL,
+      membran_pressure REAL,
+      nilai_tds REAL,
+      nilai_conductivity REAL,
+      chemical_wtp TEXT,
+      level_tandon_ro1 REAL,
+      level_tandon_ro2 REAL,
+      level_tandon_ro_gd4 TEXT,
+      backwash_mmf TEXT,
+      backwash_sebelum TEXT,
+      backwash_sesudah TEXT,
+      regenerasi_softener TEXT,
+      status_mesin_uv TEXT,
+      penggantian_membran_ro TEXT,
+      penggantian_membran_ro_comment TEXT,
+      penggantian_media_softener TEXT,
+      penggantian_media_softener_comment TEXT,
+      penggantian_media_carbon TEXT,
+      penggantian_media_carbon_comment TEXT,
+      penggantian_media_mn_zeloit TEXT,
+      penggantian_media_mn_zeloit_comment TEXT,
+      penggantian_catridge_filter TEXT,
+      penggantian_catridge_filter_comment TEXT,
+      foto_url TEXT,
+      photo_url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    saveDb();
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateChecklistBoiler() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS checklist_boiler (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id INTEGER REFERENCES users(id),
+      shift TEXT NOT NULL,
+      jam_monitoring TEXT,
+      tanggal_monitoring TEXT,
+      jenis_kegiatan TEXT NOT NULL,
+      status_operasional TEXT,
+      boiler_capacity TEXT,
+      steam_pressure REAL,
+      flue_gas_temp REAL,
+      feed_water_temp REAL,
+      scale_monitor_temp REAL,
+      pressure_gas REAL,
+      pressure_header REAL,
+      garam_softener TEXT,
+      chemical_boiler TEXT,
+      blowdown TEXT,
+      cleaning_strainer TEXT,
+      preventive_maintener TEXT,
+      preventive_aktivitas TEXT,
+      preventive_deskripsi TEXT,
+      preventive_foto_url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    saveDb();
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateChecklistN2() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS checklist_n2 (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id INTEGER REFERENCES users(id),
+      shift TEXT NOT NULL,
+      jam_monitoring TEXT,
+      tanggal_monitoring TEXT,
+      jenis_kegiatan TEXT NOT NULL,
+      status_operasional TEXT,
+      pilih_mesin TEXT,
+      temperature_area REAL,
+      running_hour REAL,
+      pressure REAL,
+      freq_min REAL,
+      freq_max REAL,
+      power_min REAL,
+      power_max REAL,
+      drayer_temp_high REAL,
+      drayer_temp_low REAL,
+      purify_percent REAL,
+      purify_flow REAL,
+      gas_compressor REAL,
+      gas_drayer REAL,
+      gas_absorption_a REAL,
+      gas_absorption_b REAL,
+      gas_nitrogen REAL,
+      gas_filter REAL,
+      change_air_filter_6 TEXT,
+      change_oil_filter_6 TEXT,
+      change_oil_water_sep_6 TEXT,
+      change_air_filter_t_12 TEXT,
+      change_air_filter_a_12 TEXT,
+      change_air_filter_x_12 TEXT,
+      check_electromagnetic TEXT,
+      foto_url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    saveDb();
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateChecklistKompressor() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS checklist_kompressor (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id INTEGER REFERENCES users(id),
+      shift TEXT NOT NULL,
+      jam_monitoring TEXT,
+      tanggal_monitoring TEXT,
+      jenis_kegiatan TEXT NOT NULL,
+      status_operasional TEXT,
+      air_compressor TEXT,
+      mode TEXT,
+      running_hour REAL,
+      system_pressure REAL,
+      flow_rate REAL,
+      motor_temperature REAL,
+      oil_temperature REAL,
+      bunyi_abnormal TEXT,
+      kebocoran_oli TEXT,
+      drayer_status TEXT,
+      drayer_humidity_temp TEXT,
+      change_filter_mat TEXT,
+      oil_change TEXT,
+      change_oil_filter TEXT,
+      change_air_filter TEXT,
+      change_belt_coupling TEXT,
+      change_oil_separator TEXT,
+      check_ecodrain TEXT,
+      bearing_lube_drive TEXT,
+      change_bearing TEXT,
+      check_electrical TEXT,
+      bearing_lube TEXT,
+      check_valve TEXT,
+      foto_url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
     )`);
     saveDb();
   } catch (err) {

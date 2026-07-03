@@ -1,0 +1,407 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clipboard-check me-2"></i>Checklist Kompressor</h4>
+      <a href="<%= typeof backUrl !== 'undefined' ? backUrl : '/job1' %>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header"><h5>Input Checklist Kompressor</h5></div>
+          <div class="card-body">
+            <form method="POST" action="<%= typeof formAction !== 'undefined' ? formAction : '/job1/checklist/kompressor' %>" enctype="multipart/form-data" id="kompressorForm">
+
+              <!-- PIC -->
+              <div class="mb-3">
+                <label class="form-label">PIC</label>
+                <input type="text" class="form-control" value="<%= user.name %>" readonly>
+              </div>
+
+              <!-- Shift -->
+              <div class="mb-3">
+                <label class="form-label">Shift</label>
+                <select name="shift" class="form-select" required>
+                  <option value="1">Shift 1</option>
+                  <option value="2">Shift 2</option>
+                  <option value="3">Shift 3</option>
+                </select>
+              </div>
+
+              <!-- Jam Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Jam Monitoring</label>
+                <input type="time" name="jam_monitoring" class="form-control">
+              </div>
+
+              <!-- Tanggal Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Tanggal Monitoring</label>
+                <input type="date" name="tanggal_monitoring" class="form-control" required>
+              </div>
+
+              <!-- Jenis Kegiatan -->
+              <div class="mb-3">
+                <label class="form-label">Pilih Opsi Pengecekan</label>
+                <select name="jenis_kegiatan" class="form-select" id="jenisKegiatan" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="predictive">Predictive Maintenance</option>
+                  <option value="preventive">Preventive Maintenance</option>
+                </select>
+              </div>
+
+              <hr>
+
+              <!-- ==================== PREDICTIVE SECTION ==================== -->
+              <div id="predictiveSection" style="display:none;">
+                <h6 class="text-primary fw-bold mb-3"><i class="bi bi-gear me-1"></i>Predictive Maintenance</h6>
+
+                <!-- Status Operasional -->
+                <div class="mb-3">
+                  <label class="form-label">Status Operasional</label>
+                  <select name="status_operasional" class="form-select" id="statusOperasional">
+                    <option value="">-- Pilih --</option>
+                    <option value="Running">Running</option>
+                    <option value="Off">Off</option>
+                  </select>
+                </div>
+
+                <div id="predictiveFields">
+                  <!-- Air Compressor -->
+                  <div class="mb-3">
+                    <label class="form-label">Air Compressor</label>
+                    <select name="air_compressor" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="Air Compressor 01">Air Compressor 01</option>
+                      <option value="Air Compressor 02">Air Compressor 02</option>
+                      <option value="Air Compressor 03">Air Compressor 03</option>
+                      <option value="Air Compressor 04">Air Compressor 04</option>
+                    </select>
+                  </div>
+
+                  <!-- Mode -->
+                  <div class="mb-3">
+                    <label class="form-label">Mode</label>
+                    <select name="mode" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="Load">Load</option>
+                      <option value="Iddle">Iddle</option>
+                      <option value="Standby">Standby</option>
+                    </select>
+                  </div>
+
+                  <!-- Running Hour -->
+                  <div class="mb-3">
+                    <label class="form-label">Running Hour</label>
+                    <input type="number" step="any" name="running_hour" class="form-control">
+                  </div>
+
+                  <!-- System Pressure & Flow Rate -->
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <label class="form-label">System Pressure (bar)</label>
+                      <input type="number" step="any" name="system_pressure" class="form-control">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Flow Rate (Nm&sup3;/h)</label>
+                      <input type="number" step="any" name="flow_rate" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Motor & Oil Temperature -->
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <label class="form-label">Motor Temperature (&deg;C)</label>
+                      <input type="number" step="any" name="motor_temperature" class="form-control">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Oil Temperature (&deg;C)</label>
+                      <input type="number" step="any" name="oil_temperature" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Bunyi Abnormal & Kebocoran Oli -->
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <label class="form-label">Bunyi Abnormal</label>
+                      <select name="bunyi_abnormal" class="form-select">
+                        <option value="">-- Pilih --</option>
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Kebocoran Oli</label>
+                      <select name="kebocoran_oli" class="form-select">
+                        <option value="">-- Pilih --</option>
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Drayer -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Drayer</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Status</label>
+                          <select name="drayer_status" class="form-select form-select-sm">
+                            <option value="">-- Pilih --</option>
+                            <option value="On">On</option>
+                            <option value="Off">Off</option>
+                          </select>
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Humidity &amp; Temperature</label>
+                          <select name="drayer_humidity_temp" class="form-select form-select-sm">
+                            <option value="">-- Pilih --</option>
+                            <option value="Red">Red</option>
+                            <option value="Green">Green</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==================== PREVENTIVE SECTION ==================== -->
+              <div id="preventiveSection" style="display:none;">
+                <h6 class="text-success fw-bold mb-3"><i class="bi bi-tools me-1"></i>Preventive Maintenance</h6>
+
+                <!-- Change Filter Mat (3000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Filter Mat (3000 h)</label>
+                  <select name="change_filter_mat" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Oil Change (3000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Oil Change (3000 h)</label>
+                  <select name="oil_change" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Change Oil Filter (3000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Oil Filter (3000 h)</label>
+                  <select name="change_oil_filter" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Change Air Filter (3000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Air Filter (3000 h)</label>
+                  <select name="change_air_filter" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Change Belt/Coupling (3000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Belt/Coupling (3000 h)</label>
+                  <select name="change_belt_coupling" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Change Oil Separator (6000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Oil Separator (6000 h)</label>
+                  <select name="change_oil_separator" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Check Ecodrain (6000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Check Ecodrain (6000 h)</label>
+                  <select name="check_ecodrain" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Bearing Lube Drive Motor (6000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Bearing Lube Drive Motor (6000 h)</label>
+                  <select name="bearing_lube_drive" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Change Bearing (6000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Bearing (6000 h)</label>
+                  <select name="change_bearing" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Check Electrical (9000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Check Electrical (9000 h)</label>
+                  <select name="check_electrical" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Bearing Lube (12000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Bearing Lube (12000 h)</label>
+                  <select name="bearing_lube" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Check Valve (12000 h) -->
+                <div class="mb-3">
+                  <label class="form-label">Check Valve (12000 h)</label>
+                  <select name="check_valve" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Running Hour belum tercapai">Running Hour belum tercapai</option>
+                  </select>
+                </div>
+
+                <!-- Foto Dokumentasi -->
+                <div class="mb-3">
+                  <label class="form-label">Foto Dokumentasi (JPEG/PNG)</label>
+                  <input type="file" name="foto_dokumentasi" class="form-control" accept=".jpg,.jpeg,.png">
+                  <div class="form-text">Format: JPG, JPEG, atau PNG. Maks 5MB.</div>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div id="formButtons" style="display:none;">
+                <hr>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
+                  <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('kompressorForm').reset(); resetForm();"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header"><h5>Riwayat Checklist Kompressor</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>PIC</th>
+                    <th>Jenis</th>
+                    <th>Mesin</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% entries.forEach(function(e) { %>
+                  <tr>
+                    <td><%= e.tanggal_monitoring || '-' %></td>
+                    <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                    <td><%= e.member_name %></td>
+                    <td><span class="badge <%= e.jenis_kegiatan === 'predictive' ? 'bg-info' : 'bg-success' %>"><%= e.jenis_kegiatan === 'predictive' ? 'Predictive' : 'Preventive' %></span></td>
+                    <td><small><%= e.air_compressor || '-' %></small></td>
+                    <td>
+                      <% if (e.status_operasional) { %>
+                        <span class="badge <%= e.status_operasional === 'Running' ? 'bg-success' : 'bg-secondary' %>"><%= e.status_operasional %></span>
+                      <% } else { %>
+                        <span class="badge bg-light text-dark">-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="<%= typeof deletePrefix !== 'undefined' ? deletePrefix : '/job1' %>/checklist/kompressor/<%= e.id %>/delete" class="btn btn-sm btn-outline-danger delete-btn"><i class="bi bi-trash"></i></a>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (entries.length === 0) { %>
+                  <tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var jenisKegiatan = document.getElementById('jenisKegiatan');
+  var predictiveSection = document.getElementById('predictiveSection');
+  var preventiveSection = document.getElementById('preventiveSection');
+  var predictiveFields = document.getElementById('predictiveFields');
+  var statusOperasional = document.getElementById('statusOperasional');
+  var formButtons = document.getElementById('formButtons');
+
+  function resetForm() {
+    predictiveSection.style.display = 'none';
+    preventiveSection.style.display = 'none';
+    predictiveFields.style.display = 'block';
+    formButtons.style.display = 'none';
+  }
+
+  jenisKegiatan.addEventListener('change', function() {
+    var val = this.value;
+    predictiveSection.style.display = val === 'predictive' ? 'block' : 'none';
+    preventiveSection.style.display = val === 'preventive' ? 'block' : 'none';
+    formButtons.style.display = val ? 'block' : 'none';
+  });
+
+  statusOperasional.addEventListener('change', function() {
+    predictiveFields.style.display = this.value === 'Off' ? 'none' : 'block';
+  });
+});
+</script>
+
+<%- include('../../partials/footer') %>

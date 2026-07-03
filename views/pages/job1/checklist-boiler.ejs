@@ -1,0 +1,279 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clipboard-check me-2"></i>Checklist Boiler</h4>
+      <a href="/job1" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header"><h5>Input Checklist Boiler</h5></div>
+          <div class="card-body">
+            <form method="POST" action="/job1/checklist/boiler" enctype="multipart/form-data" id="boilerForm">
+
+              <!-- PIC -->
+              <div class="mb-3">
+                <label class="form-label">PIC</label>
+                <input type="text" class="form-control" value="<%= user.name %>" readonly>
+              </div>
+
+              <!-- Shift -->
+              <div class="mb-3">
+                <label class="form-label">Shift</label>
+                <select name="shift" class="form-select" required>
+                  <option value="1">Shift 1</option>
+                  <option value="2">Shift 2</option>
+                  <option value="3">Shift 3</option>
+                </select>
+              </div>
+
+              <!-- Jam Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Jam Monitoring</label>
+                <input type="time" name="jam_monitoring" class="form-control">
+              </div>
+
+              <!-- Tanggal Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Tanggal Monitoring</label>
+                <input type="date" name="tanggal_monitoring" class="form-control" required>
+              </div>
+
+              <!-- Jenis Kegiatan -->
+              <div class="mb-3">
+                <label class="form-label">Pilih Opsi Pengecekan</label>
+                <select name="jenis_kegiatan" class="form-select" id="jenisKegiatan" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="predictive">Predictive Maintenance</option>
+                  <option value="preventive">Preventive Maintenance</option>
+                </select>
+              </div>
+
+              <hr>
+
+              <!-- ==================== PREDICTIVE SECTION ==================== -->
+              <div id="predictiveSection" style="display:none;">
+                <h6 class="text-primary fw-bold mb-3"><i class="bi bi-gear me-1"></i>Predictive Maintenance</h6>
+
+                <!-- Status Operasional -->
+                <div class="mb-3">
+                  <label class="form-label">Status Operasional</label>
+                  <select name="status_operasional" class="form-select" id="statusOperasional">
+                    <option value="">-- Pilih --</option>
+                    <option value="Running">Running</option>
+                    <option value="Off">Off</option>
+                  </select>
+                </div>
+
+                <div id="predictiveFields">
+                  <!-- Boiler Capacity -->
+                  <div class="mb-3">
+                    <label class="form-label">Boiler Capacity</label>
+                    <select name="boiler_capacity" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="2,5T">2,5T</option>
+                      <option value="2T">2T</option>
+                    </select>
+                  </div>
+
+                  <!-- Steam Pressure -->
+                  <div class="mb-3">
+                    <label class="form-label">Steam Pressure (Mpa)</label>
+                    <input type="number" step="any" name="steam_pressure" class="form-control">
+                  </div>
+
+                  <!-- Flue Gas Temperature -->
+                  <div class="mb-3">
+                    <label class="form-label">Flue Gas Temperature (&deg;C)</label>
+                    <input type="number" step="any" name="flue_gas_temp" class="form-control">
+                  </div>
+
+                  <!-- Feed Water Temperature -->
+                  <div class="mb-3">
+                    <label class="form-label">Feed Water Temperature (&deg;C)</label>
+                    <input type="number" step="any" name="feed_water_temp" class="form-control">
+                  </div>
+
+                  <!-- Scale Monitor Temperature -->
+                  <div class="mb-3">
+                    <label class="form-label">Scale Monitor Temperature (&deg;C)</label>
+                    <input type="number" step="any" name="scale_monitor_temp" class="form-control">
+                  </div>
+
+                  <!-- Pressure Gas -->
+                  <div class="mb-3">
+                    <label class="form-label">Pressure Gas</label>
+                    <input type="number" step="any" name="pressure_gas" class="form-control">
+                  </div>
+
+                  <!-- Pressure Header -->
+                  <div class="mb-3">
+                    <label class="form-label">Pressure Header (Mpa)</label>
+                    <input type="number" step="any" name="pressure_header" class="form-control">
+                  </div>
+
+                  <!-- Garam Softener -->
+                  <div class="mb-3">
+                    <label class="form-label">Garam Softener</label>
+                    <select name="garam_softener" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="cukup">Cukup</option>
+                      <option value="kurang">Kurang</option>
+                    </select>
+                  </div>
+
+                  <!-- Chemical Boiler -->
+                  <div class="mb-3">
+                    <label class="form-label">Chemical Boiler</label>
+                    <select name="chemical_boiler" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="cukup">Cukup</option>
+                      <option value="kurang">Kurang</option>
+                    </select>
+                  </div>
+
+                  <!-- Blowdown -->
+                  <div class="mb-3">
+                    <label class="form-label">Blowdown</label>
+                    <select name="blowdown" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="sudah">Sudah</option>
+                      <option value="belum">Belum</option>
+                    </select>
+                  </div>
+
+                  <!-- Cleaning Strainer -->
+                  <div class="mb-3">
+                    <label class="form-label">Cleaning Strainer</label>
+                    <select name="cleaning_strainer" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="sudah">Sudah</option>
+                      <option value="belum">Belum</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==================== PREVENTIVE SECTION ==================== -->
+              <div id="preventiveSection" style="display:none;">
+                <h6 class="text-success fw-bold mb-3"><i class="bi bi-tools me-1"></i>Preventive Maintenance</h6>
+
+                <!-- Maintener -->
+                <div class="mb-3">
+                  <label class="form-label">Maintener</label>
+                  <input type="text" name="preventive_maintener" class="form-control" placeholder="Nama maintener">
+                </div>
+
+                <!-- Aktivitas -->
+                <div class="mb-3">
+                  <label class="form-label">Aktivitas</label>
+                  <input type="text" name="preventive_aktivitas" class="form-control" placeholder="Jenis aktivitas">
+                </div>
+
+                <!-- Deskripsi -->
+                <div class="mb-3">
+                  <label class="form-label">Deskripsi</label>
+                  <textarea name="preventive_deskripsi" class="form-control" rows="3" placeholder="Deskripsi aktivitas..."></textarea>
+                </div>
+
+                <!-- Dokumentasi -->
+                <div class="mb-3">
+                  <label class="form-label">Dokumentasi (JPEG/PNG)</label>
+                  <input type="file" name="preventive_foto" class="form-control" accept=".jpg,.jpeg,.png">
+                  <div class="form-text">Format: JPG, JPEG, atau PNG. Maks 5MB.</div>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div id="formButtons" style="display:none;">
+                <hr>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
+                  <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('boilerForm').reset(); resetForm();"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header"><h5>Riwayat Checklist Boiler</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>PIC</th>
+                    <th>Jenis</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% entries.forEach(function(e) { %>
+                  <tr>
+                    <td><%= e.tanggal_monitoring || '-' %></td>
+                    <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                    <td><%= e.member_name %></td>
+                    <td><span class="badge <%= e.jenis_kegiatan === 'predictive' ? 'bg-info' : 'bg-success' %>"><%= e.jenis_kegiatan === 'predictive' ? 'Predictive' : 'Preventive' %></span></td>
+                    <td>
+                      <% if (e.status_operasional) { %>
+                        <span class="badge <%= e.status_operasional === 'Running' ? 'bg-success' : 'bg-secondary' %>"><%= e.status_operasional %></span>
+                      <% } else { %>
+                        <span class="badge bg-light text-dark">-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="/job1/checklist/boiler/<%= e.id %>/delete" class="btn btn-sm btn-outline-danger delete-btn"><i class="bi bi-trash"></i></a>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (entries.length === 0) { %>
+                  <tr><td colspan="6" class="text-center text-muted">Belum ada data</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var jenisKegiatan = document.getElementById('jenisKegiatan');
+  var predictiveSection = document.getElementById('predictiveSection');
+  var preventiveSection = document.getElementById('preventiveSection');
+  var predictiveFields = document.getElementById('predictiveFields');
+  var statusOperasional = document.getElementById('statusOperasional');
+  var formButtons = document.getElementById('formButtons');
+
+  function resetForm() {
+    predictiveSection.style.display = 'none';
+    preventiveSection.style.display = 'none';
+    predictiveFields.style.display = 'block';
+    formButtons.style.display = 'none';
+  }
+
+  jenisKegiatan.addEventListener('change', function() {
+    var val = this.value;
+    predictiveSection.style.display = val === 'predictive' ? 'block' : 'none';
+    preventiveSection.style.display = val === 'preventive' ? 'block' : 'none';
+    formButtons.style.display = val ? 'block' : 'none';
+  });
+
+  statusOperasional.addEventListener('change', function() {
+    predictiveFields.style.display = this.value === 'Off' ? 'none' : 'block';
+  });
+});
+</script>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,389 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clipboard-check me-2"></i>Checklist N2 Generator</h4>
+      <a href="/job2" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header"><h5>Input Checklist N2 Generator</h5></div>
+          <div class="card-body">
+            <form method="POST" action="/job2/checklist/n2_generator" enctype="multipart/form-data" id="n2Form">
+
+              <!-- PIC -->
+              <div class="mb-3">
+                <label class="form-label">PIC</label>
+                <input type="text" class="form-control" value="<%= user.name %>" readonly>
+              </div>
+
+              <!-- Shift -->
+              <div class="mb-3">
+                <label class="form-label">Shift</label>
+                <select name="shift" class="form-select" required>
+                  <option value="1">Shift 1</option>
+                  <option value="2">Shift 2</option>
+                  <option value="3">Shift 3</option>
+                </select>
+              </div>
+
+              <!-- Jam Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Jam Monitoring</label>
+                <input type="time" name="jam_monitoring" class="form-control">
+              </div>
+
+              <!-- Tanggal Monitoring -->
+              <div class="mb-3">
+                <label class="form-label">Tanggal Monitoring</label>
+                <input type="date" name="tanggal_monitoring" class="form-control" required>
+              </div>
+
+              <!-- Jenis Kegiatan -->
+              <div class="mb-3">
+                <label class="form-label">Pilih Opsi Pengecekan</label>
+                <select name="jenis_kegiatan" class="form-select" id="jenisKegiatan" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="predictive">Predictive Maintenance</option>
+                  <option value="preventive">Preventive Maintenance</option>
+                </select>
+              </div>
+
+              <hr>
+
+              <!-- ==================== PREDICTIVE SECTION ==================== -->
+              <div id="predictiveSection" style="display:none;">
+                <h6 class="text-primary fw-bold mb-3"><i class="bi bi-gear me-1"></i>Predictive Maintenance</h6>
+
+                <!-- Status Operasional -->
+                <div class="mb-3">
+                  <label class="form-label">Status Operasional</label>
+                  <select name="status_operasional" class="form-select" id="statusOperasional">
+                    <option value="">-- Pilih --</option>
+                    <option value="Running">Running</option>
+                    <option value="Off">Off</option>
+                  </select>
+                </div>
+
+                <div id="predictiveFields">
+                  <!-- Pilih Mesin -->
+                  <div class="mb-3">
+                    <label class="form-label">Pilih Mesin</label>
+                    <select name="pilih_mesin" class="form-select">
+                      <option value="">-- Pilih Mesin --</option>
+                      <option value="N2 Generator GD6 01">N2 Generator GD6 01</option>
+                      <option value="N2 Generator GD6 02">N2 Generator GD6 02</option>
+                      <option value="N2 Generator GD4 01">N2 Generator GD4 01</option>
+                      <option value="N2 Generator GD4 02">N2 Generator GD4 02</option>
+                    </select>
+                  </div>
+
+                  <!-- Temperature Area & Running Hour -->
+                  <div class="row mb-3">
+                    <div class="col-6">
+                      <label class="form-label">Temperature Area (&deg;C)</label>
+                      <input type="number" step="any" name="temperature_area" class="form-control">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Running Hour (hour)</label>
+                      <input type="number" step="any" name="running_hour" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Pressure -->
+                  <div class="mb-3">
+                    <label class="form-label">Pressure (Mpa)</label>
+                    <input type="number" step="any" name="pressure" class="form-control">
+                  </div>
+
+                  <!-- Frequency -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Frequency</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Minimal (Hz)</label>
+                          <input type="number" step="any" name="freq_min" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Maximal (Hz)</label>
+                          <input type="number" step="any" name="freq_max" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Power -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Power</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Minimal (kW)</label>
+                          <input type="number" step="any" name="power_min" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Maximal (kW)</label>
+                          <input type="number" step="any" name="power_max" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Drayer -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Drayer</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Temperature High (&deg;C)</label>
+                          <input type="number" step="any" name="drayer_temp_high" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Temperature Low (&deg;C)</label>
+                          <input type="number" step="any" name="drayer_temp_low" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Purify -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Purify</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Purify (%)</label>
+                          <input type="number" step="any" name="purify_percent" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Flow Purify (Liter/Minute)</label>
+                          <input type="number" step="any" name="purify_flow" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Gas Cylinder -->
+                  <div class="card mb-3">
+                    <div class="card-header py-2"><h6 class="mb-0">Gas Cylinder</h6></div>
+                    <div class="card-body py-2">
+                      <div class="row mb-2">
+                        <div class="col-6">
+                          <label class="form-label small">Compressor (Mpa)</label>
+                          <input type="number" step="any" name="gas_compressor" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Drayer (Mpa)</label>
+                          <input type="number" step="any" name="gas_drayer" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                      <div class="row mb-2">
+                        <div class="col-6">
+                          <label class="form-label small">Absorption A (Mpa)</label>
+                          <input type="number" step="any" name="gas_absorption_a" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Absorption B (Mpa)</label>
+                          <input type="number" step="any" name="gas_absorption_b" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-6">
+                          <label class="form-label small">Nitrogen (Mpa)</label>
+                          <input type="number" step="any" name="gas_nitrogen" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label small">Filter (Mpa)</label>
+                          <input type="number" step="any" name="gas_filter" class="form-control form-control-sm">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==================== PREVENTIVE SECTION ==================== -->
+              <div id="preventiveSection" style="display:none;">
+                <h6 class="text-success fw-bold mb-3"><i class="bi bi-tools me-1"></i>Preventive Maintenance</h6>
+
+                <!-- Change Air Filter Element (6 month) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Air Filter Element (6 month)</label>
+                  <select name="change_air_filter_6" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Change Oil Filter Element (6 month) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Oil Filter Element (6 month)</label>
+                  <select name="change_oil_filter_6" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Change Oil Water Separator (6 month) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Oil Water Separator (6 month)</label>
+                  <select name="change_oil_water_sep_6" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Change Air Filter Element T (12 month) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Air Filter Element T (12 month)</label>
+                  <select name="change_air_filter_t_12" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Change Air Filter Element A (12 month) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Air Filter Element A (12 month)</label>
+                  <select name="change_air_filter_a_12" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Change Air Filter Element X (12 month) -->
+                <div class="mb-3">
+                  <label class="form-label">Change Air Filter Element X (12 month)</label>
+                  <select name="change_air_filter_x_12" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Check Electromagnetic valve -->
+                <div class="mb-3">
+                  <label class="form-label">Check Electromagnetic Valve</label>
+                  <select name="check_electromagnetic" class="form-select">
+                    <option value="">-- Pilih --</option>
+                    <option value="Sudah">Sudah</option>
+                    <option value="Part tidak tersedia">Part tidak tersedia</option>
+                    <option value="Belum mencapai Lifetime">Belum mencapai Lifetime</option>
+                  </select>
+                </div>
+
+                <!-- Foto Dokumentasi -->
+                <div class="mb-3">
+                  <label class="form-label">Foto Dokumentasi (JPEG/PNG)</label>
+                  <input type="file" name="foto_dokumentasi" class="form-control" accept=".jpg,.jpeg,.png">
+                  <div class="form-text">Format: JPG, JPEG, atau PNG. Maks 5MB.</div>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div id="formButtons" style="display:none;">
+                <hr>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
+                  <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('n2Form').reset(); resetForm();"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header"><h5>Riwayat Checklist N2 Generator</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Shift</th>
+                    <th>PIC</th>
+                    <th>Jenis</th>
+                    <th>Mesin</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% entries.forEach(function(e) { %>
+                  <tr>
+                    <td><%= e.tanggal_monitoring || '-' %></td>
+                    <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                    <td><%= e.member_name %></td>
+                    <td><span class="badge <%= e.jenis_kegiatan === 'predictive' ? 'bg-info' : 'bg-success' %>"><%= e.jenis_kegiatan === 'predictive' ? 'Predictive' : 'Preventive' %></span></td>
+                    <td><small><%= e.pilih_mesin || '-' %></small></td>
+                    <td>
+                      <% if (e.status_operasional) { %>
+                        <span class="badge <%= e.status_operasional === 'Running' ? 'bg-success' : 'bg-secondary' %>"><%= e.status_operasional %></span>
+                      <% } else { %>
+                        <span class="badge bg-light text-dark">-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="/job2/checklist/n2_generator/<%= e.id %>/delete" class="btn btn-sm btn-outline-danger delete-btn"><i class="bi bi-trash"></i></a>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  <% if (entries.length === 0) { %>
+                  <tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var jenisKegiatan = document.getElementById('jenisKegiatan');
+  var predictiveSection = document.getElementById('predictiveSection');
+  var preventiveSection = document.getElementById('preventiveSection');
+  var predictiveFields = document.getElementById('predictiveFields');
+  var statusOperasional = document.getElementById('statusOperasional');
+  var formButtons = document.getElementById('formButtons');
+
+  function resetForm() {
+    predictiveSection.style.display = 'none';
+    preventiveSection.style.display = 'none';
+    predictiveFields.style.display = 'block';
+    formButtons.style.display = 'none';
+  }
+
+  jenisKegiatan.addEventListener('change', function() {
+    var val = this.value;
+    predictiveSection.style.display = val === 'predictive' ? 'block' : 'none';
+    preventiveSection.style.display = val === 'preventive' ? 'block' : 'none';
+    formButtons.style.display = val ? 'block' : 'none';
+  });
+
+  statusOperasional.addEventListener('change', function() {
+    predictiveFields.style.display = this.value === 'Off' ? 'none' : 'block';
+  });
+});
+</script>
+
+<%- include('../../partials/footer') %>

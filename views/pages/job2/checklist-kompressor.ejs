@@ -1,0 +1,181 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4><i class="bi bi-clipboard-check me-2"></i>Checklist Kompressor</h4>
+      <a href="/job2" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="kompressorTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="k03-tab" data-bs-toggle="tab" data-bs-target="#k03" type="button" role="tab" aria-controls="k03" aria-selected="true">
+          <i class="bi bi-gear me-1"></i>Kompressor 03
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="k04-tab" data-bs-toggle="tab" data-bs-target="#k04" type="button" role="tab" aria-controls="k04" aria-selected="false">
+          <i class="bi bi-gear me-1"></i>Kompressor 04
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="kompressorTabContent">
+      <!-- Kompressor 03 -->
+      <div class="tab-pane fade show active" id="k03" role="tabpanel" aria-labelledby="k03-tab">
+        <div class="row">
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-header"><h5>Input Checklist Kompressor 03</h5></div>
+              <div class="card-body">
+                <form method="POST" action="/job2/checklist/kompressor/kompressor03">
+                  <div class="mb-3">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" name="entry_date" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Shift</label>
+                    <select name="shift" class="form-select" required>
+                      <option value="1">Shift 1</option>
+                      <option value="2">Shift 2</option>
+                      <option value="3">Shift 3</option>
+                    </select>
+                  </div>
+                  <% templates03.forEach(function(t) { %>
+                  <div class="mb-3">
+                    <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                    <% if (t.parameter_type === 'number') { %>
+                      <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+                    <% } else { %>
+                      <input type="text" name="values" class="form-control">
+                    <% } %>
+                    <input type="hidden" name="templates" value="<%= t.id %>">
+                  </div>
+                  <% }); %>
+                  <div class="mb-3">
+                    <label class="form-label">Catatan</label>
+                    <textarea name="notes" class="form-control" rows="2"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i>Simpan Checklist</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card">
+              <div class="card-header"><h5>Riwayat Checklist Kompressor 03</h5></div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped">
+                    <thead>
+                      <tr>
+                        <th>Tanggal</th>
+                        <th>Shift</th>
+                        <th>Oleh</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% entries03.forEach(function(e) { %>
+                      <tr>
+                        <td><%= e.entry_date %></td>
+                        <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                        <td><%= e.input_by_name %></td>
+                        <td>
+                          <a href="/job2/checklist/entry/<%= e.id %>/delete" class="btn btn-sm btn-outline-danger delete-btn"><i class="bi bi-trash"></i></a>
+                        </td>
+                      </tr>
+                      <% }); %>
+                      <% if (entries03.length === 0) { %>
+                      <tr><td colspan="4" class="text-center text-muted">Belum ada data</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kompressor 04 -->
+      <div class="tab-pane fade" id="k04" role="tabpanel" aria-labelledby="k04-tab">
+        <div class="row">
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-header"><h5>Input Checklist Kompressor 04</h5></div>
+              <div class="card-body">
+                <form method="POST" action="/job2/checklist/kompressor/kompressor04">
+                  <div class="mb-3">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" name="entry_date" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Shift</label>
+                    <select name="shift" class="form-select" required>
+                      <option value="1">Shift 1</option>
+                      <option value="2">Shift 2</option>
+                      <option value="3">Shift 3</option>
+                    </select>
+                  </div>
+                  <% templates04.forEach(function(t) { %>
+                  <div class="mb-3">
+                    <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                    <% if (t.parameter_type === 'number') { %>
+                      <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+                    <% } else { %>
+                      <input type="text" name="values" class="form-control">
+                    <% } %>
+                    <input type="hidden" name="templates" value="<%= t.id %>">
+                  </div>
+                  <% }); %>
+                  <div class="mb-3">
+                    <label class="form-label">Catatan</label>
+                    <textarea name="notes" class="form-control" rows="2"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i>Simpan Checklist</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card">
+              <div class="card-header"><h5>Riwayat Checklist Kompressor 04</h5></div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped">
+                    <thead>
+                      <tr>
+                        <th>Tanggal</th>
+                        <th>Shift</th>
+                        <th>Oleh</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% entries04.forEach(function(e) { %>
+                      <tr>
+                        <td><%= e.entry_date %></td>
+                        <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
+                        <td><%= e.input_by_name %></td>
+                        <td>
+                          <a href="/job2/checklist/entry/<%= e.id %>/delete" class="btn btn-sm btn-outline-danger delete-btn"><i class="bi bi-trash"></i></a>
+                        </td>
+                      </tr>
+                      <% }); %>
+                      <% if (entries04.length === 0) { %>
+                      <tr><td colspan="4" class="text-center text-muted">Belum ada data</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>
