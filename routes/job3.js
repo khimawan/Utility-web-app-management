@@ -1,7 +1,33 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 const { getDb, dbAll, dbGet, dbRun } = require('../config/database');
 const { isAuthenticated } = require('../middleware/auth');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, '..', 'public', 'uploads', 'works');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'work-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|mp4|webm|quicktime/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) return cb(null, true);
+    cb(new Error('Hanya file JPG, JPEG, PNG, MP4, atau WebM yang diizinkan'));
+  },
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
 
 const job3Categories = ['pemakaian_air', 'pemakaian_gas', 'suhu_trafo', 'listrik_trafo', 'energi_listrik'];
 
@@ -15,7 +41,7 @@ router.get('/', isAuthenticated, async (req, res) => {
       LEFT JOIN work_members wm ON w.id = wm.work_id
       LEFT JOIN users u ON wm.member_id = u.id
       GROUP BY w.id
-      ORDER BY w.work_date DESC LIMIT 10
+      ORDER BY CASE WHEN w.repair_percentage >= 100 THEN 1 ELSE 0 END, w.work_date DESC LIMIT 10
     `);
     res.render('pages/job3/index', { description, machines, works });
   } catch (err) {
@@ -55,7 +81,7 @@ router.post('/checklist/:category', isAuthenticated, async (req, res) => {
     const { category } = req.params;
     const { entry_date, shift, notes, templates, values, machine_id } = req.body;
     let finalEntryDate = entry_date;
-    if ((category === 'pemakaian_air' || category === 'energi_listrik') && !entry_date) {
+    if ((category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') && !entry_date) {
       const tplIdsArr = Array.isArray(templates) ? templates : (templates ? [templates] : []);
       const valsArr = Array.isArray(values) ? values : (values ? [values] : []);
       for (let i = 0; i < tplIdsArr.length; i++) {
@@ -111,7 +137,7 @@ router.get('/works', isAuthenticated, async (req, res) => {
       LEFT JOIN work_members wm ON w.id = wm.work_id
       LEFT JOIN users u ON wm.member_id = u.id
       GROUP BY w.id
-      ORDER BY w.work_date DESC
+      ORDER BY CASE WHEN w.repair_percentage >= 100 THEN 1 ELSE 0 END, w.work_date DESC
     `);
     const members = dbAll("SELECT * FROM users WHERE position = 'member' AND is_active = 1 ORDER BY name");
     res.render('pages/job3/works', { works, members });
@@ -121,13 +147,14 @@ router.get('/works', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/works', isAuthenticated, async (req, res) => {
+router.post('/works', isAuthenticated, upload.single('photo'), async (req, res) => {
   try {
     const { work_date, area, description, repair_notes, repair_percentage, member_ids } = req.body;
+    const photo_url = req.file ? '/uploads/works/' + req.file.filename : null;
     const result = dbRun(
-      `INSERT INTO works (work_date, area, description, repair_notes, repair_percentage, input_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [work_date, area, description, repair_notes || '', repair_percentage || 0, req.session.user.id]
+      `INSERT INTO works (work_date, area, description, repair_notes, repair_percentage, photo_url, input_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [work_date, area, description, repair_notes || '', repair_percentage || 0, photo_url, req.session.user.id]
     );
     const workId = result.lastID;
     const ids = Array.isArray(member_ids) ? member_ids : (member_ids ? [member_ids] : []);
@@ -141,13 +168,30 @@ router.post('/works', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/works/:id', isAuthenticated, async (req, res) => {
+router.post('/works/:id', isAuthenticated, upload.single('photo'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { work_date, area, description, repair_notes, repair_percentage, member_ids } = req.body;
+    const { work_date, area, description, repair_notes, repair_percentage, member_ids, delete_photo } = req.body;
+    const existing = dbGet('SELECT photo_url FROM works WHERE id = ?', [parseInt(id)]);
+    let photo_url = existing ? existing.photo_url : null;
+
+    if (delete_photo === '1' && photo_url) {
+      const filePath = path.join(__dirname, '..', 'public', photo_url);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      photo_url = null;
+    }
+
+    if (req.file) {
+      if (photo_url) {
+        const oldPath = path.join(__dirname, '..', 'public', photo_url);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      photo_url = '/uploads/works/' + req.file.filename;
+    }
+
     dbRun(
-      `UPDATE works SET work_date=?, area=?, description=?, repair_notes=?, repair_percentage=? WHERE id=?`,
-      [work_date, area, description, repair_notes || '', repair_percentage || 0, parseInt(id)]
+      `UPDATE works SET work_date=?, area=?, description=?, repair_notes=?, repair_percentage=?, photo_url=? WHERE id=?`,
+      [work_date, area, description, repair_notes || '', repair_percentage || 0, photo_url, parseInt(id)]
     );
     dbRun('DELETE FROM work_members WHERE work_id = ?', [parseInt(id)]);
     const ids = Array.isArray(member_ids) ? member_ids : (member_ids ? [member_ids] : []);
@@ -163,6 +207,11 @@ router.post('/works/:id', isAuthenticated, async (req, res) => {
 
 router.post('/works/:id/delete', isAuthenticated, async (req, res) => {
   try {
+    const existing = dbGet('SELECT photo_url FROM works WHERE id = ?', [parseInt(req.params.id)]);
+    if (existing && existing.photo_url) {
+      const filePath = path.join(__dirname, '..', 'public', existing.photo_url);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
     dbRun('DELETE FROM works WHERE id = ?', [parseInt(req.params.id)]);
     res.redirect('/job3/works');
   } catch (err) {

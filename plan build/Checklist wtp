@@ -1,6 +1,8 @@
 Wtp checklist
 
-- Pilih pic : memilih member
+buat checklist wtp dengan dasar sebagai berikut
+
+- PIC : (otomatis input nama dari member)
 - Shift : 1/2/3
 - Jam monitoring :
 - Tanggal monitoring :
@@ -9,44 +11,51 @@ Wtp checklist
 Predictive Maintenence
 - Status operasional : Running/Off
 # jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi untuk di submit
-- Motor HPP
-    * Arus Listrik (A):
-    * Temperature ('C):
-- Motor Distribusi GD7
-    * Arus Listrik (A):
-    * Temperature ('C):
 - Pompa Distribusi GD4
     * Arus Listrik (A):
     * Temperature ('C):
 - Pompa Booster
     * Arus Listrik (A):
     * Temperature ('C):
-- premate dan reject membran RO
-- MMF: Inlet pressure
-- catrige pressure
-- membran pressure
-- nilai tds
-# nilai max 200 untuk hasil yg bagus
-- nilai conductivity
-- chemical wtp : cukup/kurang/other(deskripsi)
-- level tandon RO1 (%):
-- level tandon RO2 (%):
-- level tandon RO GD4 : full/perlu pengisian
-- Backwash MMF
-- kondisi air jika sudah di backwash
-    * sebelum : keruh/jernih
-    * sesudah : keruh/jernih
+- Motor HPP
+    * Arus Listrik (A):
+    * Temperature ('C):
+- Motor Distribusi GD7
+    * Arus Listrik (A):
+    * Temperature ('C):
+- Premate membran RO (LPM):
+- Reject membran RO (LPM):
+- MMF Inlet pressure (Kg/cm^2):
+- Catrige pressure (Kg/cm^2):
+- Membran pressure (Kg/cm^2):
+# jika pressure membran lebih dari 10, otomatis warning muncul untuk melakukan CIP membran RO segera.
+- Nilai TDS :
+# jika ninai TDS diatas 200 muncul warning TDS terlalu tinggi
+- Nilai conductivity :
+- Chemical wtp : Cukup/Kurang
+- Level tandon RO1 (%):
+- Level tandon RO2 (%):
+- Level tandon RO GD4 : Full/Perlu pengisian
+- Backwash MMF : Sudah/Belum
+# jika memilih belum pada backwash MMF, list untuk kondisi air saat backwash tidak perlu di isi
+- Kondisi air saat backwash
+    * sebelum : Keruh/Jernih
+    * sesudah : Keruh/Jernih
 - Regenerasi Softener WTP : Sudah/Belum
-- CIP : >10 Kg/cm^2 = warning untuk melakukan CIP membran RO
-- status mesin UV : on/off
+- Status mesin UV : On/Off
 - Berikan tombol submit dan clear form pada bawah checklist
 
 Preventive
-- penggantian membran RO : sudah/masih bisa dipakai & comment member #penggantian berkala pertahun
-- penggantian media softener
-- penggantian media carbon filter
-- penggantian media manganese zeloit
-- penggantian catrige filter
-- input foto dokumentasi
+- Penggantian membran RO : Sudah/Masih OK
+# jika memilih opsi Masih OK, berikan kolom untuk input comment member
+- Penggantian media softener : Sudah/Masih OK
+# jika memilih opsi Masih OK, berikan kolom untuk input comment member
+- Penggantian media carbon filter : Sudah/Masih OK
+# jika memilih opsi Masih OK, berikan kolom untuk input comment member
+- Penggantian media manganese zeloit : Sudah/Masih OK
+# jika memilih opsi Masih OK, berikan kolom untuk input comment member
+- Penggantian catrige filter : Sudah/Masih OK
+# jika memilih opsi Masih OK, berikan kolom untuk input comment member
+- Input foto dokumentasi :
 # input dokumentasi berupa pload file foto jpeg/png
 - Berikan tombol submit dan clear form pada bawah checklist

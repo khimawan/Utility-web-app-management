@@ -1,6 +1,8 @@
 Boiler checklist
 
-- Pilih PIC : Memilih member
+buat checklist boiler berdasarkan ketentuan sebagai berikut ini
+
+- PIC : (otomatis input nama dari member)
 - Shift : 1/2/3
 - Jam monitoring :
 - Tanggal monitoring :
@@ -8,22 +10,26 @@ Boiler checklist
 # jika memilih predictive maintenence akan terbuka list untuk input data predictive maintenence, sedangkan jika memilih preventive maintenence akan muncul kolompreventive maintenence
 
 Predictive
-- status operasional : Running/Off
+- Status operasional : Running/Off
 # jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi dan dapat langsung ke button submit
-- boiler capacity : 2,5T/2T/running all
-# jika memilih running all, checklist dari steam pressure sampai blowndown akan terinput untuk mesin 2,5T dan disebelahnya muncul input data dari steam preassure blowdown untuk input boiler dengan kapasitas 2T.
+- Boiler capacity : 2,5T/2T
 - Steam preassure (Mpa):
 - Flue gass temperature ('C):
 - Feed water temperature ('C):
 - Scale monitor temperature ('C):
 - Preassure gas :
 - Preassure header (Mpa):
-- Cleaning strainer : sudah/belum
 - Garam softener : cukup/kurang
 - Chemical boiler : cukup/kurang
 - Blowdown : sudah/belum
+- Cleaning strainer : sudah/belum
 - Berikan tombol submit dan clear form pada bawah checklist
 
 Preventive maintenence
-# list aktivitas terdiri dari 4 kolom input : maintener, aktivitas, deskripsi, input foto.
+# list aktivitas terdiri dari 4 kolom input : maintener, aktivitas, deskripsi, dokumentasi.
+- Maintener :
+- Aktivitas :
+- Deskripsi :
+- Dokumentasi :
+# input dokumentasi berupa pload file foto jpeg/png
 - Berikan tombol submit dan clear form pada bawah checklist

@@ -20,6 +20,7 @@
                 <th>Member</th>
                 <th>Catatan</th>
                 <th>Progres</th>
+                <th>Dokumentasi</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -37,6 +38,17 @@
                   </div>
                 </td>
                 <td>
+                  <% if (w.photo_url) { %>
+                    <% if (w.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                      <video src="<%= w.photo_url %>" style="max-height:50px;max-width:80px;" controls></video>
+                    <% } else { %>
+                      <a href="<%= w.photo_url %>" target="_blank"><img src="<%= w.photo_url %>" style="max-height:50px;max-width:80px;" class="rounded"></a>
+                    <% } %>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td>
                   <button class="btn btn-sm btn-outline-primary me-1 edit-warning"
                     data-id="<%= w.id %>"
                     data-date="<%= w.warning_date %>"
@@ -44,7 +56,8 @@
                     data-desc="<%= w.description %>"
                     data-notes="<%= w.repair_notes || '' %>"
                     data-percentage="<%= w.repair_percentage %>"
-                    data-memberids="<%= w.member_names || '' %>">
+                    data-memberids="<%= w.member_names || '' %>"
+                    data-photo="<%= w.photo_url || '' %>">
                     <i class="bi bi-pencil"></i>
                   </button>
                   <form method="POST" action="/awal/warnings/<%= w.id %>/delete" style="display:inline;" class="delete-btn-form">
@@ -54,7 +67,7 @@
               </tr>
               <% }); %>
               <% if (warnings.length === 0) { %>
-              <tr><td colspan="7" class="text-center text-muted">Belum ada data warning</td></tr>
+              <tr><td colspan="8" class="text-center text-muted">Belum ada data warning</td></tr>
               <% } %>
             </tbody>
           </table>
@@ -65,7 +78,7 @@
     <div class="modal fade" id="addWarningModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" action="/awal/warnings">
+          <form method="POST" action="/awal/warnings" enctype="multipart/form-data">
             <div class="modal-header">
               <h5 class="modal-title">Tambah Warning</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -112,6 +125,11 @@
                 <label class="form-label">Persentase Perbaikan (%)</label>
                 <input type="number" name="repair_percentage" class="form-control" min="0" max="100" value="0">
               </div>
+              <div class="mb-3">
+                <label class="form-label">Dokumentasi (Foto/Video)</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.mp4,.webm">
+                <div class="form-text">Format: JPG, JPEG, PNG, MP4, atau WebM. Maks 50MB.</div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -125,7 +143,7 @@
     <div class="modal fade" id="editWarningModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" id="editWarningForm">
+          <form method="POST" id="editWarningForm" enctype="multipart/form-data">
             <div class="modal-header">
               <h5 class="modal-title">Edit Warning</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -172,6 +190,16 @@
                 <label class="form-label">Persentase Perbaikan (%)</label>
                 <input type="number" name="repair_percentage" class="form-control" min="0" max="100" id="edit_warning_percentage">
               </div>
+              <div class="mb-3">
+                <label class="form-label">Dokumentasi Saat Ini</label>
+                <div id="edit_warning_photo_preview" class="mb-2"></div>
+                <input type="hidden" name="delete_photo" id="edit_warning_delete_photo" value="0">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Ganti Dokumentasi (Foto/Video)</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.mp4,.webm">
+                <div class="form-text">Format: JPG, JPEG, PNG, MP4, atau WebM. Maks 50MB.</div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -193,6 +221,19 @@ document.querySelectorAll('.edit-warning').forEach(function(btn) {
     document.getElementById('edit_warning_desc').value = this.dataset.desc;
     document.getElementById('edit_warning_notes').value = this.dataset.notes;
     document.getElementById('edit_warning_percentage').value = this.dataset.percentage;
+    document.getElementById('edit_warning_delete_photo').value = '0';
+
+    var photoUrl = this.dataset.photo;
+    var preview = document.getElementById('edit_warning_photo_preview');
+    if (photoUrl) {
+      if (photoUrl.match(/\.(mp4|webm|quicktime)$/i)) {
+        preview.innerHTML = '<div class="d-flex align-items-center gap-2"><video src="' + photoUrl + '" style="max-height:80px;max-width:120px;" controls></video><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById(\'edit_warning_photo_preview\').innerHTML=\'<span class=text-muted>\Tidak ada<\/span>\';document.getElementById(\'edit_warning_delete_photo\').value=\'1\';"><i class="bi bi-trash"></i> Hapus</button></div>';
+      } else {
+        preview.innerHTML = '<div class="d-flex align-items-center gap-2"><a href="' + photoUrl + '" target="_blank"><img src="' + photoUrl + '" style="max-height:80px;max-width:120px;" class="rounded"></a><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById(\'edit_warning_photo_preview\').innerHTML=\'<span class=text-muted>\Tidak ada<\/span>\';document.getElementById(\'edit_warning_delete_photo\').value=\'1\';"><i class="bi bi-trash"></i> Hapus</button></div>';
+      }
+    } else {
+      preview.innerHTML = '<span class="text-muted">Tidak ada dokumentasi</span>';
+    }
 
     document.querySelectorAll('#editWarningModal input[name="member_ids"]').forEach(function(cb) {
       cb.checked = false;

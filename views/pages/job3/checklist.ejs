@@ -12,13 +12,13 @@
           <div class="card-header"><h5>Input Checklist</h5></div>
           <div class="card-body">
             <form method="POST" action="/job3/checklist/<%= category %>" id="checklistForm">
-              <% if (category === 'pemakaian_air' || category === 'energi_listrik') { %>
+              <% if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') { %>
                 <div class="mb-3">
                   <label class="form-label">Pilih PIC</label>
                   <select name="machine_id" class="form-select" required>
                     <option value="">-- Pilih PIC --</option>
                     <% members.forEach(function(m) { %>
-                      <option value="<%= m.id %>"><%= m.name %></option>
+                      <option value="<%= m.id %>" <%= m.id === user.id ? 'selected' : '' %>><%= m.name %></option>
                     <% }); %>
                   </select>
                 </div>
@@ -51,7 +51,15 @@
                     <% if (t.parameter_type === 'date') { %>
                       <input type="date" name="values" class="form-control">
                     <% } else if (t.parameter_type === 'time') { %>
-                      <input type="time" name="values" class="form-control">
+                      <select name="values" class="form-select">
+                        <option value="">-- Pilih Jam --</option>
+                        <option value="00:00">00:00</option><option value="01:00">01:00</option><option value="02:00">02:00</option><option value="03:00">03:00</option>
+                        <option value="04:00">04:00</option><option value="05:00">05:00</option><option value="06:00">06:00</option><option value="07:00">07:00</option>
+                        <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option>
+                        <option value="12:00">12:00</option><option value="13:00">13:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option>
+                        <option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
+                        <option value="20:00">20:00</option><option value="21:00">21:00</option><option value="22:00">22:00</option><option value="23:00">23:00</option>
+                      </select>
                     <% } else if (t.parameter_type === 'number') { %>
                       <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
                     <% } else { %>
@@ -67,7 +75,15 @@
                     <% if (t.parameter_type === 'date') { %>
                       <input type="date" name="values" class="form-control">
                     <% } else if (t.parameter_type === 'time') { %>
-                      <input type="time" name="values" class="form-control">
+                      <select name="values" class="form-select">
+                        <option value="">-- Pilih Jam --</option>
+                        <option value="00:00">00:00</option><option value="01:00">01:00</option><option value="02:00">02:00</option><option value="03:00">03:00</option>
+                        <option value="04:00">04:00</option><option value="05:00">05:00</option><option value="06:00">06:00</option><option value="07:00">07:00</option>
+                        <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option>
+                        <option value="12:00">12:00</option><option value="13:00">13:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option>
+                        <option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
+                        <option value="20:00">20:00</option><option value="21:00">21:00</option><option value="22:00">22:00</option><option value="23:00">23:00</option>
+                      </select>
                     <% } else if (t.parameter_type === 'number') { %>
                       <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
                     <% } else { %>
@@ -128,7 +144,7 @@
                   <tr>
                     <th>Tanggal</th>
                     <th>Shift</th>
-                    <% if (category === 'pemakaian_air' || category === 'energi_listrik') { %>
+                    <% if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') { %>
                       <th>PIC</th>
                     <% } %>
                     <th>Oleh</th>
@@ -140,7 +156,7 @@
                   <tr>
                     <td><%= e.entry_date %></td>
                     <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
-                    <% if (category === 'pemakaian_air' || category === 'energi_listrik') { %>
+                    <% if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') { %>
                       <td><%= e.pic_name || '-' %></td>
                     <% } %>
                     <td><%= e.input_by_name %></td>
@@ -153,7 +169,7 @@
                   <% }); %>
                   <% if (entries.length === 0) { %>
                   <tr>
-                    <td colspan="<%= (category === 'pemakaian_air' || category === 'energi_listrik') ? 5 : 4 %>" class="text-center text-muted">Belum ada data</td>
+                    <td colspan="<%= (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') ? 5 : 4 %>" class="text-center text-muted">Belum ada data</td>
                   </tr>
                   <% } %>
                 </tbody>

@@ -1,6 +1,10 @@
 Checklist Kompressor
 
-- Pilih PIC : Memilih member
+buat checklist kompressor dengan dasar sebagai berikut
+# checklist kompressor pada halaman job 1 dan job 2 berisikan checklist yang sama
+
+
+- PIC : (otomatis input nama dari member)
 - Shift : 1/2/3
 - Jam monitoring :
 - Tanggal monitoring :
@@ -9,11 +13,9 @@ Checklist Kompressor
 
 
 Predictive Maintenence
-- status operasional : Running/Off
+- Status operasional : Running/Off
 # jika memilih Off, semua opsi checklist dibawahnya tidak perlu di isi dan dapat langsung ke button submit
-- Air Compressor : Air Compressor 01,Air Compressor 02,Air Compressor 03,Air Compressor 04.
-# Air compressor dapat dipilih 1 atau 2 dalam bentuk checklist
-# jika memilih lebih dari 1 air compressor checklist dari mode hingga drayer terdapat 2 kolom input sesuai dengan kompressor yang dipiih.
+- Air Compressor : Air Compressor 01/Air Compressor 02/Air Compressor 03/Air Compressor 04.
 - Mode : Load/Iddle/Standby
 - Running Hour :
 - System Pressure (bar):
@@ -22,8 +24,6 @@ Predictive Maintenence
 - Oil Temperature ('C):
 - Bunyi Abnormal : Ya/Tidak
 - Kebocoran Oli : Ya/Tidak
-- Alaram : Ya/Tidak
-# jika memilih tidak, terdapat input alaram dalam bentuk input text
 - Drayer
     * Status : On/Off
     * Humidity & Temperature : Red/Green

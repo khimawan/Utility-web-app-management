@@ -3,9 +3,12 @@
   <div class="page-content">
     <div class="page-header d-flex justify-content-between align-items-center">
       <h4><i class="bi bi-clipboard-check me-2"></i>List Pekerjaan</h4>
-      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWorkModal">
-        <i class="bi bi-plus-circle me-1"></i>Tambah Pekerjaan
-      </button>
+      <div class="d-flex gap-2">
+        <a href="/awal/utility-requests" class="btn btn-outline-primary btn-sm"><i class="bi bi-headset me-1"></i>Utility Requests</a>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWorkModal">
+          <i class="bi bi-plus-circle me-1"></i>Tambah Pekerjaan
+        </button>
+      </div>
     </div>
 
     <div class="card">
@@ -13,15 +16,16 @@
         <div class="table-responsive">
           <table class="table table-striped table-hover">
             <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Area</th>
-                <th>Deskripsi</th>
-                <th>Member</th>
-                <th>Catatan</th>
-                <th>Progres</th>
-                <th>Aksi</th>
-              </tr>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Area</th>
+                  <th>Deskripsi</th>
+                  <th>Member</th>
+                  <th>Catatan</th>
+                  <th>Progres</th>
+                  <th>Dokumentasi</th>
+                  <th>Aksi</th>
+                </tr>
             </thead>
             <tbody>
               <% works.forEach(function(w) { %>
@@ -37,6 +41,17 @@
                   </div>
                 </td>
                 <td>
+                  <% if (w.photo_url) { %>
+                    <% if (w.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                      <video src="<%= w.photo_url %>" style="max-height:50px;max-width:80px;" controls></video>
+                    <% } else { %>
+                      <a href="<%= w.photo_url %>" target="_blank"><img src="<%= w.photo_url %>" style="max-height:50px;max-width:80px;" class="rounded"></a>
+                    <% } %>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td>
                   <button class="btn btn-sm btn-outline-primary me-1 edit-work"
                     data-id="<%= w.id %>"
                     data-date="<%= w.work_date %>"
@@ -44,7 +59,8 @@
                     data-desc="<%= w.description %>"
                     data-notes="<%= w.repair_notes || '' %>"
                     data-percentage="<%= w.repair_percentage %>"
-                    data-memberids="<%= w.member_names || '' %>">
+                    data-memberids="<%= w.member_names || '' %>"
+                    data-photo="<%= w.photo_url || '' %>">
                     <i class="bi bi-pencil"></i>
                   </button>
                   <form method="POST" action="/awal/works/<%= w.id %>/delete" style="display:inline;" class="delete-btn-form">
@@ -54,7 +70,7 @@
               </tr>
               <% }); %>
               <% if (works.length === 0) { %>
-              <tr><td colspan="7" class="text-center text-muted">Belum ada data pekerjaan</td></tr>
+              <tr><td colspan="8" class="text-center text-muted">Belum ada data pekerjaan</td></tr>
               <% } %>
             </tbody>
           </table>
@@ -65,7 +81,7 @@
     <div class="modal fade" id="addWorkModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" action="/awal/works">
+          <form method="POST" action="/awal/works" enctype="multipart/form-data">
             <div class="modal-header">
               <h5 class="modal-title">Tambah Pekerjaan</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -104,6 +120,11 @@
                 <label class="form-label">Persentase Perbaikan (%)</label>
                 <input type="number" name="repair_percentage" class="form-control" min="0" max="100" value="0">
               </div>
+              <div class="mb-3">
+                <label class="form-label">Dokumentasi (Foto/Video)</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.mp4,.webm">
+                <div class="form-text">Format: JPG, JPEG, PNG, MP4, atau WebM. Maks 50MB.</div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -117,7 +138,7 @@
     <div class="modal fade" id="editWorkModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" id="editWorkForm">
+          <form method="POST" id="editWorkForm" enctype="multipart/form-data">
             <div class="modal-header">
               <h5 class="modal-title">Edit Pekerjaan</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -156,6 +177,16 @@
                 <label class="form-label">Persentase Perbaikan (%)</label>
                 <input type="number" name="repair_percentage" class="form-control" min="0" max="100" id="edit_work_percentage">
               </div>
+              <div class="mb-3">
+                <label class="form-label">Dokumentasi Saat Ini</label>
+                <div id="edit_work_photo_preview" class="mb-2"></div>
+                <input type="hidden" name="delete_photo" id="edit_work_delete_photo" value="0">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Ganti Dokumentasi (Foto/Video)</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.mp4,.webm">
+                <div class="form-text">Format: JPG, JPEG, PNG, MP4, atau WebM. Maks 50MB.</div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -177,6 +208,19 @@ document.querySelectorAll('.edit-work').forEach(function(btn) {
     document.getElementById('edit_work_desc').value = this.dataset.desc;
     document.getElementById('edit_work_notes').value = this.dataset.notes;
     document.getElementById('edit_work_percentage').value = this.dataset.percentage;
+    document.getElementById('edit_work_delete_photo').value = '0';
+
+    var photoUrl = this.dataset.photo;
+    var preview = document.getElementById('edit_work_photo_preview');
+    if (photoUrl) {
+      if (photoUrl.match(/\.(mp4|webm|quicktime)$/i)) {
+        preview.innerHTML = '<div class="d-flex align-items-center gap-2"><video src="' + photoUrl + '" style="max-height:80px;max-width:120px;" controls></video><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById(\'edit_work_photo_preview\').innerHTML=\'<span class=text-muted>\Tidak ada<\/span>\';document.getElementById(\'edit_work_delete_photo\').value=\'1\';"><i class="bi bi-trash"></i> Hapus</button></div>';
+      } else {
+        preview.innerHTML = '<div class="d-flex align-items-center gap-2"><a href="' + photoUrl + '" target="_blank"><img src="' + photoUrl + '" style="max-height:80px;max-width:120px;" class="rounded"></a><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById(\'edit_work_photo_preview\').innerHTML=\'<span class=text-muted>\Tidak ada<\/span>\';document.getElementById(\'edit_work_delete_photo\').value=\'1\';"><i class="bi bi-trash"></i> Hapus</button></div>';
+      }
+    } else {
+      preview.innerHTML = '<span class="text-muted">Tidak ada dokumentasi</span>';
+    }
 
     document.querySelectorAll('#editWorkModal input[name="member_ids"]').forEach(function(cb) {
       cb.checked = false;

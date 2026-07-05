@@ -25,6 +25,7 @@ async function getDb() {
     migrateChecklistBoiler();
     migrateChecklistN2();
     migrateChecklistKompressor();
+    migrateUtilityRequests();
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -405,6 +406,38 @@ function initSchema(db) {
     updated_at TEXT DEFAULT (datetime('now'))
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS utility_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    requester_name TEXT NOT NULL,
+    position TEXT NOT NULL,
+    whatsapp TEXT NOT NULL,
+    work_area TEXT NOT NULL,
+    building TEXT NOT NULL,
+    issue TEXT NOT NULL,
+    priority TEXT NOT NULL DEFAULT 'Medium',
+    photo_url TEXT,
+    status TEXT DEFAULT 'open',
+    repair_notes TEXT,
+    repair_percentage REAL DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS utility_request_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_id INTEGER REFERENCES utility_requests(id) ON DELETE CASCADE,
+    member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(request_id, member_id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS utility_landing_content (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content_key TEXT NOT NULL UNIQUE,
+    content_value TEXT,
+    content_image TEXT,
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
   // Seed data
   db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Administrator', 'adminaja', 'adminaja', 'admin', NULL)`);
   db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Member 01', 'member01', 'member01', 'member', 'operator_wtp')`);
@@ -542,6 +575,19 @@ function initSchema(db) {
 
   db.run(`INSERT INTO utility_profile (section, title, description, sort_order) VALUES ('team_profile', 'Profil Tim Utility', 'Tim utility bertanggung jawab untuk memastikan kelancaran operasional seluruh sistem pendukung di area produksi.', 1)`);
   db.run(`INSERT INTO utility_profile (section, title, description, sort_order) VALUES ('jobdesk', 'Jobdesk Utility', 'Tim utility terdiri dari 3 job utama: Operator WTP, Operator N2, dan Facility.', 2)`);
+
+  // Seed landing page content
+  const landingContent = [
+    ['welcome_title', 'Selamat Datang di Sistem Utility', null],
+    ['welcome_subtitle', 'Pengajuan Bantuan & Tracking Pekerjaan Utility', null],
+    ['welcome_description', 'Sistem ini memudahkan Anda untuk mengajukan bantuan terkait utility (air, listrik, gas, HVAC) dan memantau progress pengerjaannya secara realtime.', null],
+    ['welcome_image', null, '/uploads/photos/default-utility.jpg'],
+    ['btn_submit_text', 'Input Pengajuan', null],
+    ['btn_tracking_text', 'Tracking Pengajuan', null],
+  ];
+  landingContent.forEach(function(c) {
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`, c);
+  });
 }
 
 function migratePemakaianAir() {
@@ -862,6 +908,55 @@ function migrateChecklistKompressor() {
     saveDb();
   } catch (err) {
     console.error('Migration error:', err);
+  }
+}
+
+function migrateUtilityRequests() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS utility_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      requester_name TEXT NOT NULL,
+      position TEXT,
+      whatsapp TEXT,
+      work_area TEXT,
+      building TEXT,
+      issue TEXT,
+      priority TEXT DEFAULT 'Medium',
+      photo_url TEXT,
+      status TEXT DEFAULT 'open',
+      repair_notes TEXT DEFAULT '',
+      repair_percentage REAL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS utility_request_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      request_id INTEGER REFERENCES utility_requests(id) ON DELETE CASCADE,
+      member_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(request_id, member_id)
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS utility_landing_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content_key TEXT NOT NULL UNIQUE,
+      content_value TEXT,
+      content_image TEXT,
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`,
+      ['welcome_title', 'Selamat Datang di Sistem Utility', null]);
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`,
+      ['welcome_subtitle', 'Pengajuan Bantuan & Tracking Pekerjaan Utility', null]);
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`,
+      ['welcome_description', 'Sistem ini memudahkan Anda untuk mengajukan bantuan terkait utility (air, listrik, gas, HVAC) dan memantau progress pengerjaannya secara realtime.', null]);
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`,
+      ['welcome_image', null, '/uploads/photos/default-utility.jpg']);
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`,
+      ['btn_submit_text', 'Input Pengajuan', null]);
+    db.run(`INSERT OR IGNORE INTO utility_landing_content (content_key, content_value, content_image) VALUES (?, ?, ?)`,
+      ['btn_tracking_text', 'Tracking Pengajuan', null]);
+    saveDb();
+  } catch (err) {
+    console.error('Migration utility_requests error:', err);
   }
 }
 

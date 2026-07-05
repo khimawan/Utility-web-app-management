@@ -1,6 +1,8 @@
 Checklist n2 generator
 
-- Pilih pic : memilih member
+buat checklist n2 generator berdasarkan berikut ini
+
+- PIC : (otomatis input nama dari member)
 - Shift : 1/2/3
 - Jam monitoring :
 - Tanggal monitoring :

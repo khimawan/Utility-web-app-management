@@ -26,6 +26,27 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
+const warningStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '..', 'public', 'uploads', 'works'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'warning-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const uploadWarning = multer({
+  storage: warningStorage,
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|mp4|webm|quicktime/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) return cb(null, true);
+    cb(new Error('Hanya file JPG, JPEG, PNG, MP4, atau WebM yang diizinkan'));
+  },
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
+
 const job1Categories = ['kompressor01', 'kompressor02'];
 
 router.get('/', isAuthenticated, async (req, res) => {
@@ -371,7 +392,7 @@ router.get('/warning', isAuthenticated, async (req, res) => {
       LEFT JOIN users u ON wm.member_id = u.id
       WHERE w.machine_name IN ('wtp', 'boiler', 'kompressor01', 'kompressor02')
       GROUP BY w.id
-      ORDER BY w.warning_date DESC
+      ORDER BY CASE WHEN w.repair_percentage >= 100 THEN 1 ELSE 0 END, w.warning_date DESC
     `);
     const members = dbAll("SELECT * FROM users WHERE position = 'member' AND is_active = 1 ORDER BY name");
     res.render('pages/job1/warning', { warnings, members, machines });
@@ -381,13 +402,14 @@ router.get('/warning', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/warning', isAuthenticated, async (req, res) => {
+router.post('/warning', isAuthenticated, uploadWarning.single('photo'), async (req, res) => {
   try {
     const { warning_date, machine_name, description, repair_notes, repair_percentage, member_ids } = req.body;
+    const photo_url = req.file ? '/uploads/works/' + req.file.filename : null;
     const result = dbRun(
-      `INSERT INTO warnings (warning_date, machine_name, description, repair_notes, repair_percentage, input_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [warning_date, machine_name, description, repair_notes || '', repair_percentage || 0, req.session.user.id]
+      `INSERT INTO warnings (warning_date, machine_name, description, repair_notes, repair_percentage, photo_url, input_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [warning_date, machine_name, description, repair_notes || '', repair_percentage || 0, photo_url, req.session.user.id]
     );
     const warningId = result.lastID;
     const ids = Array.isArray(member_ids) ? member_ids : (member_ids ? [member_ids] : []);

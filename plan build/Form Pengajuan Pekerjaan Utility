@@ -1,15 +1,43 @@
 Form Pengajuan Pekerjaan Utility
 
+
+tambahkan sebuah halaman dengan ketentuan sebagai berikut
+Halaman Pengajuan Bantuan Utility
+- Halaman ditambahkan dengan akses semua orang
+- Halaman ini dapat diakses tanpa login terlebih dahulu
+- Halaman ini terdiri dari halaman awal, halaman input pengajuan dan halaman tracking pekerjaan
+- halaman awal berisikan kalimat selamat datang pada sistem utility, kemudian dibawahnya terdapat dua opsi untuk input pengajuan dan tracking pengajuan
+- seluruh data text ataupun gambar pada halaman awal dapat diubah olah admin
+
+Halaman Input Pengajuan
 - Nama Pemohon :
 - Jabatan :
 - No. Whatsapp yang dapat dihubungi :
 - Area Kerja :
-- Detail area kerja : GD1/GD2/GD3/GD4/GD5/GD6/GD7
+- Gedung area kerja : GD1/GD2/GD3/GD4/GD5/GD6/GD7
 - Issue :
 - Level priority : High/Medium/Low
 - Dokumentasi :
-# input dokumentasi berupa pload file foto jpeg/png
+# input dokumentasi berupa pload file foto jpeg/png atau file video
 - Berikan tombol submit dan clear form pada bawah checklist
 
 
-- link untuk trace pekerjaan
+Halaman Tracking Pekerjaan
+- halaman berisikan tabel pengajuan utility dengan update secara realtime
+- data tabel berisikan : Nama Pemohon, Jabatan, No. Whatsapp, Issue, Level priority, Area Kerja, Gedung area kerja, Dokumentasi, Status Pengajuan (Open/Closed/Diluar Scoope/on Hold), Progress (%), dan Catatan perbaikan.
+- tabel trace pekerjaan dapat diupdate oleh setiap member dan admin
+- member dan admin dapat menambahkan, menghapus, atau merubah data pada tabel
+- jika status pengajuan sudah closed, maka progress otomatis akan langsung terisi 100%
+- jika progress telah terisi 100%, maka ststus pengajuan akan berubah menjadi closed
+- tabel dibagi menjadi 4 bagian: Tabel Pengajuan Open, Tabel Pengajuan Closed, Tabel Pengajuan diluar Scoope, dan tabel pengajuan on Hold
+- klasifikasi input data ke tabel berdasarkan status pengajuan
+- setiap input pengajuan masuk akan diklasifikasikan sementara kedalam ststus open
+- Tabel Pengajuan Open berisikan input pengajuan dengan status open
+- Tabel Pengajuan Closed berisikan input pengajuan dengan status closed
+- Tabel Pengajuan diluar Scoope berisikan input pengajuan dengan status diluar scoope
+- Tabel Pengajuan on Hold berisikan input pengajuan dengan status on hold
+- setiap tabel diurutkan berdasarkan tanggal input, data teratas adalah data yang terakhir kali di upload
+- buat setiap tabel dalam halaman tracking pekerjaan juga muncul pada halaman list pekerjaan
+- khusus tabel yang muncul pada halaman list pekerjaan terdapat tambahan kolom Manpower yang dapat di isi oleh member dan admin
+- Manpower berisikan list member yang mengerjakan, dapat dipilih lebih dari 1
+- untuk setiap update pekerjaan maupun pengajuan yang masuk ke halaman list pekerjaan akan tersimpan dan dapat dilihat historinya pada halaman rangkuman kegiatan walaupun belum mencapai progress 100%

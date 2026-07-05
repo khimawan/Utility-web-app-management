@@ -13,14 +13,55 @@
     </div>
 
     <div class="row">
+      <div class="col-12 mb-4">
+        <div class="card border-success">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Import Data CSV</h5>
+          </div>
+          <div class="card-body">
+            <div class="row align-items-end g-3">
+              <div class="col-md-3">
+                <label class="form-label">Pilih Kategori</label>
+                <select id="importCategory" class="form-select">
+                  <% categories.forEach(function(cat) { %>
+                    <option value="<%= cat %>"><%= cat.replace(/_/g, ' ').toUpperCase() %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">File CSV</label>
+                <input type="file" id="importFile" class="form-control" accept=".csv">
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="downloadTemplate()">
+                  <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Template
+                </button>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-success w-100" onclick="importCSV()">
+                  <i class="bi bi-upload me-1"></i> Import
+                </button>
+              </div>
+              <div class="col-md-2">
+                <div id="importStatus" class="text-muted small"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <% categories.forEach(function(cat) { %>
       <div class="col-12 mb-4">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="text-capitalize"><%= cat.replace(/_/g, ' ') %></h5>
-            <button class="btn btn-sm btn-outline-primary" onclick="loadCategoryData('<%= cat %>')">
-              <i class="bi bi-arrow-clockwise"></i> Refresh
-            </button>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-success" onclick="downloadCSV('<%= cat %>')">
+                <i class="bi bi-download"></i> CSV
+              </button>
+              <button class="btn btn-sm btn-outline-primary" onclick="loadCategoryData('<%= cat %>')">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+              </button>
+            </div>
           </div>
           <div class="card-body">
             <div class="row">
@@ -60,6 +101,7 @@
 <script>
 const categories = <%- JSON.stringify(categories) %>;
 const templates = <%- JSON.stringify(templates) %>;
+const categoryData = {};
 
 categories.forEach(function(cat) {
   loadCategoryData(cat);
@@ -70,10 +112,41 @@ function loadCategoryData(category) {
   fetch('/awal/api/summary-data?category=' + category + '&period=' + period)
     .then(r => r.json())
     .then(data => {
+      categoryData[category] = data;
       updateChart(category, data);
       updateTable(category, data);
     })
     .catch(err => console.error(err));
+}
+
+function downloadCSV(category) {
+  const data = categoryData[category];
+  if (!data || data.length === 0) {
+    alert('Tidak ada data untuk di-download');
+    return;
+  }
+
+  const header = ['Tanggal', 'Shift', 'Parameter', 'Nilai', 'Satuan'];
+  const rows = data.map(function(row) {
+    return [
+      row.entry_date,
+      row.shift,
+      '"' + (row.parameter_name || '').replace(/"/g, '""') + '"',
+      '"' + (row.parameter_value || '').replace(/"/g, '""') + '"',
+      '"' + (row.unit || '').replace(/"/g, '""') + '"'
+    ].join(',');
+  });
+
+  const csv = '\uFEFF' + header.join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'checklist_' + category + '_' + new Date().toISOString().slice(0, 10) + '.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function updateChart(category, data) {
@@ -146,5 +219,57 @@ function updateTable(category, data) {
 document.getElementById('periodSelect').addEventListener('change', function() {
   categories.forEach(function(cat) { loadCategoryData(cat); });
 });
+
+function downloadTemplate() {
+  const category = document.getElementById('importCategory').value;
+  window.location.href = '/awal/api/template-csv/' + category;
+}
+
+function importCSV() {
+  const category = document.getElementById('importCategory').value;
+  const fileInput = document.getElementById('importFile');
+  const status = document.getElementById('importStatus');
+
+  if (!fileInput.files.length) {
+    alert('Pilih file CSV terlebih dahulu');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const csvData = e.target.result;
+    status.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengimport...';
+    status.className = 'text-primary small';
+
+    fetch('/awal/api/import-csv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: category, csv_data: csvData })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+      if (result.success) {
+        let msg = 'Berhasil import ' + result.imported + ' data';
+        if (result.errors.length > 0) {
+          msg += '\n\n' + result.errors.length + ' error:\n' + result.errors.slice(0, 5).join('\n');
+        }
+        status.innerHTML = '<i class="bi bi-check-circle text-success"></i> ' + result.imported + ' data berhasil diimport';
+        status.className = 'text-success small';
+        fileInput.value = '';
+        loadCategoryData(category);
+      } else {
+        status.innerHTML = '<i class="bi bi-exclamation-circle text-danger"></i> ' + result.error;
+        status.className = 'text-danger small';
+      }
+    })
+    .catch(function(err) {
+      status.innerHTML = '<i class="bi bi-exclamation-circle text-danger"></i> Gagal import';
+      status.className = 'text-danger small';
+      console.error(err);
+    });
+  };
+  reader.readAsText(file);
+}
 </script>
 <%- include('../../partials/footer') %>

@@ -11,7 +11,7 @@
         <div class="card">
           <div class="card-header"><h5>Form Warning</h5></div>
           <div class="card-body">
-            <form method="POST" action="/job1/warning">
+            <form method="POST" action="/job1/warning" enctype="multipart/form-data">
               <div class="mb-3">
                 <label class="form-label">Tanggal</label>
                 <input type="date" name="warning_date" class="form-control" required>
@@ -44,6 +44,11 @@
                 <label class="form-label">Persentase Perbaikan (%)</label>
                 <input type="number" name="repair_percentage" class="form-control" min="0" max="100" value="0">
               </div>
+              <div class="mb-3">
+                <label class="form-label">Dokumentasi (Foto/Video)</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.mp4,.webm">
+                <div class="form-text">Format: JPG, JPEG, PNG, MP4, atau WebM. Maks 50MB.</div>
+              </div>
               <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i>Simpan Warning</button>
             </form>
           </div>
@@ -57,7 +62,7 @@
             <div class="table-responsive">
               <table class="table table-sm table-striped">
                 <thead>
-                  <tr><th>Tanggal</th><th>Mesin</th><th>Deskripsi</th><th>Progres</th><th>Aksi</th></tr>
+                  <tr><th>Tanggal</th><th>Mesin</th><th>Deskripsi</th><th>Progres</th><th>Dokumentasi</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                   <% warnings.forEach(function(w) { %>
@@ -66,6 +71,17 @@
                     <td><span class="badge bg-warning text-dark"><%= w.machine_name %></span></td>
                     <td><%= w.description %></td>
                     <td><div class="progress" style="height:18px;width:80px;"><div class="progress-bar bg-success" style="width:<%= w.repair_percentage %>%"><%= w.repair_percentage %>%</div></div></td>
+                    <td>
+                      <% if (w.photo_url) { %>
+                        <% if (w.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                          <video src="<%= w.photo_url %>" style="max-height:50px;max-width:80px;" controls></video>
+                        <% } else { %>
+                          <a href="<%= w.photo_url %>" target="_blank"><img src="<%= w.photo_url %>" style="max-height:50px;max-width:80px;" class="rounded"></a>
+                        <% } %>
+                      <% } else { %>
+                        <span class="text-muted">-</span>
+                      <% } %>
+                    </td>
                     <td>
                       <form method="POST" action="/awal/warnings/<%= w.id %>/delete" style="display:inline;" class="delete-btn-form">
                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>

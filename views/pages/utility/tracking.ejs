@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking Pengajuan Bantuan Utility</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f0f2f5; }
+    .tracking-card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .status-open { border-left: 4px solid #0d6efd; }
+    .status-closed { border-left: 4px solid #198754; }
+    .status-oos { border-left: 4px solid #ffc107; }
+    .status-hold { border-left: 4px solid #6c757d; }
+    .table th { font-weight: 600; font-size: 13px; white-space: nowrap; }
+    .table td { font-size: 13px; vertical-align: middle; }
+    .badge-priority-High { background: #dc3545; }
+    .badge-priority-Medium { background: #ffc107; color: #000; }
+    .badge-priority-Low { background: #198754; }
+    .doc-thumb { max-height: 50px; max-width: 80px; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1e3c72, #2a5298);">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/utility"><i class="bi bi-lightning-charge me-2"></i>Utility Management</a>
+      <div class="d-flex gap-2">
+        <a href="/utility/submit" class="btn btn-outline-light btn-sm"><i class="bi bi-plus-circle me-1"></i>Input Pengajuan</a>
+        <a href="/utility" class="btn btn-outline-light btn-sm"><i class="bi bi-house me-1"></i>Beranda</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h3 class="fw-bold mb-4"><i class="bi bi-search me-2"></i>Tracking Pengajuan Bantuan Utility</h3>
+
+    <!-- Open -->
+    <div class="card tracking-card status-open mb-4">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Pengajuan Open (<%= open.length %>)</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Tanggal</th><th>Nama</th><th>Jabatan</th><th>WhatsApp</th>
+                <th>Issue</th><th>Priority</th><th>Area</th><th>Gedung</th>
+                <th>Dokumentasi</th><th>Status</th><th>Progress</th><th>Catatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% open.forEach(function(r) { %>
+              <tr>
+                <td><%= r.created_at ? r.created_at.slice(0,10) : '-' %></td>
+                <td><strong><%= r.requester_name %></strong></td>
+                <td><%= r.position %></td>
+                <td><%= r.whatsapp %></td>
+                <td style="max-width:200px;"><%= r.issue %></td>
+                <td><span class="badge badge-priority-<%= r.priority %>"><%= r.priority %></span></td>
+                <td><%= r.work_area %></td>
+                <td><span class="badge bg-secondary"><%= r.building %></span></td>
+                <td>
+                  <% if (r.photo_url) { %>
+                    <% if (r.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                      <video src="<%= r.photo_url %>" class="doc-thumb" controls></video>
+                    <% } else { %>
+                      <a href="<%= r.photo_url %>" target="_blank"><img src="<%= r.photo_url %>" class="doc-thumb"></a>
+                    <% } %>
+                  <% } else { %>-<% } %>
+                </td>
+                <td><span class="badge bg-primary">Open</span></td>
+                <td>
+                  <div class="progress" style="height:18px;width:80px;">
+                    <div class="progress-bar bg-success" style="width:<%= r.repair_percentage %>%"><%= r.repair_percentage %>%</div>
+                  </div>
+                </td>
+                <td style="max-width:150px;"><small><%= r.repair_notes || '-' %></small></td>
+              </tr>
+              <% }); %>
+              <% if (open.length === 0) { %>
+              <tr><td colspan="12" class="text-center text-muted py-3">Tidak ada pengajuan open</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closed -->
+    <div class="card tracking-card status-closed mb-4">
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Pengajuan Closed (<%= closed.length %>)</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Tanggal</th><th>Nama</th><th>Jabatan</th><th>WhatsApp</th>
+                <th>Issue</th><th>Priority</th><th>Area</th><th>Gedung</th>
+                <th>Dokumentasi</th><th>Status</th><th>Progress</th><th>Catatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% closed.forEach(function(r) { %>
+              <tr>
+                <td><%= r.created_at ? r.created_at.slice(0,10) : '-' %></td>
+                <td><strong><%= r.requester_name %></strong></td>
+                <td><%= r.position %></td>
+                <td><%= r.whatsapp %></td>
+                <td style="max-width:200px;"><%= r.issue %></td>
+                <td><span class="badge badge-priority-<%= r.priority %>"><%= r.priority %></span></td>
+                <td><%= r.work_area %></td>
+                <td><span class="badge bg-secondary"><%= r.building %></span></td>
+                <td>
+                  <% if (r.photo_url) { %>
+                    <% if (r.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                      <video src="<%= r.photo_url %>" class="doc-thumb" controls></video>
+                    <% } else { %>
+                      <a href="<%= r.photo_url %>" target="_blank"><img src="<%= r.photo_url %>" class="doc-thumb"></a>
+                    <% } %>
+                  <% } else { %>-<% } %>
+                </td>
+                <td><span class="badge bg-success">Closed</span></td>
+                <td>
+                  <div class="progress" style="height:18px;width:80px;">
+                    <div class="progress-bar bg-success" style="width:100%">100%</div>
+                  </div>
+                </td>
+                <td style="max-width:150px;"><small><%= r.repair_notes || '-' %></small></td>
+              </tr>
+              <% }); %>
+              <% if (closed.length === 0) { %>
+              <tr><td colspan="12" class="text-center text-muted py-3">Tidak ada pengajuan closed</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diluar Scoope -->
+    <div class="card tracking-card status-oos mb-4">
+      <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Pengajuan Diluar Scoope (<%= outOfScope.length %>)</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Tanggal</th><th>Nama</th><th>Jabatan</th><th>WhatsApp</th>
+                <th>Issue</th><th>Priority</th><th>Area</th><th>Gedung</th>
+                <th>Dokumentasi</th><th>Status</th><th>Progress</th><th>Catatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% outOfScope.forEach(function(r) { %>
+              <tr>
+                <td><%= r.created_at ? r.created_at.slice(0,10) : '-' %></td>
+                <td><strong><%= r.requester_name %></strong></td>
+                <td><%= r.position %></td>
+                <td><%= r.whatsapp %></td>
+                <td style="max-width:200px;"><%= r.issue %></td>
+                <td><span class="badge badge-priority-<%= r.priority %>"><%= r.priority %></span></td>
+                <td><%= r.work_area %></td>
+                <td><span class="badge bg-secondary"><%= r.building %></span></td>
+                <td>
+                  <% if (r.photo_url) { %>
+                    <% if (r.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                      <video src="<%= r.photo_url %>" class="doc-thumb" controls></video>
+                    <% } else { %>
+                      <a href="<%= r.photo_url %>" target="_blank"><img src="<%= r.photo_url %>" class="doc-thumb"></a>
+                    <% } %>
+                  <% } else { %>-<% } %>
+                </td>
+                <td><span class="badge bg-warning text-dark">Diluar Scoope</span></td>
+                <td>
+                  <div class="progress" style="height:18px;width:80px;">
+                    <div class="progress-bar bg-warning" style="width:<%= r.repair_percentage %>%"><%= r.repair_percentage %>%</div>
+                  </div>
+                </td>
+                <td style="max-width:150px;"><small><%= r.repair_notes || '-' %></small></td>
+              </tr>
+              <% }); %>
+              <% if (outOfScope.length === 0) { %>
+              <tr><td colspan="12" class="text-center text-muted py-3">Tidak ada pengajuan diluar scoope</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- On Hold -->
+    <div class="card tracking-card status-hold mb-4">
+      <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-pause-circle me-2"></i>Pengajuan On Hold (<%= onHold.length %>)</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Tanggal</th><th>Nama</th><th>Jabatan</th><th>WhatsApp</th>
+                <th>Issue</th><th>Priority</th><th>Area</th><th>Gedung</th>
+                <th>Dokumentasi</th><th>Status</th><th>Progress</th><th>Catatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% onHold.forEach(function(r) { %>
+              <tr>
+                <td><%= r.created_at ? r.created_at.slice(0,10) : '-' %></td>
+                <td><strong><%= r.requester_name %></strong></td>
+                <td><%= r.position %></td>
+                <td><%= r.whatsapp %></td>
+                <td style="max-width:200px;"><%= r.issue %></td>
+                <td><span class="badge badge-priority-<%= r.priority %>"><%= r.priority %></span></td>
+                <td><%= r.work_area %></td>
+                <td><span class="badge bg-secondary"><%= r.building %></span></td>
+                <td>
+                  <% if (r.photo_url) { %>
+                    <% if (r.photo_url.match(/\.(mp4|webm|quicktime)$/i)) { %>
+                      <video src="<%= r.photo_url %>" class="doc-thumb" controls></video>
+                    <% } else { %>
+                      <a href="<%= r.photo_url %>" target="_blank"><img src="<%= r.photo_url %>" class="doc-thumb"></a>
+                    <% } %>
+                  <% } else { %>-<% } %>
+                </td>
+                <td><span class="badge bg-secondary">On Hold</span></td>
+                <td>
+                  <div class="progress" style="height:18px;width:80px;">
+                    <div class="progress-bar bg-secondary" style="width:<%= r.repair_percentage %>%"><%= r.repair_percentage %>%</div>
+                  </div>
+                </td>
+                <td style="max-width:150px;"><small><%= r.repair_notes || '-' %></small></td>
+              </tr>
+              <% }); %>
+              <% if (onHold.length === 0) { %>
+              <tr><td colspan="12" class="text-center text-muted py-3">Tidak ada pengajuan on hold</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
