@@ -8,19 +8,43 @@ document.addEventListener('DOMContentLoaded', function() {
   backdrop.className = 'sidebar-backdrop';
   document.body.appendChild(backdrop);
 
+  let autoHideTimer;
+  const AUTO_HIDE_DELAY = 3000;
+
+  // ensure sidebar starts hidden on mobile
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('show');
+    document.body.classList.remove('sidebar-open');
+  }
+
   function isMobile() {
     return window.innerWidth <= 768;
   }
 
-  function toggleSidebar(show) {
-    if (show === undefined) {
-      sidebar.classList.toggle('show');
-    } else if (show) {
-      sidebar.classList.add('show');
+  function lockBodyScroll(lock) {
+    document.body.classList.toggle('sidebar-open', lock);
+  }
+
+  function showSidebar() {
+    sidebar.classList.add('show');
+    backdrop.classList.add('active');
+    lockBodyScroll(true);
+    scheduleAutoHide();
+  }
+
+  function hideSidebar() {
+    sidebar.classList.remove('show');
+    backdrop.classList.remove('active');
+    lockBodyScroll(false);
+    clearTimeout(autoHideTimer);
+  }
+
+  function toggleSidebar() {
+    if (sidebar.classList.contains('show')) {
+      hideSidebar();
     } else {
-      sidebar.classList.remove('show');
+      showSidebar();
     }
-    backdrop.classList.toggle('active', sidebar.classList.contains('show'));
   }
 
   function collapseSidebar() {
@@ -29,55 +53,67 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.has-sub').forEach(function(el) {
       el.classList.remove('open');
     });
-  }
-
-  let autoHideTimer;
-  const AUTO_HIDE_DELAY = 2000;
-
-  function cancelAutoHide() {
     clearTimeout(autoHideTimer);
   }
 
-  function resumeAutoHideTimer() {
-    cancelAutoHide();
+  function expandSidebar() {
+    sidebar.classList.remove('collapsed');
+    if (mainContent) mainContent.classList.remove('expanded');
+    scheduleAutoHide();
+  }
+
+  function scheduleAutoHide() {
+    clearTimeout(autoHideTimer);
     if (isMobile()) {
       if (sidebar.classList.contains('show')) {
-        autoHideTimer = setTimeout(function() {
-          toggleSidebar(false);
-        }, AUTO_HIDE_DELAY);
+        autoHideTimer = setTimeout(hideSidebar, AUTO_HIDE_DELAY);
       }
     } else {
       if (!sidebar.classList.contains('collapsed')) {
-        autoHideTimer = setTimeout(function() {
-          collapseSidebar();
-        }, AUTO_HIDE_DELAY);
+        autoHideTimer = setTimeout(collapseSidebar, AUTO_HIDE_DELAY);
       }
     }
   }
 
-  if (sidebar) {
-    sidebar.addEventListener('mouseenter', cancelAutoHide);
-    sidebar.addEventListener('mouseleave', resumeAutoHideTimer);
-    sidebar.addEventListener('touchstart', cancelAutoHide, { passive: true });
-    sidebar.addEventListener('touchend', resumeAutoHideTimer, { passive: true });
+  // close sidebar on background scroll (mobile)
+  if (mainContent) {
+    mainContent.addEventListener('touchmove', function() {
+      if (isMobile() && sidebar.classList.contains('show')) {
+        hideSidebar();
+      }
+    }, { passive: true });
+  }
 
-    backdrop.addEventListener('click', function() {
-      toggleSidebar(false);
+  // close sidebar on window scroll (mobile)
+  window.addEventListener('scroll', function() {
+    if (isMobile() && sidebar.classList.contains('show')) {
+      hideSidebar();
+    }
+  }, { passive: true });
+
+  if (sidebar) {
+    sidebar.addEventListener('mouseenter', function() {
+      clearTimeout(autoHideTimer);
     });
+    sidebar.addEventListener('mouseleave', scheduleAutoHide);
+    sidebar.addEventListener('touchstart', function() {
+      clearTimeout(autoHideTimer);
+    }, { passive: true });
+    sidebar.addEventListener('touchend', scheduleAutoHide, { passive: true });
+    sidebar.addEventListener('click', function() {
+      if (isMobile()) scheduleAutoHide();
+    });
+    backdrop.addEventListener('click', hideSidebar);
   }
 
   if (sidebarToggle) {
     sidebarToggle.addEventListener('click', function() {
-      const wasCollapsed = sidebar.classList.contains('collapsed');
-      sidebar.classList.toggle('collapsed');
-      if (mainContent) mainContent.classList.toggle('expanded');
-      if (sidebar.classList.contains('collapsed')) {
-        document.querySelectorAll('.has-sub').forEach(function(el) {
-          el.classList.remove('open');
-        });
-        cancelAutoHide();
-      } else if (wasCollapsed) {
-        resumeAutoHideTimer();
+      if (isMobile()) {
+        hideSidebar();
+      } else if (sidebar.classList.contains('collapsed')) {
+        expandSidebar();
+      } else {
+        collapseSidebar();
       }
     });
   }
@@ -86,11 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
     sidebarToggleMobile.addEventListener('click', function(e) {
       e.stopPropagation();
       toggleSidebar();
-      if (sidebar.classList.contains('show')) {
-        resumeAutoHideTimer();
-      } else {
-        cancelAutoHide();
-      }
     });
   }
 
@@ -100,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var parent = this.closest('.has-sub');
       if (parent) {
         parent.classList.toggle('open');
+        if (isMobile()) scheduleAutoHide();
       }
     });
   });

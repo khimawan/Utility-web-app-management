@@ -1,0 +1,7 @@
+tunnel: utility-management-app
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: utilitymanagementweb.orasaurus.my.id
+    service: http://app:3000
+  - service: http_status:404

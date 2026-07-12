@@ -4,3 +4,4 @@ public/uploads/
 *.db
 .env
 npm-debug.log
+cloudflared/credentials.json

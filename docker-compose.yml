@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -14,3 +12,22 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped
+    networks:
+      - app-network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-tunnel
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml
+      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+networks:
+  app-network:
+    driver: bridge
