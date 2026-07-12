@@ -4,21 +4,93 @@ document.addEventListener('DOMContentLoaded', function() {
   const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
   const mainContent = document.querySelector('.main-content');
 
+  const backdrop = document.createElement('div');
+  backdrop.className = 'sidebar-backdrop';
+  document.body.appendChild(backdrop);
+
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  function toggleSidebar(show) {
+    if (show === undefined) {
+      sidebar.classList.toggle('show');
+    } else if (show) {
+      sidebar.classList.add('show');
+    } else {
+      sidebar.classList.remove('show');
+    }
+    backdrop.classList.toggle('active', sidebar.classList.contains('show'));
+  }
+
+  function collapseSidebar() {
+    sidebar.classList.add('collapsed');
+    if (mainContent) mainContent.classList.add('expanded');
+    document.querySelectorAll('.has-sub').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+
+  let autoHideTimer;
+  const AUTO_HIDE_DELAY = 2000;
+
+  function cancelAutoHide() {
+    clearTimeout(autoHideTimer);
+  }
+
+  function resumeAutoHideTimer() {
+    cancelAutoHide();
+    if (isMobile()) {
+      if (sidebar.classList.contains('show')) {
+        autoHideTimer = setTimeout(function() {
+          toggleSidebar(false);
+        }, AUTO_HIDE_DELAY);
+      }
+    } else {
+      if (!sidebar.classList.contains('collapsed')) {
+        autoHideTimer = setTimeout(function() {
+          collapseSidebar();
+        }, AUTO_HIDE_DELAY);
+      }
+    }
+  }
+
+  if (sidebar) {
+    sidebar.addEventListener('mouseenter', cancelAutoHide);
+    sidebar.addEventListener('mouseleave', resumeAutoHideTimer);
+    sidebar.addEventListener('touchstart', cancelAutoHide, { passive: true });
+    sidebar.addEventListener('touchend', resumeAutoHideTimer, { passive: true });
+
+    backdrop.addEventListener('click', function() {
+      toggleSidebar(false);
+    });
+  }
+
   if (sidebarToggle) {
     sidebarToggle.addEventListener('click', function() {
+      const wasCollapsed = sidebar.classList.contains('collapsed');
       sidebar.classList.toggle('collapsed');
       if (mainContent) mainContent.classList.toggle('expanded');
       if (sidebar.classList.contains('collapsed')) {
         document.querySelectorAll('.has-sub').forEach(function(el) {
           el.classList.remove('open');
         });
+        cancelAutoHide();
+      } else if (wasCollapsed) {
+        resumeAutoHideTimer();
       }
     });
   }
 
   if (sidebarToggleMobile) {
-    sidebarToggleMobile.addEventListener('click', function() {
-      sidebar.classList.toggle('show');
+    sidebarToggleMobile.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleSidebar();
+      if (sidebar.classList.contains('show')) {
+        resumeAutoHideTimer();
+      } else {
+        cancelAutoHide();
+      }
     });
   }
 

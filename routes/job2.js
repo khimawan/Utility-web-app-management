@@ -96,7 +96,7 @@ router.post('/checklist/n2_generator', isAuthenticated, upload.single('foto_doku
       `INSERT INTO checklist_n2 (
         member_id, shift, jam_monitoring, tanggal_monitoring, jenis_kegiatan,
         status_operasional, pilih_mesin,
-        temperature_area, running_hour, pressure,
+        temperature_area, running_hour, pressure, temperature_mesin,
         freq_min, freq_max, power_min, power_max,
         drayer_temp_high, drayer_temp_low,
         purify_percent, purify_flow,
@@ -104,11 +104,11 @@ router.post('/checklist/n2_generator', isAuthenticated, upload.single('foto_doku
         change_air_filter_6, change_oil_filter_6, change_oil_water_sep_6,
         change_air_filter_t_12, change_air_filter_a_12, change_air_filter_x_12,
         check_electromagnetic, foto_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user.id, b.shift, b.jam_monitoring, b.tanggal_monitoring, b.jenis_kegiatan,
         b.status_operasional || null, b.pilih_mesin || null,
-        b.temperature_area || null, b.running_hour || null, b.pressure || null,
+        b.temperature_area || null, b.running_hour || null, b.pressure || null, b.temperature_mesin || null,
         b.freq_min || null, b.freq_max || null, b.power_min || null, b.power_max || null,
         b.drayer_temp_high || null, b.drayer_temp_low || null,
         b.purify_percent || null, b.purify_flow || null,
