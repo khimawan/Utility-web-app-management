@@ -19,6 +19,7 @@ async function getDb() {
     // Migration: update pemakaian_air templates to new air sumur format
     migratePemakaianAir();
     migratePemakaianGas();
+    migrateSuhuTrafo();
     migrateLvmdp();
     migrateEnergiListrik();
     migrateOvertimeTables();
@@ -554,12 +555,14 @@ function initSchema(db) {
     ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 5],
     ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 6],
     ['pemakaian_gas', 'Catatan', 'text', '', null, null, 7],
-    ['suhu_trafo', 'Suhu Trafo Fasa R', 'number', 'C', 0, 150, 1],
-    ['suhu_trafo', 'Suhu Trafo Fasa S', 'number', 'C', 0, 150, 2],
-    ['suhu_trafo', 'Suhu Trafo Fasa T', 'number', 'C', 0, 150, 3],
-    ['suhu_trafo', 'Suhu Oil', 'number', 'C', 0, 100, 4],
-    ['suhu_trafo', 'Kondisi Trafo', 'text', '', null, null, 5],
-    ['suhu_trafo', 'Catatan', 'text', '', null, null, 6],
+    ['suhu_trafo', 'Jam Monitoring', 'time', '', null, null, 1],
+    ['suhu_trafo', 'Tanggal Monitoring', 'date', '', null, null, 2],
+    ['suhu_trafo', 'Suhu Trafo Fasa R', 'number', 'C', 0, 150, 3],
+    ['suhu_trafo', 'Suhu Trafo Fasa S', 'number', 'C', 0, 150, 4],
+    ['suhu_trafo', 'Suhu Trafo Fasa T', 'number', 'C', 0, 150, 5],
+    ['suhu_trafo', 'Suhu Oil', 'number', 'C', 0, 100, 6],
+    ['suhu_trafo', 'Kondisi Trafo', 'text', '', null, null, 7],
+    ['suhu_trafo', 'Catatan', 'text', '', null, null, 8],
     ['listrik_trafo', 'Tegangan Primer', 'number', 'kV', 0, 30, 1],
     ['listrik_trafo', 'Tegangan Sekunder', 'number', 'V', 350, 450, 2],
     ['listrik_trafo', 'Arus Primer', 'number', 'A', 0, 1000, 3],
@@ -647,6 +650,35 @@ function migratePemakaianGas() {
     });
     saveDb();
     console.log('Migration: pemakaian_gas templates updated with Jam and Tanggal Monitoring');
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migrateSuhuTrafo() {
+  try {
+    const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'suhu_trafo'");
+    if (existing[0] && existing[0].cnt > 0) {
+      const hasJam = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'suhu_trafo' AND parameter_name = 'Jam Monitoring'");
+      if (hasJam[0] && hasJam[0].cnt > 0) return;
+      db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'suhu_trafo')");
+      db.run("DELETE FROM checklist_templates WHERE category = 'suhu_trafo'");
+    }
+    const newTemplates = [
+      ['suhu_trafo', 'Jam Monitoring', 'time', '', null, null, 1],
+      ['suhu_trafo', 'Tanggal Monitoring', 'date', '', null, null, 2],
+      ['suhu_trafo', 'Suhu Trafo Fasa R', 'number', 'C', 0, 150, 3],
+      ['suhu_trafo', 'Suhu Trafo Fasa S', 'number', 'C', 0, 150, 4],
+      ['suhu_trafo', 'Suhu Trafo Fasa T', 'number', 'C', 0, 150, 5],
+      ['suhu_trafo', 'Suhu Oil', 'number', 'C', 0, 100, 6],
+      ['suhu_trafo', 'Kondisi Trafo', 'text', '', null, null, 7],
+      ['suhu_trafo', 'Catatan', 'text', '', null, null, 8],
+    ];
+    newTemplates.forEach(t => {
+      db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+    });
+    saveDb();
+    console.log('Migration: suhu_trafo templates updated with Jam and Tanggal Monitoring');
   } catch (err) {
     console.error('Migration error:', err);
   }
