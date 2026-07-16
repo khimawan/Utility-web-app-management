@@ -865,6 +865,7 @@ function migrateChecklistN2() {
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     )`);
+    try { db.run("ALTER TABLE checklist_n2 ADD COLUMN temperature_mesin REAL"); } catch (e) {}
     saveDb();
   } catch (err) {
     console.error('Migration error:', err);
