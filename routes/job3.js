@@ -147,7 +147,7 @@ router.post('/checklist/:category', isAuthenticated, uploadChecklist.single('fot
     );
     res.redirect(`/job3/checklist/${category}`);
   } catch (err) {
-    console.error(err);
+    console.error('POST /job3/checklist/:category error:', err.message);
     res.status(500).send('Server Error');
   }
 });
