@@ -26,6 +26,7 @@ async function getDb() {
     migrateChecklistN2();
     migrateChecklistKompressor();
     migrateUtilityRequests();
+    migrateChecklistEntriesPhoto();
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -959,6 +960,15 @@ function migrateUtilityRequests() {
     saveDb();
   } catch (err) {
     console.error('Migration utility_requests error:', err);
+  }
+}
+
+function migrateChecklistEntriesPhoto() {
+  try {
+    db.run("ALTER TABLE checklist_entries ADD COLUMN photo_url TEXT");
+    saveDb();
+  } catch (e) {
+    // kolom sudah ada, skip
   }
 }
 

@@ -13,14 +13,19 @@ function getDateSubdir() {
     String(d.getDate()).padStart(2, '0');
 }
 
-function ensureChecklistDir(cb) {
-  const dir = path.join(__dirname, '..', 'public', 'uploads', 'checklist', getDateSubdir());
+function getChecklistDest(req) {
+  const cat = req.params.category || 'general';
+  return path.join(__dirname, '..', 'public', 'uploads', 'checklist', cat, getDateSubdir());
+}
+
+function ensureChecklistDir(req, cb) {
+  const dir = getChecklistDest(req);
   fs.mkdirSync(dir, { recursive: true });
   cb(null, dir);
 }
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) { ensureChecklistDir(cb); },
+  destination: function (req, file, cb) { ensureChecklistDir(req, cb); },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, 'checklist-' + uniqueSuffix + path.extname(file.originalname));
@@ -253,10 +258,11 @@ router.get('/checklist/:category', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/checklist/:category', isAuthenticated, async (req, res) => {
+router.post('/checklist/:category', isAuthenticated, upload.single('foto_dokumentasi'), async (req, res) => {
   try {
     const { category } = req.params;
     const { entry_date, shift, notes, templates, values, machine_id } = req.body;
+    const fotoUrl = req.file ? '/uploads/checklist/' + category + '/' + getDateSubdir() + '/' + req.file.filename : null;
     let finalEntryDate = entry_date;
     if (category === 'lvmdp' && !entry_date) {
       const tplIds = Array.isArray(templates) ? templates : (templates ? [templates] : []);
@@ -271,8 +277,8 @@ router.post('/checklist/:category', isAuthenticated, async (req, res) => {
     }
     if (!finalEntryDate) finalEntryDate = new Date().toISOString().slice(0, 10);
     const entry = dbRun(
-      `INSERT INTO checklist_entries (category, entry_date, shift, machine_id, input_by, notes) VALUES (?, ?, ?, ?, ?, ?)`,
-      [category, finalEntryDate, shift, machine_id || null, req.session.user.id, notes || '']
+      `INSERT INTO checklist_entries (category, entry_date, shift, machine_id, input_by, notes, photo_url) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [category, finalEntryDate, shift, machine_id || null, req.session.user.id, notes || '', fotoUrl]
     );
     const entryId = entry.lastID;
     const tplIds = Array.isArray(templates) ? templates : (templates ? [templates] : []);

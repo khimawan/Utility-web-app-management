@@ -13,7 +13,35 @@ function getDateSubdir() {
     String(d.getDate()).padStart(2, '0');
 }
 
-const storage = multer.diskStorage({
+function getChecklistDest(req) {
+  const cat = req.params.category || 'general';
+  return path.join(__dirname, '..', 'public', 'uploads', 'checklist', cat, getDateSubdir());
+}
+
+const checklistStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = getChecklistDest(req);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'checklist-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const uploadChecklist = multer({
+  storage: checklistStorage,
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) return cb(null, true);
+    cb(new Error('Hanya file JPG, JPEG, dan PNG yang diizinkan'));
+  },
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+const workStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = path.join(__dirname, '..', 'public', 'uploads', 'works', getDateSubdir());
     fs.mkdirSync(dir, { recursive: true });
@@ -24,8 +52,8 @@ const storage = multer.diskStorage({
     cb(null, 'work-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
-const upload = multer({
-  storage: storage,
+const uploadWork = multer({
+  storage: workStorage,
   fileFilter: function (req, file, cb) {
     const allowedTypes = /jpeg|jpg|png|mp4|webm|quicktime/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -83,10 +111,11 @@ router.get('/checklist/:category', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/checklist/:category', isAuthenticated, async (req, res) => {
+router.post('/checklist/:category', isAuthenticated, uploadChecklist.single('foto_dokumentasi'), async (req, res) => {
   try {
     const { category } = req.params;
     const { entry_date, shift, notes, templates, values, machine_id } = req.body;
+    const fotoUrl = req.file ? '/uploads/checklist/' + category + '/' + getDateSubdir() + '/' + req.file.filename : null;
     let finalEntryDate = entry_date;
     if ((category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') && !entry_date) {
       const tplIdsArr = Array.isArray(templates) ? templates : (templates ? [templates] : []);
@@ -101,8 +130,8 @@ router.post('/checklist/:category', isAuthenticated, async (req, res) => {
     }
     if (!finalEntryDate) finalEntryDate = new Date().toISOString().slice(0, 10);
     const entry = dbRun(
-      `INSERT INTO checklist_entries (category, entry_date, shift, machine_id, input_by, notes) VALUES (?, ?, ?, ?, ?, ?)`,
-      [category, finalEntryDate, shift, machine_id || null, req.session.user.id, notes || '']
+      `INSERT INTO checklist_entries (category, entry_date, shift, machine_id, input_by, notes, photo_url) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [category, finalEntryDate, shift, machine_id || null, req.session.user.id, notes || '', fotoUrl]
     );
     const entryId = entry.lastID;
     const tplIds = Array.isArray(templates) ? templates : (templates ? [templates] : []);
@@ -154,7 +183,7 @@ router.get('/works', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/works', isAuthenticated, upload.single('photo'), async (req, res) => {
+router.post('/works', isAuthenticated, uploadWork.single('photo'), async (req, res) => {
   try {
     const { work_date, area, description, repair_notes, repair_percentage, member_ids } = req.body;
     const photo_url = req.file ? '/uploads/works/' + getDateSubdir() + '/' + req.file.filename : null;
@@ -175,7 +204,7 @@ router.post('/works', isAuthenticated, upload.single('photo'), async (req, res) 
   }
 });
 
-router.post('/works/:id', isAuthenticated, upload.single('photo'), async (req, res) => {
+router.post('/works/:id', isAuthenticated, uploadWork.single('photo'), async (req, res) => {
   try {
     const { id } = req.params;
     const { work_date, area, description, repair_notes, repair_percentage, member_ids, delete_photo } = req.body;
