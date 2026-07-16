@@ -53,13 +53,81 @@ router.get('/', isAuthenticated, async (req, res) => {
       ORDER BY ur.created_at
     `, [date, date]);
 
+    const wtpPredictive = dbAll(`
+      SELECT cw.*, u.name as member_name
+      FROM checklist_wtp cw
+      LEFT JOIN users u ON cw.member_id = u.id
+      WHERE cw.tanggal_monitoring = ? AND cw.jenis_kegiatan = 'predictive'
+      ORDER BY cw.shift, cw.jam_monitoring
+    `, [date]);
+
+    const wtpPreventive = dbAll(`
+      SELECT cw.*, u.name as member_name
+      FROM checklist_wtp cw
+      LEFT JOIN users u ON cw.member_id = u.id
+      WHERE cw.tanggal_monitoring = ? AND cw.jenis_kegiatan = 'preventive'
+      ORDER BY cw.shift, cw.jam_monitoring
+    `, [date]);
+
+    const boilerPredictive = dbAll(`
+      SELECT cb.*, u.name as member_name
+      FROM checklist_boiler cb
+      LEFT JOIN users u ON cb.member_id = u.id
+      WHERE cb.tanggal_monitoring = ? AND cb.jenis_kegiatan = 'predictive'
+      ORDER BY cb.shift, cb.jam_monitoring
+    `, [date]);
+
+    const boilerPreventive = dbAll(`
+      SELECT cb.*, u.name as member_name
+      FROM checklist_boiler cb
+      LEFT JOIN users u ON cb.member_id = u.id
+      WHERE cb.tanggal_monitoring = ? AND cb.jenis_kegiatan = 'preventive'
+      ORDER BY cb.shift, cb.jam_monitoring
+    `, [date]);
+
+    const n2Predictive = dbAll(`
+      SELECT cn.*, u.name as member_name
+      FROM checklist_n2 cn
+      LEFT JOIN users u ON cn.member_id = u.id
+      WHERE cn.tanggal_monitoring = ? AND cn.jenis_kegiatan = 'predictive'
+      ORDER BY cn.shift, cn.jam_monitoring
+    `, [date]);
+
+    const n2Preventive = dbAll(`
+      SELECT cn.*, u.name as member_name
+      FROM checklist_n2 cn
+      LEFT JOIN users u ON cn.member_id = u.id
+      WHERE cn.tanggal_monitoring = ? AND cn.jenis_kegiatan = 'preventive'
+      ORDER BY cn.shift, cn.jam_monitoring
+    `, [date]);
+
+    const kompresorPredictive = dbAll(`
+      SELECT ck.*, u.name as member_name
+      FROM checklist_kompressor ck
+      LEFT JOIN users u ON ck.member_id = u.id
+      WHERE ck.tanggal_monitoring = ? AND ck.jenis_kegiatan = 'predictive'
+      ORDER BY ck.shift, ck.jam_monitoring
+    `, [date]);
+
+    const kompresorPreventive = dbAll(`
+      SELECT ck.*, u.name as member_name
+      FROM checklist_kompressor ck
+      LEFT JOIN users u ON ck.member_id = u.id
+      WHERE ck.tanggal_monitoring = ? AND ck.jenis_kegiatan = 'preventive'
+      ORDER BY ck.shift, ck.jam_monitoring
+    `, [date]);
+
     res.render('pages/rangkuman/index', {
       selectedDate: date,
       activities,
       warnings,
       works,
       checklists,
-      utilityRequests
+      utilityRequests,
+      wtpPredictive, wtpPreventive,
+      boilerPredictive, boilerPreventive,
+      n2Predictive, n2Preventive,
+      kompresorPredictive, kompresorPreventive
     });
   } catch (err) {
     console.error(err);
