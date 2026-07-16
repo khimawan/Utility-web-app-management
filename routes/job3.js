@@ -143,7 +143,7 @@ router.post('/checklist/:category', isAuthenticated, uploadChecklist.single('fot
     dbRun(
       `INSERT INTO activity_logs (activity_type, reference_id, reference_table, member_id, shift, job, description, activity_date)
        VALUES ('checklist_submit', ?, 'checklist_entries', ?, ?, ?, ?, ?)`,
-      [entryId, req.session.user.id, shift, req.session.user.job, `Checklist ${category} submitted`, entry_date]
+      [entryId, req.session.user.id, shift, req.session.user.job, `Checklist ${category} submitted`, finalEntryDate]
     );
     res.redirect(`/job3/checklist/${category}`);
   } catch (err) {

@@ -290,7 +290,7 @@ router.post('/checklist/:category', isAuthenticated, upload.single('foto_dokumen
     dbRun(
       `INSERT INTO activity_logs (activity_type, reference_id, reference_table, member_id, shift, job, description, activity_date)
        VALUES ('checklist_submit', ?, 'checklist_entries', ?, ?, ?, ?, ?)`,
-       [entryId, req.session.user.id, shift, req.session.user.job, `Checklist ${category} submitted`, entry_date]
+       [entryId, req.session.user.id, shift, req.session.user.job, `Checklist ${category} submitted`, finalEntryDate]
     );
     if (category === 'kompressor03' || category === 'kompressor04') {
       res.redirect('/job2/checklist/kompressor');
