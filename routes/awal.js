@@ -623,4 +623,81 @@ router.post('/admin/landing-content', isAuthenticated, uploadPhoto.single('conte
   }
 });
 
+router.get('/api/predictive-chart/:type', isAuthenticated, async (req, res) => {
+  try {
+    const { type } = req.params;
+    const period = req.query.period || 'week';
+    let dateFilter = "tm.tanggal_monitoring >= date('now', '-7 days')";
+    if (period === 'month') dateFilter = "tm.tanggal_monitoring >= date('now', '-1 month')";
+    if (period === 'year') dateFilter = "tm.tanggal_monitoring >= date('now', '-1 year')";
+
+    let table, params;
+    switch (type) {
+      case 'wtp':
+        table = 'checklist_wtp';
+        params = ['pompa_gd4_arus','pompa_gd4_temp','pompa_booster_arus','pompa_booster_temp','motor_hpp_arus','motor_hpp_temp','motor_gd7_arus','motor_gd7_temp','mmf_inlet_pressure','catridge_pressure','membran_pressure','nilai_tds','nilai_conductivity','level_tandon_ro1','level_tandon_ro2','premate_membran_ro','reject_membran_ro'];
+        break;
+      case 'boiler':
+        table = 'checklist_boiler';
+        params = ['steam_pressure','flue_gas_temp','feed_water_temp','scale_monitor_temp','pressure_gas','pressure_header'];
+        break;
+      case 'n2':
+        table = 'checklist_n2';
+        params = ['temperature_area','running_hour','pressure','temperature_mesin','freq_min','freq_max','power_min','power_max','drayer_temp_high','drayer_temp_low','purify_percent','purify_flow'];
+        break;
+      case 'kompressor':
+        table = 'checklist_kompressor';
+        params = ['running_hour','system_pressure','flow_rate','motor_temperature','oil_temperature'];
+        break;
+      default:
+        return res.status(404).json({ error: 'Type not found' });
+    }
+
+    const rows = dbAll(`
+      SELECT tm.tanggal_monitoring, tm.shift, tm.jam_monitoring, tm.jenis_kegiatan,
+             tm.member_id, u.name as member_name
+        ${params.map(p => `, tm.${p}`).join('')}
+      FROM ${table} tm
+      LEFT JOIN users u ON tm.member_id = u.id
+      WHERE tm.jenis_kegiatan = 'predictive' AND ${dateFilter}
+      ORDER BY tm.tanggal_monitoring, tm.jam_monitoring
+    `);
+
+    // Group by date, average values per date
+    const byDate = {};
+    rows.forEach(function(r) {
+      const d = r.tanggal_monitoring;
+      if (!byDate[d]) byDate[d] = { count: 0 };
+      byDate[d].count++;
+      params.forEach(function(p) {
+        const v = parseFloat(r[p]);
+        if (!isNaN(v)) {
+          if (!byDate[d][p]) byDate[d][p] = 0;
+          byDate[d][p] += v;
+        }
+      });
+    });
+
+    const dates = Object.keys(byDate).sort();
+    const datasets = params.map(function(p) {
+      return {
+        label: p.replace(/_/g, ' '),
+        data: dates.map(function(d) {
+          const avg = byDate[d][p] !== undefined ? (byDate[d][p] / byDate[d].count) : null;
+          return avg !== null ? Math.round(avg * 100) / 100 : null;
+        }),
+        borderColor: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'),
+        tension: 0.3,
+        fill: false,
+        spanGaps: false
+      };
+    });
+
+    res.json({ labels: dates, datasets: datasets });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
 module.exports = router;
