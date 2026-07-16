@@ -6,10 +6,17 @@ const fs = require('fs');
 const { getDb, dbAll, dbGet, dbRun } = require('../config/database');
 const { isAuthenticated } = require('../middleware/auth');
 
+function getDateSubdir() {
+  const d = new Date();
+  return d.getFullYear() + '/' +
+    String(d.getMonth() + 1).padStart(2, '0') + '/' +
+    String(d.getDate()).padStart(2, '0');
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const dir = path.join(__dirname, '..', 'public', 'uploads', 'works');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const dir = path.join(__dirname, '..', 'public', 'uploads', 'works', getDateSubdir());
+    fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: function (req, file, cb) {
@@ -150,7 +157,7 @@ router.get('/works', isAuthenticated, async (req, res) => {
 router.post('/works', isAuthenticated, upload.single('photo'), async (req, res) => {
   try {
     const { work_date, area, description, repair_notes, repair_percentage, member_ids } = req.body;
-    const photo_url = req.file ? '/uploads/works/' + req.file.filename : null;
+    const photo_url = req.file ? '/uploads/works/' + getDateSubdir() + '/' + req.file.filename : null;
     const result = dbRun(
       `INSERT INTO works (work_date, area, description, repair_notes, repair_percentage, photo_url, input_by)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -186,7 +193,7 @@ router.post('/works/:id', isAuthenticated, upload.single('photo'), async (req, r
         const oldPath = path.join(__dirname, '..', 'public', photo_url);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
-      photo_url = '/uploads/works/' + req.file.filename;
+      photo_url = '/uploads/works/' + getDateSubdir() + '/' + req.file.filename;
     }
 
     dbRun(

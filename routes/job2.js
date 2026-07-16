@@ -2,16 +2,28 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { getDb, dbAll, dbGet, dbRun } = require('../config/database');
 const { isAuthenticated } = require('../middleware/auth');
 
+function getDateSubdir() {
+  const d = new Date();
+  return d.getFullYear() + '/' +
+    String(d.getMonth() + 1).padStart(2, '0') + '/' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function ensureChecklistDir(cb) {
+  const dir = path.join(__dirname, '..', 'public', 'uploads', 'checklist', getDateSubdir());
+  fs.mkdirSync(dir, { recursive: true });
+  cb(null, dir);
+}
+
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '..', 'public', 'uploads', 'checklist'));
-  },
+  destination: function (req, file, cb) { ensureChecklistDir(cb); },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'kompressor-' + uniqueSuffix + path.extname(file.originalname));
+    cb(null, 'checklist-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 const upload = multer({
@@ -26,10 +38,14 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
+function ensureWorksDir(cb) {
+  const dir = path.join(__dirname, '..', 'public', 'uploads', 'works', getDateSubdir());
+  fs.mkdirSync(dir, { recursive: true });
+  cb(null, dir);
+}
+
 const warningStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '..', 'public', 'uploads', 'works'));
-  },
+  destination: function (req, file, cb) { ensureWorksDir(cb); },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, 'warning-' + uniqueSuffix + path.extname(file.originalname));
@@ -91,7 +107,7 @@ router.post('/checklist/n2_generator', isAuthenticated, upload.single('foto_doku
   try {
     const user = req.session.user;
     const b = req.body;
-    const fotoUrl = req.file ? '/uploads/checklist/' + req.file.filename : null;
+    const fotoUrl = req.file ? '/uploads/checklist/' + getDateSubdir() + '/' + req.file.filename : null;
     dbRun(
       `INSERT INTO checklist_n2 (
         member_id, shift, jam_monitoring, tanggal_monitoring, jenis_kegiatan,
@@ -162,7 +178,7 @@ router.post('/checklist/kompressor', isAuthenticated, upload.single('foto_dokume
   try {
     const user = req.session.user;
     const b = req.body;
-    const fotoUrl = req.file ? '/uploads/checklist/' + req.file.filename : null;
+    const fotoUrl = req.file ? '/uploads/checklist/' + getDateSubdir() + '/' + req.file.filename : null;
     dbRun(
       `INSERT INTO checklist_kompressor (
         member_id, shift, jam_monitoring, tanggal_monitoring, jenis_kegiatan,
@@ -321,7 +337,7 @@ router.get('/warning', isAuthenticated, async (req, res) => {
 router.post('/warning', isAuthenticated, uploadWarning.single('photo'), async (req, res) => {
   try {
     const { warning_date, machine_name, description, repair_notes, repair_percentage, member_ids } = req.body;
-    const photo_url = req.file ? '/uploads/works/' + req.file.filename : null;
+    const photo_url = req.file ? '/uploads/works/' + getDateSubdir() + '/' + req.file.filename : null;
     const result = dbRun(
       `INSERT INTO warnings (warning_date, machine_name, description, repair_notes, repair_percentage, photo_url, input_by)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,

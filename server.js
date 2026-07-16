@@ -63,12 +63,11 @@ process.on('SIGTERM', () => { saveDb(); process.exit(0); });
 async function start() {
   await getDb();
   console.log('Database initialized');
-  const uploadsDir = path.join(__dirname, 'public', 'uploads', 'works');
-  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-  const utilityDir = path.join(__dirname, 'public', 'uploads', 'utility_requests');
-  if (!fs.existsSync(utilityDir)) fs.mkdirSync(utilityDir, { recursive: true });
-  const photosDir = path.join(__dirname, 'public', 'uploads', 'photos');
-  if (!fs.existsSync(photosDir)) fs.mkdirSync(photosDir, { recursive: true });
+  const uploadDirs = ['works', 'utility_requests', 'photos', 'checklist'];
+  uploadDirs.forEach(dir => {
+    const p = path.join(__dirname, 'public', 'uploads', dir);
+    if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+  });
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
   });
