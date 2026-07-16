@@ -18,6 +18,7 @@ async function getDb() {
     db = new SQL.Database(buf);
     // Migration: update pemakaian_air templates to new air sumur format
     migratePemakaianAir();
+    migratePemakaianGas();
     migrateLvmdp();
     migrateEnergiListrik();
     migrateOvertimeTables();
@@ -546,11 +547,13 @@ function initSchema(db) {
     ['pemakaian_air', 'Meretan Sibel 04', 'number', 'M³', 0, 999999, 6],
     ['pemakaian_air', 'Meretan Sibel 05', 'number', 'M³', 0, 999999, 7],
     ['pemakaian_air', 'Meretan Sibel 06', 'number', 'M³', 0, 999999, 8],
-    ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 1],
-    ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 2],
-    ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 3],
-    ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 4],
-    ['pemakaian_gas', 'Catatan', 'text', '', null, null, 5],
+    ['pemakaian_gas', 'Jam Monitoring', 'time', '', null, null, 1],
+    ['pemakaian_gas', 'Tanggal Monitoring', 'date', '', null, null, 2],
+    ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 3],
+    ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 4],
+    ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 5],
+    ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 6],
+    ['pemakaian_gas', 'Catatan', 'text', '', null, null, 7],
     ['suhu_trafo', 'Suhu Trafo Fasa R', 'number', 'C', 0, 150, 1],
     ['suhu_trafo', 'Suhu Trafo Fasa S', 'number', 'C', 0, 150, 2],
     ['suhu_trafo', 'Suhu Trafo Fasa T', 'number', 'C', 0, 150, 3],
@@ -616,6 +619,34 @@ function migratePemakaianAir() {
     });
     saveDb();
     console.log('Migration: pemakaian_air templates updated to air sumur format');
+  } catch (err) {
+    console.error('Migration error:', err);
+  }
+}
+
+function migratePemakaianGas() {
+  try {
+    const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_gas'");
+    if (existing[0] && existing[0].cnt > 0) {
+      const hasJam = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_gas' AND parameter_name = 'Jam Monitoring'");
+      if (hasJam[0] && hasJam[0].cnt > 0) return;
+      db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'pemakaian_gas')");
+      db.run("DELETE FROM checklist_templates WHERE category = 'pemakaian_gas'");
+    }
+    const newTemplates = [
+      ['pemakaian_gas', 'Jam Monitoring', 'time', '', null, null, 1],
+      ['pemakaian_gas', 'Tanggal Monitoring', 'date', '', null, null, 2],
+      ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 3],
+      ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 4],
+      ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 5],
+      ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 6],
+      ['pemakaian_gas', 'Catatan', 'text', '', null, null, 7],
+    ];
+    newTemplates.forEach(t => {
+      db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+    });
+    saveDb();
+    console.log('Migration: pemakaian_gas templates updated with Jam and Tanggal Monitoring');
   } catch (err) {
     console.error('Migration error:', err);
   }
