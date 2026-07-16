@@ -43,12 +43,23 @@ router.get('/', isAuthenticated, async (req, res) => {
       ORDER BY ce.shift, ce.category
     `, [date]);
 
+    const utilityRequests = dbAll(`
+      SELECT ur.*, GROUP_CONCAT(u.name, ', ') as member_names
+      FROM utility_requests ur
+      LEFT JOIN utility_request_members urm ON ur.id = urm.request_id
+      LEFT JOIN users u ON urm.member_id = u.id
+      WHERE date(ur.created_at) = ? OR date(ur.updated_at) = ?
+      GROUP BY ur.id
+      ORDER BY ur.created_at
+    `, [date, date]);
+
     res.render('pages/rangkuman/index', {
       selectedDate: date,
       activities,
       warnings,
       works,
-      checklists
+      checklists,
+      utilityRequests
     });
   } catch (err) {
     console.error(err);
