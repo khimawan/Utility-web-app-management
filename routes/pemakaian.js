@@ -29,15 +29,6 @@ router.get('/', isAuthenticated, async (req, res) => {
   }
 });
 
-router.get('/download-template', isAuthenticated, async (req, res) => {
-  const header = 'project_name,member_names,item_name,quantity\n';
-  const example = 'Proyek A,John Doe;Jane Doe,Kabel NYA 2.5mm,10\n';
-  const csv = header + example;
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', 'attachment; filename=template_pemakaian.csv');
-  res.send(csv);
-});
-
 router.post('/', isAuthenticated, async (req, res) => {
   try {
     const { project_name, member_ids, items } = req.body;
