@@ -10,10 +10,14 @@
 
     <div class="card">
       <div class="card-body">
-        <div class="table-responsive">
+            <div class="delete-selected-bar">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected('/awal/warnings/delete-multiple')"><i class="bi bi-trash me-1"></i>Hapus Terpilih</button>
+            </div>
+        <div class="table-responsive scrollable-table">
           <table class="table table-striped table-hover">
             <thead>
               <tr>
+                <th><input type="checkbox" class="select-all-checkbox"></th>
                 <th>Tanggal</th>
                 <th>Mesin</th>
                 <th>Deskripsi</th>
@@ -27,6 +31,7 @@
             <tbody>
               <% warnings.forEach(function(w) { %>
               <tr>
+                <td><input type="checkbox" class="row-checkbox" value="<%= w.id %>"></td>
                 <td><%= w.warning_date %></td>
                 <td><span class="badge bg-warning text-dark"><%= w.machine_name %></span></td>
                 <td><%= w.description %></td>
@@ -67,7 +72,7 @@
               </tr>
               <% }); %>
               <% if (warnings.length === 0) { %>
-              <tr><td colspan="8" class="text-center text-muted">Belum ada data warning</td></tr>
+              <tr><td colspan="9" class="text-center text-muted">Belum ada data warning</td></tr>
               <% } %>
             </tbody>
           </table>

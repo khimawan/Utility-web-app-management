@@ -59,14 +59,18 @@
         <div class="card">
           <div class="card-header"><h5>Riwayat Warning</h5></div>
           <div class="card-body">
-            <div class="table-responsive">
+            <div class="delete-selected-bar">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected('/awal/warnings/delete-multiple')"><i class="bi bi-trash me-1"></i>Hapus Terpilih</button>
+            </div>
+            <div class="table-responsive scrollable-table">
               <table class="table table-sm table-striped">
                 <thead>
-                  <tr><th>Tanggal</th><th>Mesin</th><th>Deskripsi</th><th>Progres</th><th>Dokumentasi</th></tr>
+                  <tr><th><input type="checkbox" class="select-all-checkbox"></th><th>Tanggal</th><th>Mesin</th><th>Deskripsi</th><th>Progres</th><th>Dokumentasi</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                   <% warnings.forEach(function(w) { %>
                   <tr>
+                    <td><input type="checkbox" class="row-checkbox" value="<%= w.id %>"></td>
                     <td><%= w.warning_date %></td>
                     <td><span class="badge bg-warning text-dark"><%= w.machine_name %></span></td>
                     <td><%= w.description %></td>
@@ -82,8 +86,14 @@
                         <span class="text-muted">-</span>
                       <% } %>
                     </td>
+                    <td>
+                      <form method="POST" action="/awal/warnings/<%= w.id %>/delete" style="display:inline;" class="delete-btn-form">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </td>
                   </tr>
                   <% }); %>
+              <% if (warnings.length === 0) { %><tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr><% } %>
                 </tbody>
               </table>
             </div>

@@ -391,6 +391,25 @@ router.post('/warnings/:id', isAuthenticated, upload.single('photo'), async (req
   }
 });
 
+router.post('/warnings/delete-multiple', isAuthenticated, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    const idList = Array.isArray(ids) ? ids.map(Number).filter(Boolean) : [];
+    idList.forEach(function(id) {
+      const existing = dbGet('SELECT photo_url FROM warnings WHERE id = ?', [id]);
+      if (existing && existing.photo_url) {
+        const filePath = path.join(__dirname, '..', 'public', existing.photo_url);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }
+      dbRun('DELETE FROM warnings WHERE id = ?', [id]);
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
 router.post('/warnings/:id/delete', isAuthenticated, async (req, res) => {
   try {
     const existing = dbGet('SELECT photo_url FROM warnings WHERE id = ?', [parseInt(req.params.id)]);
