@@ -69,7 +69,8 @@
                     data-days="<%= r.duration_days %>"
                     data-hours="<%= r.duration_hours %>"
                     data-minutes="<%= r.duration_minutes %>"
-                    data-photo="<%= r.photo_url || '' %>"><i class="bi bi-pencil"></i></button>
+                    data-photo="<%= r.photo_url || '' %>"
+                    data-status="<%= r.status %>"><i class="bi bi-pencil"></i></button>
                   <form method="POST" action="/peminjaman/<%= r.id %>/delete" style="display:inline;" class="delete-btn-form">
                     <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                   </form>
@@ -227,7 +228,13 @@
                   </div>
                 </div>
               </div>
-              <input type="hidden" name="status" value="dipinjam">
+              <div class="mb-3">
+                <label class="form-label">Status Peminjaman</label>
+                <select name="status" id="edit_status" class="form-select">
+                  <option value="dipinjam">Dipinjam</option>
+                  <option value="sudah_kembali">Sudah Kembali</option>
+                </select>
+              </div>
               <div class="mb-3">
                 <label class="form-label">Ganti Foto</label>
                 <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png">
@@ -286,6 +293,7 @@ document.querySelectorAll('.edit-peminjaman').forEach(function(btn) {
     document.getElementById('edit_days').value = this.dataset.days;
     document.getElementById('edit_hours').value = this.dataset.hours;
     document.getElementById('edit_minutes').value = this.dataset.minutes;
+    document.getElementById('edit_status').value = this.dataset.status;
 
     var itemsData = JSON.parse(this.dataset.items || '[]');
     var editCheckboxes = document.querySelectorAll('#editPeminjamanModal .alat-checkbox');
