@@ -27,8 +27,15 @@
                   </select>
                 </div>
                 <% templates.forEach(function(t) { %>
+                  <% if (t.parameter_name.indexOf('Trafo 630KVA') >= 0 && t.sort_order === 3) { %>
+                    <hr class="my-3">
+                    <h6 class="text-primary fw-bold">Trafo 630KVA</h6>
+                  <% } else if (t.parameter_name.indexOf('Trafo 2000KVA') >= 0 && t.sort_order === 7) { %>
+                    <hr class="my-3">
+                    <h6 class="text-primary fw-bold">Trafo 2000KVA</h6>
+                  <% } %>
                 <div class="mb-3">
-                  <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                  <label class="form-label"><%= t.parameter_name.replace('Trafo 630KVA - ', '').replace('Trafo 2000KVA - ', '') %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
                   <% if (t.parameter_type === 'date') { %>
                     <input type="date" name="values" class="form-control">
                   <% } else if (t.parameter_type === 'time') { %>

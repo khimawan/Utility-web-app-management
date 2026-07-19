@@ -554,10 +554,14 @@ function initSchema(db) {
     ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 4],
     ['suhu_trafo', 'Jam Monitoring', 'time', '', null, null, 1],
     ['suhu_trafo', 'Tanggal Monitoring', 'date', '', null, null, 2],
-    ['suhu_trafo', 'Suhu Trafo', 'number', 'C', 0, 150, 3],
-    ['suhu_trafo', 'Suhu Oil', 'number', 'C', 0, 100, 4],
-    ['suhu_trafo', 'Oil Level', 'select_oli', '', null, null, 5],
-    ['suhu_trafo', 'Kebocoran Gasket/Seal busbar', 'select_bocor', '', null, null, 6],
+    ['suhu_trafo', 'Trafo 630KVA - Suhu Trafo', 'number', 'C', 0, 150, 3],
+    ['suhu_trafo', 'Trafo 630KVA - Suhu Oil', 'number', 'C', 0, 100, 4],
+    ['suhu_trafo', 'Trafo 630KVA - Oil Level', 'select_oli', '', null, null, 5],
+    ['suhu_trafo', 'Trafo 630KVA - Kebocoran Gasket/Seal busbar', 'select_bocor', '', null, null, 6],
+    ['suhu_trafo', 'Trafo 2000KVA - Suhu Trafo', 'number', 'C', 0, 150, 7],
+    ['suhu_trafo', 'Trafo 2000KVA - Suhu Oil', 'number', 'C', 0, 100, 8],
+    ['suhu_trafo', 'Trafo 2000KVA - Oil Level', 'select_oli', '', null, null, 9],
+    ['suhu_trafo', 'Trafo 2000KVA - Kebocoran Gasket/Seal busbar', 'select_bocor', '', null, null, 10],
     ['listrik_trafo', 'Tegangan Primer', 'number', 'kV', 0, 30, 1],
     ['listrik_trafo', 'Tegangan Sekunder', 'number', 'V', 350, 450, 2],
     ['listrik_trafo', 'Arus Primer', 'number', 'A', 0, 1000, 3],
@@ -656,23 +660,25 @@ function migrateSuhuTrafo() {
   try {
     const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'suhu_trafo'");
     if (existing[0] && existing[0].cnt > 0) {
-      const hasOld = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'suhu_trafo' AND parameter_name = 'Suhu Trafo Fasa R'");
+      const hasOld = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'suhu_trafo' AND parameter_name = 'Suhu Trafo'");
       if (hasOld[0] && hasOld[0].cnt > 0) {
         db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'suhu_trafo')");
         db.run("DELETE FROM checklist_templates WHERE category = 'suhu_trafo'");
       } else {
         return;
       }
-      db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'suhu_trafo')");
-      db.run("DELETE FROM checklist_templates WHERE category = 'suhu_trafo'");
     }
     const newTemplates = [
       ['suhu_trafo', 'Jam Monitoring', 'time', '', null, null, 1],
       ['suhu_trafo', 'Tanggal Monitoring', 'date', '', null, null, 2],
-      ['suhu_trafo', 'Suhu Trafo', 'number', 'C', 0, 150, 3],
-      ['suhu_trafo', 'Suhu Oil', 'number', 'C', 0, 100, 4],
-      ['suhu_trafo', 'Oil Level', 'select_oli', '', null, null, 5],
-      ['suhu_trafo', 'Kebocoran Gasket/Seal busbar', 'select_bocor', '', null, null, 6],
+      ['suhu_trafo', 'Trafo 630KVA - Suhu Trafo', 'number', 'C', 0, 150, 3],
+      ['suhu_trafo', 'Trafo 630KVA - Suhu Oil', 'number', 'C', 0, 100, 4],
+      ['suhu_trafo', 'Trafo 630KVA - Oil Level', 'select_oli', '', null, null, 5],
+      ['suhu_trafo', 'Trafo 630KVA - Kebocoran Gasket/Seal busbar', 'select_bocor', '', null, null, 6],
+      ['suhu_trafo', 'Trafo 2000KVA - Suhu Trafo', 'number', 'C', 0, 150, 7],
+      ['suhu_trafo', 'Trafo 2000KVA - Suhu Oil', 'number', 'C', 0, 100, 8],
+      ['suhu_trafo', 'Trafo 2000KVA - Oil Level', 'select_oli', '', null, null, 9],
+      ['suhu_trafo', 'Trafo 2000KVA - Kebocoran Gasket/Seal busbar', 'select_bocor', '', null, null, 10],
     ];
     newTemplates.forEach(t => {
       db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
