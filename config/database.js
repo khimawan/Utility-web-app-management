@@ -23,6 +23,7 @@ async function getDb() {
     migrateLvmdp();
     migrateEnergiListrik();
     migrateOvertimeTables();
+    migrateAirTandon();
     migrateChecklistWtp();
     migrateChecklistBoiler();
     migrateChecklistN2();
@@ -536,10 +537,6 @@ function initSchema(db) {
     ['lvmdp', 'Catatan', 'text', '', null, null, 11],
     ['air_tandon', 'Level Air Tandon', 'number', '%', 0, 100, 1],
     ['air_tandon', 'Tekanan Pompa', 'number', 'bar', 0, 10, 2],
-    ['air_tandon', 'Kondisi Pompa', 'text', '', null, null, 3],
-    ['air_tandon', 'Kondisi Pipa', 'text', '', null, null, 4],
-    ['air_tandon', 'Kualitas Air', 'text', '', null, null, 5],
-    ['air_tandon', 'Catatan', 'text', '', null, null, 6],
     ['pemakaian_air', 'Jam Monitoring', 'time', '', null, null, 1],
     ['pemakaian_air', 'Tanggal Monitoring', 'date', '', null, null, 2],
     ['pemakaian_air', 'Meretan Sibel 01', 'number', 'M³', 0, 999999, 3],
@@ -1030,6 +1027,32 @@ function migrateUtilityRequests() {
     saveDb();
   } catch (err) {
     console.error('Migration utility_requests error:', err);
+  }
+}
+
+function migrateAirTandon() {
+  try {
+    const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'air_tandon'");
+    if (existing[0] && existing[0].cnt > 0) {
+      const hasCatatan = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'air_tandon' AND parameter_name = 'Catatan'");
+      if (hasCatatan[0] && hasCatatan[0].cnt > 0) {
+        db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'air_tandon')");
+        db.run("DELETE FROM checklist_templates WHERE category = 'air_tandon'");
+      } else {
+        return;
+      }
+    }
+    const newTemplates = [
+      ['air_tandon', 'Level Air Tandon', 'number', '%', 0, 100, 1],
+      ['air_tandon', 'Tekanan Pompa', 'number', 'bar', 0, 10, 2],
+    ];
+    newTemplates.forEach(t => {
+      db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
+    });
+    saveDb();
+    console.log('Migration: air_tandon templates simplified');
+  } catch (err) {
+    console.error('Migration error:', err);
   }
 }
 
