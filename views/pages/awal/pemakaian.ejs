@@ -36,7 +36,7 @@
                     var memberIds = JSON.parse(r.member_ids || '[]');
                     var memberNames = memberIds.map(function(mid) {
                       var found = members.find(function(m) { return m.id === mid; });
-                      return found ? found.full_name : '';
+                      return found ? found.name : '';
                     }).filter(function(n) { return n; });
                   %>
                   <%= memberNames.join(', ') %>
@@ -86,9 +86,9 @@
                 <input type="text" class="form-control mb-2" id="searchMember" placeholder="Cari pemakai..." oninput="filterMember(this.value)">
                 <div style="max-height:200px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;padding:8px;">
                   <% members.forEach(function(m) { %>
-                  <div class="form-check member-item" data-name="<%= m.full_name.toLowerCase() %>">
-                    <input class="form-check-input member-checkbox" type="checkbox" value="<%= m.id %>" data-fullname="<%= m.full_name %>" onchange="getSelectedMembers()">
-                    <label class="form-check-label"><%= m.full_name %></label>
+                  <div class="form-check member-item" data-name="<%= m.name.toLowerCase() %>">
+                    <input class="form-check-input member-checkbox" type="checkbox" value="<%= m.id %>" data-membername="<%= m.name %>" onchange="getSelectedMembers()">
+                    <label class="form-check-label"><%= m.name %></label>
                   </div>
                   <% }); %>
                 </div>

@@ -21,7 +21,7 @@ router.get('/', isAuthenticated, async (req, res) => {
       ORDER BY p.created_at DESC
     `);
     const items = dbAll("SELECT * FROM inventory_items WHERE category IN ('part', 'bahan') ORDER BY item_name ASC");
-    const members = dbAll("SELECT * FROM users WHERE status = 'aktif' ORDER BY name ASC");
+    const members = dbAll("SELECT * FROM users WHERE is_active = 1 ORDER BY name ASC");
     res.render('pages/awal/pemakaian', { records, items, members, page: 'pemakaian' });
   } catch (err) {
     console.error(err);

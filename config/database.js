@@ -30,6 +30,7 @@ async function getDb() {
     migrateChecklistKompressor();
     migrateUtilityRequests();
     migrateChecklistEntriesPhoto();
+    migratePeminjamanPemakaian();
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -1089,6 +1090,40 @@ function migrateChecklistEntriesPhoto() {
     saveDb();
   } catch (e) {
     // kolom sudah ada, skip
+  }
+}
+
+function migratePeminjamanPemakaian() {
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS peminjaman_alat (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      borrower_name TEXT NOT NULL,
+      division TEXT NOT NULL,
+      location TEXT NOT NULL,
+      borrow_time TEXT NOT NULL,
+      borrow_date TEXT NOT NULL,
+      items TEXT NOT NULL,
+      duration_days INTEGER DEFAULT 0,
+      duration_hours INTEGER DEFAULT 0,
+      duration_minutes INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'dipinjam',
+      photo_url TEXT,
+      input_by INTEGER REFERENCES users(id),
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS pemakaian_part (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_name TEXT NOT NULL,
+      member_ids TEXT NOT NULL,
+      items TEXT NOT NULL,
+      input_by INTEGER REFERENCES users(id),
+      created_at TEXT DEFAULT (datetime('now'))
+    )`);
+    saveDb();
+    console.log('Migration: peminjaman_alat and pemakaian_part tables created');
+  } catch (err) {
+    console.error('Migration peminjaman_pemakaian error:', err);
   }
 }
 
