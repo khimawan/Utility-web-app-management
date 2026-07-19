@@ -7,7 +7,7 @@
   </div>
   <ul class="sidebar-nav">
 
-    <li class="nav-item has-sub<%= typeof page !== 'undefined' && ['awal','summary','warnings','works','spareparts','member'].includes(page) ? ' open' : '' %>">
+     <li class="nav-item has-sub<%= typeof page !== 'undefined' && ['awal','summary','warnings','works','spareparts','member','peminjaman','pemakaian'].includes(page) ? ' open' : '' %>">
       <a href="#" class="nav-link sidebar-toggle">
         <i class="bi bi-house-door"></i><span>Halaman Awal</span>
         <i class="bi bi-chevron-down arrow"></i>
@@ -19,6 +19,8 @@
         <li><a href="/awal/works" class="nav-link<%= typeof page !== 'undefined' && page === 'works' ? ' active' : '' %>">List Pekerjaan</a></li>
         <li><a href="/awal/spareparts" class="nav-link<%= typeof page !== 'undefined' && page === 'spareparts' ? ' active' : '' %>">List Sparepart</a></li>
         <li><a href="/awal/member" class="nav-link<%= typeof page !== 'undefined' && page === 'member' ? ' active' : '' %>">Jadwal Utility</a></li>
+        <li><a href="/peminjaman" class="nav-link<%= typeof page !== 'undefined' && page === 'peminjaman' ? ' active' : '' %>">Peminjaman Alat</a></li>
+        <li><a href="/pemakaian" class="nav-link<%= typeof page !== 'undefined' && page === 'pemakaian' ? ' active' : '' %>">Pemakaian Part & Bahan</a></li>
       </ul>
     </li>
 

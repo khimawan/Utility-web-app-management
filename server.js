@@ -33,6 +33,8 @@ app.use('/job1', require('./routes/job1'));
 app.use('/job2', require('./routes/job2'));
 app.use('/job3', require('./routes/job3'));
 app.use('/inventory', require('./routes/inventory'));
+app.use('/peminjaman', require('./routes/peminjaman'));
+app.use('/pemakaian', require('./routes/pemakaian'));
 app.use('/rangkuman', require('./routes/rangkuman'));
 app.use('/admin', require('./routes/admin'));
 

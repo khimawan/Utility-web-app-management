@@ -1,0 +1,336 @@
+<%- include('../../partials/header') %>
+  <%- include('../../partials/topnav') %>
+  <div class="page-content">
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <h4><i class="bi bi-tools me-2"></i>Peminjaman Alat</h4>
+      <div class="d-flex gap-2">
+        <a href="/peminjaman/download-template" class="btn btn-sm btn-outline-success"><i class="bi bi-download me-1"></i>Download Template CSV</a>
+        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#importCsvModal"><i class="bi bi-upload me-1"></i>Import CSV</button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPeminjamanModal"><i class="bi bi-plus-circle me-1"></i>Tambah Peminjaman</button>
+      </div>
+    </div>
+
+    <% if (typeof importCount !== 'undefined' && importCount > 0) { %>
+      <div class="alert alert-success py-2"><i class="bi bi-check-circle me-1"></i><%= importCount %> peminjaman berhasil diimpor dari CSV.</div>
+    <% } %>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="delete-selected-bar">
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected('/peminjaman/delete-multiple')"><i class="bi bi-trash me-1"></i>Hapus Terpilih</button>
+        </div>
+        <div class="table-responsive scrollable-table">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="select-all-checkbox"></th>
+                <th>Nama Peminjam</th>
+                <th>Divisi/Pangkat</th>
+                <th>Lokasi</th>
+                <th>Waktu</th>
+                <th>Tanggal</th>
+                <th>Alat & Bahan</th>
+                <th>Durasi</th>
+                <th>Status</th>
+                <th>Foto</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% records.forEach(function(r) { %>
+              <tr>
+                <td><input type="checkbox" class="row-checkbox" value="<%= r.id %>"></td>
+                <td><%= r.borrower_name %></td>
+                <td><%= r.division %></td>
+                <td><%= r.location %></td>
+                <td><%= r.borrow_time %></td>
+                <td><%= r.borrow_date %></td>
+                <td>
+                  <%
+                    var itemList = JSON.parse(r.items || '[]');
+                    var names = itemList.map(function(i) { return i.name || i.item_name || ''; }).filter(function(n) { return n; });
+                  %>
+                  <%= names.join(', ') %>
+                </td>
+                <td><%= r.duration_days %> hari, <%= r.duration_hours %> jam, <%= r.duration_minutes %> menit</td>
+                <td>
+                  <% if (r.status === 'dipinjam') { %>
+                    <span class="badge bg-warning text-dark">Dipinjam</span>
+                  <% } else if (r.status === 'sudah_kembali') { %>
+                    <span class="badge bg-success">Sudah Kembali</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary"><%= r.status %></span>
+                  <% } %>
+                </td>
+                <td><% if (r.photo_url) { %><img src="<%= r.photo_url %>" width="50" height="50" style="object-fit:cover;border-radius:4px;"><% } else { %>-<% } %></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-1 edit-peminjaman"
+                    data-id="<%= r.id %>"
+                    data-borrower="<%= r.borrower_name %>"
+                    data-division="<%= r.division %>"
+                    data-location="<%= r.location %>"
+                    data-time="<%= r.borrow_time %>"
+                    data-date="<%= r.borrow_date %>"
+                    data-items='<%= r.items %>'
+                    data-days="<%= r.duration_days %>"
+                    data-hours="<%= r.duration_hours %>"
+                    data-minutes="<%= r.duration_minutes %>"
+                    data-photo="<%= r.photo_url || '' %>"><i class="bi bi-pencil"></i></button>
+                  <form method="POST" action="/peminjaman/<%= r.id %>/delete" style="display:inline;" class="delete-btn-form">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              <% }); %>
+              <% if (records.length === 0) { %>
+              <tr><td colspan="11" class="text-center text-muted">Belum ada data</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="importCsvModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/peminjaman/import-csv" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title">Import CSV Peminjaman</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p class="text-muted small">Unduh template CSV terlebih dahulu, lalu isi data dan unggah kembali.</p>
+              <div class="mb-3">
+                <label class="form-label">File CSV</label>
+                <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Import</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addPeminjamanModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <form method="POST" action="/peminjaman" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Peminjaman</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Nama Peminjam</label>
+                  <input type="text" name="borrower_name" class="form-control" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Divisi dan Pangkat</label>
+                  <input type="text" name="division" class="form-control" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Lokasi Penggunaan</label>
+                <input type="text" name="location" class="form-control" required>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Waktu Peminjaman</label>
+                  <input type="time" name="borrow_time" class="form-control" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Tanggal Peminjaman</label>
+                  <input type="date" name="borrow_date" class="form-control" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Alat & Bahan yang dipinjam</label>
+                <input type="text" class="form-control mb-2" id="searchAlat" placeholder="Cari alat..." oninput="filterAlat(this.value)">
+                <div style="max-height:200px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;padding:8px;">
+                  <% items.forEach(function(item) { %>
+                  <div class="form-check alat-item" data-name="<%= item.item_name.toLowerCase() %>">
+                    <input class="form-check-input alat-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" onchange="getSelectedItems()">
+                    <label class="form-check-label"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= item.quantity %>)</label>
+                  </div>
+                  <% }); %>
+                </div>
+                <input type="hidden" name="items" id="selectedItems" value="[]">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Durasi Peminjaman</label>
+                <div class="row">
+                  <div class="col-4">
+                    <label class="form-label small">Hari</label>
+                    <input type="number" name="duration_days" class="form-control" min="0" value="0">
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Jam</label>
+                    <input type="number" name="duration_hours" class="form-control" min="0" value="0">
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Menit</label>
+                    <input type="number" name="duration_minutes" class="form-control" min="0" value="0">
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="status" value="dipinjam">
+              <div class="mb-3">
+                <label class="form-label">Foto Dokumentasi</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png">
+                <div class="form-text">Format: JPG, JPEG, PNG. Maks 5MB.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editPeminjamanModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <form method="POST" id="editPeminjamanForm" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Peminjaman</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Nama Peminjam</label>
+                  <input type="text" name="borrower_name" class="form-control" id="edit_borrower" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Divisi dan Pangkat</label>
+                  <input type="text" name="division" class="form-control" id="edit_division" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Lokasi Penggunaan</label>
+                <input type="text" name="location" class="form-control" id="edit_location" required>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Waktu Peminjaman</label>
+                  <input type="time" name="borrow_time" class="form-control" id="edit_time" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Tanggal Peminjaman</label>
+                  <input type="date" name="borrow_date" class="form-control" id="edit_date" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Alat & Bahan yang dipinjam</label>
+                <input type="text" class="form-control mb-2" id="editSearchAlat" placeholder="Cari alat..." oninput="filterEditAlat(this.value)">
+                <div style="max-height:200px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;padding:8px;" id="editAlatContainer">
+                  <% items.forEach(function(item) { %>
+                  <div class="form-check alat-item" data-name="<%= item.item_name.toLowerCase() %>">
+                    <input class="form-check-input alat-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" onchange="getEditSelectedItems()">
+                    <label class="form-check-label"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= item.quantity %>)</label>
+                  </div>
+                  <% }); %>
+                </div>
+                <input type="hidden" name="items" id="editSelectedItems" value="[]">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Durasi Peminjaman</label>
+                <div class="row">
+                  <div class="col-4">
+                    <label class="form-label small">Hari</label>
+                    <input type="number" name="duration_days" class="form-control" id="edit_days" min="0" value="0">
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Jam</label>
+                    <input type="number" name="duration_hours" class="form-control" id="edit_hours" min="0" value="0">
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Menit</label>
+                    <input type="number" name="duration_minutes" class="form-control" id="edit_minutes" min="0" value="0">
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="status" value="dipinjam">
+              <div class="mb-3">
+                <label class="form-label">Ganti Foto</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png">
+                <div class="form-text">Format: JPG, JPEG, PNG. Maks 5MB.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function filterAlat(query) {
+  var q = query.toLowerCase();
+  document.querySelectorAll('#addPeminjamanModal .alat-item').forEach(function(el) {
+    el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+function filterEditAlat(query) {
+  var q = query.toLowerCase();
+  document.querySelectorAll('#editPeminjamanModal .alat-item').forEach(function(el) {
+    el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+function getSelectedItems() {
+  var selected = [];
+  document.querySelectorAll('#addPeminjamanModal .alat-checkbox:checked').forEach(function(cb) {
+    selected.push({ id: parseInt(cb.value), name: cb.dataset.itemname });
+  });
+  document.getElementById('selectedItems').value = JSON.stringify(selected);
+}
+
+function getEditSelectedItems() {
+  var selected = [];
+  document.querySelectorAll('#editPeminjamanModal .alat-checkbox:checked').forEach(function(cb) {
+    selected.push({ id: parseInt(cb.value), name: cb.dataset.itemname });
+  });
+  document.getElementById('editSelectedItems').value = JSON.stringify(selected);
+}
+
+document.querySelectorAll('.edit-peminjaman').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('editPeminjamanForm').action = '/peminjaman/' + this.dataset.id;
+    document.getElementById('edit_borrower').value = this.dataset.borrower;
+    document.getElementById('edit_division').value = this.dataset.division;
+    document.getElementById('edit_location').value = this.dataset.location;
+    document.getElementById('edit_time').value = this.dataset.time;
+    document.getElementById('edit_date').value = this.dataset.date;
+    document.getElementById('edit_days').value = this.dataset.days;
+    document.getElementById('edit_hours').value = this.dataset.hours;
+    document.getElementById('edit_minutes').value = this.dataset.minutes;
+
+    var itemsData = JSON.parse(this.dataset.items || '[]');
+    var editCheckboxes = document.querySelectorAll('#editPeminjamanModal .alat-checkbox');
+    editCheckboxes.forEach(function(cb) { cb.checked = false; });
+    itemsData.forEach(function(item) {
+      editCheckboxes.forEach(function(cb) {
+        if (parseInt(cb.value) === item.id) {
+          cb.checked = true;
+        }
+      });
+    });
+    getEditSelectedItems();
+
+    new bootstrap.Modal(document.getElementById('editPeminjamanModal')).show();
+  });
+});
+</script>
+<%- include('../../partials/footer') %>
