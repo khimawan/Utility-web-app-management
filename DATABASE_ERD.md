@@ -50,10 +50,12 @@
 #    └── id (PK)
 #    ├── category (wtp/boiler/kompressor01-04/n2/lvmdp/etc)
 #    ├── parameter_name
-#    ├── parameter_type (number/text/boolean/status)
+#    ├── parameter_type (number/text/boolean/status/select/select_oli/select_bocor)
 #    ├── unit
 #    ├── min_value
 #    ├── max_value
+#    ├── default_value
+#    ├── is_active
 #    └── sort_order
 
 # 7. CHECKLIST_ENTRIES (Daily Checklist Submissions)
@@ -62,7 +64,9 @@
 #    ├── entry_date
 #    ├── shift
 #    ├── machine_id ──FK──► machines.id
-#    └── input_by ──FK──► users.id
+#    ├── input_by ──FK──► users.id
+#    ├── notes
+#    └── photo_url
 
 # 8. CHECKLIST_VALUES (Parameter Values)
 #    └── id (PK)
@@ -123,7 +127,29 @@
 #     ├── quantity
 #     └── photo_url
 
-# 15. WORKING_INSTRUCTIONS (PDF Files)
+# 15. PEMINJAMAN_ALAT (Tool Borrowing)
+#     └── id (PK)
+#     ├── borrower_name
+#     ├── division
+#     ├── location
+#     ├── borrow_time
+#     ├── borrow_date
+#     ├── items (JSON array of {id, name})
+#     ├── duration_days
+#     ├── duration_hours
+#     ├── duration_minutes
+#     ├── status (dipinjam/sudah_kembali)
+#     ├── photo_url
+#     └── input_by ──FK──► users.id
+
+# 16. PEMAKAIAN_PART (Part & Material Usage)
+#     └── id (PK)
+#     ├── project_name
+#     ├── member_ids (JSON array of user IDs)
+#     ├── items (JSON array of {id, qty, name})
+#     └── input_by ──FK──► users.id
+
+# 17. WORKING_INSTRUCTIONS (PDF Files)
 #     └── id (PK)
 #     ├── title
 #     ├── job_type
@@ -132,14 +158,14 @@
 #     ├── description
 #     └── uploaded_by ──FK──► users.id
 
-# 16. GALLERY_PHOTOS (Utility Profile Gallery)
+# 18. GALLERY_PHOTOS (Utility Profile Gallery)
 #     └── id (PK)
 #     ├── title
 #     ├── photo_url
 #     ├── caption
 #     └── uploaded_by ──FK──► users.id
 
-# 17. ACTIVITY_LOGS (Summary/Rangkuman Data)
+# 19. ACTIVITY_LOGS (Summary/Rangkuman Data)
 #     └── id (PK)
 #     ├── activity_type (checklist_submit/warning_input/work_input/etc)
 #     ├── reference_id
@@ -151,23 +177,50 @@
 #     ├── activity_date
 #     └── activity_time
 
-# 18. FILE_UPLOADS (Generic Photo Uploads)
+# 20. OVERTIME_SUBMISSIONS
 #     └── id (PK)
-#     ├── original_name
-#     ├── file_url
-#     ├── file_type
-#     ├── related_table
-#     ├── related_id
-#     └── uploaded_by ──FK──► users.id
+#     ├── overtime_date
+#     ├── shift
+#     ├── schedule_type
+#     ├── job
+#     ├── assigned_job
+#     ├── status (pending/approved/rejected)
+#     ├── submitted_by ──FK──► users.id
+#     ├── admin_notes
+#     └── created_at
 
-# 19. IMPORT_EXPORT_LOGS (Import/Export Tracking)
+# 21. OVERTIME_MEMBERS
 #     └── id (PK)
-#     ├── action
-#     ├── table_name
-#     ├── file_format
-#     ├── file_url
-#     ├── processed_by ──FK──► users.id
-#     └── record_count
+#     ├── submission_id ──FK──► overtime_submissions.id (CASCADE DELETE)
+#     └── member_id ──FK──► users.id (CASCADE DELETE)
+
+# 22. UTILITY_REQUESTS (Public Utility Requests)
+#     └── id (PK)
+#     ├── requester_name
+#     ├── position
+#     ├── whatsapp
+#     ├── work_area
+#     ├── building
+#     ├── issue
+#     ├── priority (Low/Medium/High)
+#     ├── photo_url
+#     ├── status (open/in_progress/completed/closed/diluar_scope/on_hold)
+#     ├── repair_notes
+#     ├── repair_percentage
+#     └── created_at
+
+# 23. UTILITY_REQUEST_MEMBERS (Manpower Assignment)
+#     └── id (PK)
+#     ├── request_id ──FK──► utility_requests.id (CASCADE DELETE)
+#     └── member_id ──FK──► users.id (CASCADE DELETE)
+
+# 24. UTILITY_LANDING_CONTENT (Public Landing Page Content)
+#     └── id (PK)
+#     ├── content_key (UNIQUE)
+#     ├── content_value
+#     └── content_image
+
+# Custom checklist tables: checklist_wtp, checklist_boiler, checklist_n2, checklist_kompressor
 
 # =====================================================
 # RELATIONSHIP SUMMARY
@@ -178,11 +231,14 @@
 # users ──1:N──► warnings
 # users ──1:N──► works
 # users ──1:N──► spareparts
+# users ──1:N──► peminjaman_alat
+# users ──1:N──► pemakaian_part
 # users ──1:N──► working_instructions
 # users ──1:N──► gallery_photos
 # users ──1:N──► activity_logs
-# users ──1:N──► file_uploads
-# users ──1:N──► import_export_logs
+# users ──1:N──► overtime_submissions
+# users ──1:N──► overtime_members
+# users ──1:N──► utility_request_members
 #
 # machines ──1:N──► checklist_entries
 #
@@ -191,6 +247,8 @@
 #
 # warnings ──N:M──► users (via warning_members)
 # works ──N:M──► users (via work_members)
+# overtime_submissions ──N:M──► users (via overtime_members)
+# utility_requests ──N:M──► users (via utility_request_members)
 #
 # =====================================================
 # PAGE MAPPING TO TABLES
@@ -204,20 +262,23 @@
 #    ├── Summary Data: checklist_entries, checklist_values, checklist_templates
 #    ├── Warning & Pekerjaan: warnings, works, warning_members, work_members
 #    ├── Sparepart: spareparts
-#    └── Member & Jadwal: users, schedules
+#    ├── Peminjaman Alat: peminjaman_alat, inventory_items
+#    ├── Pemakaian Part & Bahan: pemakaian_part, inventory_items, users
+#    ├── Utility Requests: utility_requests, utility_request_members
+#    └── Member & Jadwal: users, schedules, overtime_submissions, overtime_members
 #
 # 3. HALAMAN JOB 1 (Operator WTP)
 #    ├── Profile: job_descriptions, machines
-#    ├── Checklist WTP: checklist_entries(category=wtp), checklist_values
-#    ├── Checklist Boiler: checklist_entries(category=boiler), checklist_values
-#    ├── Checklist Kompressor 01-02: checklist_entries(category=kompressor01/02), checklist_values
+#    ├── Checklist WTP: checklist_wtp
+#    ├── Checklist Boiler: checklist_boiler
+#    ├── Checklist Kompressor: checklist_kompressor
 #    ├── Warning: warnings, warning_members
 #    └── Working Instruction: working_instructions
 #
 # 4. HALAMAN JOB 2 (Operator N2)
 #    ├── Profile: job_descriptions, machines
-#    ├── Checklist N2 Generator: checklist_entries(category=n2_generator), checklist_values
-#    ├── Checklist Kompressor 03-04: checklist_entries(category=kompressor03/04), checklist_values
+#    ├── Checklist N2 Generator: checklist_n2
+#    ├── Checklist Kompressor: checklist_kompressor
 #    ├── Checklist LVMDP: checklist_entries(category=lvmdp), checklist_values
 #    ├── Checklist Air Tandon: checklist_entries(category=air_tandon), checklist_values
 #    ├── Warning: warnings, warning_members
@@ -228,32 +289,39 @@
 #    ├── Checklist Pemakaian Air: checklist_entries(category=pemakaian_air), checklist_values
 #    ├── Checklist Pemakaian Gas: checklist_entries(category=pemakaian_gas), checklist_values
 #    ├── Checklist Suhu Trafo: checklist_entries(category=suhu_trafo), checklist_values
-#    ├── Checklist Listrik Trafo: checklist_entries(category=listrik_trafo), checklist_values
+#    ├── Checklist Energi Listrik: checklist_entries(category=energi_listrik), checklist_values
 #    └── Pekerjaan: works, work_members
 #
-# 6. HALAMAN RANGKUMAN
+# 6. HALAMAN PEMINJAMAN ALAT
+#    └── peminjaman_alat, inventory_items
+#
+# 7. HALAMAN PEMAKAIAN PART & BAHAN
+#    └── pemakaian_part, inventory_items, users
+#
+# 8. HALAMAN RANGKUMAN
 #    └── activity_logs, schedules, warnings, works
 #
-# 7. HALAMAN ALAT & BAHAN
+# 9. HALAMAN ALAT & BAHAN
 #    └── inventory_items
 #
-# 8. HALAMAN ADMIN
-#    └── users, schedules, checklist_templates
+# 10. HALAMAN ADMIN
+#     └── users, schedules, checklist_templates
 #
 # =====================================================
-# CHECKLIST CATEGORIES (13 Total)
+# CHECKLIST CATEGORIES (14 Total)
 # =====================================================
-# 1.  wtp             → Job 1 (Operator WTP)
-# 2.  boiler          → Job 1 (Operator WTP)
-# 3.  kompressor01    → Job 1 (Operator WTP)
-# 4.  kompressor02    → Job 1 (Operator WTP)
-# 5.  n2_generator    → Job 2 (Operator N2)
-# 6.  kompressor03    → Job 2 (Operator N2)
-# 7.  kompressor04    → Job 2 (Operator N2)
-# 8.  lvmdp           → Job 2 (Operator N2)
-# 9.  air_tandon      → Job 2 (Operator N2)
-# 10. pemakaian_air   → Job 3 (Facility)
-# 11. pemakaian_gas   → Job 3 (Facility)
-# 12. suhu_trafo      → Job 3 (Facility)
-# 13. listrik_trafo   → Job 3 (Facility)
+# 1.  wtp                  → Job 1 (Operator WTP)
+# 2.  boiler               → Job 1 (Operator WTP)
+# 3.  kompressor01         → Job 1 (Operator WTP) 
+# 4.  kompressor02         → Job 1 (Operator WTP)
+# 5.  n2_generator         → Job 2 (Operator N2)
+# 6.  kompressor03         → Job 2 (Operator N2)
+# 7.  kompressor04         → Job 2 (Operator N2)
+# 8.  lvmdp                → Job 2 (Operator N2)
+# 9.  air_tandon           → Job 2 (Operator N2)
+# 10. pemakaian_air        → Job 3 (Facility)
+# 11. pemakaian_gas        → Job 3 (Facility)
+# 12. suhu_trafo           → Job 3 (Facility)
+# 13. energi_listrik       → Job 3 (Facility)
+# 14. listrik_trafo        → Legacy (migrated to energi_listrik)
 # =====================================================
