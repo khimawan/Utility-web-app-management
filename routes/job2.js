@@ -251,7 +251,7 @@ router.get('/checklist/:category', isAuthenticated, async (req, res) => {
       n2_generator: 'Checklist N2 Generator', kompressor03: 'Checklist Kompressor 03',
       kompressor04: 'Checklist Kompressor 04', lvmdp: 'Checklist LVMDP', air_tandon: 'Checklist Air Tandon'
     };
-    res.render('pages/job2/checklist', { category, categoryName: categoryNames[category], templates, entries, members });
+    res.render('pages/job2/checklist', { category, categoryName: categoryNames[category], templates, entries, members, user: req.session.user });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');

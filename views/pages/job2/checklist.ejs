@@ -14,13 +14,9 @@
             <form method="POST" action="/job2/checklist/<%= category %>" enctype="multipart/form-data" id="checklistForm">
               <% if (category === 'lvmdp') { %>
                 <div class="mb-3">
-                  <label class="form-label">Pilih PIC</label>
-                  <select name="machine_id" class="form-select" required>
-                    <option value="">-- Pilih PIC --</option>
-                    <% members.forEach(function(m) { %>
-                      <option value="<%= m.id %>"><%= m.name %></option>
-                    <% }); %>
-                  </select>
+                  <label class="form-label">PIC</label>
+                  <input type="text" class="form-control" value="<%= user.name %>" readonly>
+                  <input type="hidden" name="machine_id" value="<%= user.id %>">
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Shift</label>
@@ -95,11 +91,6 @@
                 <% }); %>
 
                 <hr class="my-3">
-                <div class="mb-3">
-                  <label class="form-label">Foto Dokumentasi (JPEG/PNG)</label>
-                  <input type="file" name="foto_dokumentasi" class="form-control" accept=".jpg,.jpeg,.png">
-                  <div class="form-text">Format: JPG, JPEG, PNG. Maks 5MB.</div>
-                </div>
                 <div class="d-flex gap-2">
                   <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
                   <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('checklistForm').reset()"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
