@@ -12,7 +12,61 @@
           <div class="card-header"><h5>Input Checklist</h5></div>
           <div class="card-body">
             <form method="POST" action="/job3/checklist/<%= category %>" enctype="multipart/form-data" id="checklistForm">
-              <% if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') { %>
+              <% if (category === 'suhu_trafo') { %>
+                <div class="mb-3">
+                  <label class="form-label">PIC</label>
+                  <input type="text" class="form-control" value="<%= user.name %>" readonly>
+                  <input type="hidden" name="machine_id" value="<%= user.id %>">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Shift</label>
+                  <select name="shift" class="form-select" required>
+                    <option value="1">Shift 1</option>
+                    <option value="2">Shift 2</option>
+                    <option value="3">Shift 3</option>
+                  </select>
+                </div>
+                <% templates.forEach(function(t) { %>
+                <div class="mb-3">
+                  <label class="form-label"><%= t.parameter_name %> <% if (t.unit) { %>(<%= t.unit %>)<% } %></label>
+                  <% if (t.parameter_type === 'date') { %>
+                    <input type="date" name="values" class="form-control">
+                  <% } else if (t.parameter_type === 'time') { %>
+                    <select name="values" class="form-select">
+                      <option value="">-- Pilih Jam --</option>
+                      <option value="00:00">00:00</option><option value="01:00">01:00</option><option value="02:00">02:00</option><option value="03:00">03:00</option>
+                      <option value="04:00">04:00</option><option value="05:00">05:00</option><option value="06:00">06:00</option><option value="07:00">07:00</option>
+                      <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option>
+                      <option value="12:00">12:00</option><option value="13:00">13:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option>
+                      <option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
+                      <option value="20:00">20:00</option><option value="21:00">21:00</option><option value="22:00">22:00</option><option value="23:00">23:00</option>
+                    </select>
+                  <% } else if (t.parameter_type === 'number') { %>
+                    <input type="number" step="any" name="values" class="form-control" min="<%= t.min_value %>" max="<%= t.max_value %>">
+                  <% } else if (t.parameter_type === 'select_oli') { %>
+                    <select name="values" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="Cukup">Cukup</option>
+                      <option value="Kurang">Kurang</option>
+                    </select>
+                  <% } else if (t.parameter_type === 'select_bocor') { %>
+                    <select name="values" class="form-select">
+                      <option value="">-- Pilih --</option>
+                      <option value="Ada">Ada</option>
+                      <option value="Tidak">Tidak</option>
+                    </select>
+                  <% } else { %>
+                    <input type="text" name="values" class="form-control">
+                  <% } %>
+                  <input type="hidden" name="templates" value="<%= t.id %>">
+                </div>
+                <% }); %>
+                <hr class="my-3">
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check-circle me-1"></i>Submit</button>
+                  <button type="button" class="btn btn-secondary flex-fill" onclick="document.getElementById('checklistForm').reset()"><i class="bi bi-x-circle me-1"></i>Clear Form</button>
+                </div>
+              <% } else if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas') { %>
                 <div class="mb-3">
                   <label class="form-label">Pilih PIC</label>
                   <select name="machine_id" class="form-select" required>
@@ -94,7 +148,7 @@
                   <% }); %>
                 <% } %>
 
-                <% if (category !== 'pemakaian_air' && category !== 'pemakaian_gas' && category !== 'suhu_trafo') { %>
+                <% if (category !== 'pemakaian_air' && category !== 'pemakaian_gas') { %>
                 <hr class="my-3">
                 <div class="mb-3">
                   <label class="form-label">Foto Dokumentasi (JPEG/PNG)</label>
