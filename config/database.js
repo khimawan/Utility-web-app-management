@@ -550,11 +550,8 @@ function initSchema(db) {
     ['pemakaian_air', 'Meretan Sibel 06', 'number', 'M³', 0, 999999, 8],
     ['pemakaian_gas', 'Jam Monitoring', 'time', '', null, null, 1],
     ['pemakaian_gas', 'Tanggal Monitoring', 'date', '', null, null, 2],
-    ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 3],
-    ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 4],
-    ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 5],
-    ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 6],
-    ['pemakaian_gas', 'Catatan', 'text', '', null, null, 7],
+    ['pemakaian_gas', 'Meteran Gas', 'number', 'm3', 0, 999999, 3],
+    ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 4],
     ['suhu_trafo', 'Jam Monitoring', 'time', '', null, null, 1],
     ['suhu_trafo', 'Tanggal Monitoring', 'date', '', null, null, 2],
     ['suhu_trafo', 'Suhu Trafo Fasa R', 'number', 'C', 0, 150, 3],
@@ -631,19 +628,21 @@ function migratePemakaianGas() {
   try {
     const existing = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_gas'");
     if (existing[0] && existing[0].cnt > 0) {
-      const hasJam = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_gas' AND parameter_name = 'Jam Monitoring'");
-      if (hasJam[0] && hasJam[0].cnt > 0) return;
+      const hasMeteranAwal = dbAll("SELECT COUNT(*) as cnt FROM checklist_templates WHERE category = 'pemakaian_gas' AND parameter_name = 'Meteran Gas Awal'");
+      if (hasMeteranAwal[0] && hasMeteranAwal[0].cnt > 0) {
+        db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'pemakaian_gas')");
+        db.run("DELETE FROM checklist_templates WHERE category = 'pemakaian_gas'");
+      } else {
+        return;
+      }
       db.run("DELETE FROM checklist_values WHERE template_id IN (SELECT id FROM checklist_templates WHERE category = 'pemakaian_gas')");
       db.run("DELETE FROM checklist_templates WHERE category = 'pemakaian_gas'");
     }
     const newTemplates = [
       ['pemakaian_gas', 'Jam Monitoring', 'time', '', null, null, 1],
       ['pemakaian_gas', 'Tanggal Monitoring', 'date', '', null, null, 2],
-      ['pemakaian_gas', 'Meteran Gas Awal', 'number', 'm3', 0, 999999, 3],
-      ['pemakaian_gas', 'Meteran Gas Akhir', 'number', 'm3', 0, 999999, 4],
-      ['pemakaian_gas', 'Total Pemakaian', 'number', 'm3', 0, 999999, 5],
-      ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 6],
-      ['pemakaian_gas', 'Catatan', 'text', '', null, null, 7],
+      ['pemakaian_gas', 'Meteran Gas', 'number', 'm3', 0, 999999, 3],
+      ['pemakaian_gas', 'Tekanan Gas', 'number', 'mbar', 0, 500, 4],
     ];
     newTemplates.forEach(t => {
       db.run('INSERT INTO checklist_templates (category, parameter_name, parameter_type, unit, min_value, max_value, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', t);
