@@ -1,19 +1,29 @@
 <%- include('../../partials/header') %>
   <%- include('../../partials/topnav') %>
   <div class="page-content">
-    <div class="page-header d-flex justify-content-between align-items-center">
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
       <h4><i class="bi bi-box-seam me-2"></i>List Sparepart</h4>
-      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSparepartModal">
-        <i class="bi bi-plus-circle me-1"></i>Tambah Sparepart
-      </button>
+      <div class="d-flex gap-2">
+        <a href="/awal/spareparts/download-template" class="btn btn-sm btn-outline-success"><i class="bi bi-download me-1"></i>Download Template CSV</a>
+        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#importCsvModal"><i class="bi bi-upload me-1"></i>Import CSV</button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSparepartModal"><i class="bi bi-plus-circle me-1"></i>Tambah Sparepart</button>
+      </div>
     </div>
+
+    <% if (typeof importCount !== 'undefined' && importCount > 0) { %>
+      <div class="alert alert-success py-2"><i class="bi bi-check-circle me-1"></i><%= importCount %> item berhasil diimpor dari CSV.</div>
+    <% } %>
 
     <div class="card">
       <div class="card-body">
-        <div class="table-responsive">
+        <div class="delete-selected-bar">
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected('/awal/spareparts/delete-multiple')"><i class="bi bi-trash me-1"></i>Hapus Terpilih</button>
+        </div>
+        <div class="table-responsive scrollable-table">
           <table class="table table-striped table-hover">
             <thead>
               <tr>
+                <th><input type="checkbox" class="select-all-checkbox"></th>
                 <th>Tanggal</th>
                 <th>Nama Barang</th>
                 <th>Spesifikasi</th>
@@ -28,6 +38,7 @@
             <tbody>
               <% spareparts.forEach(function(s) { %>
               <tr class="<%= s.urgency === 'urgent' ? 'table-warning' : '' %>">
+                <td><input type="checkbox" class="row-checkbox" value="<%= s.id %>"></td>
                 <td><%= s.request_date %></td>
                 <td><strong><%= s.item_name %></strong></td>
                 <td><%= s.specification || '-' %></td>
@@ -45,15 +56,42 @@
                   <% } %>
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary me-1 edit-sparepart" data-id="<%= s.id %>" data-name="<%= s.item_name %>" data-spec="<%= s.specification %>" data-qty="<%= s.quantity %>" data-cat="<%= s.category %>" data-urgency="<%= s.urgency %>" data-progress="<%= s.progress %>"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-primary me-1 edit-sparepart" data-id="<%= s.id %>" data-name="<%= s.item_name %>" data-spec="<%= s.specification %>" data-qty="<%= s.quantity %>" data-cat="<%= s.category %>" data-urgency="<%= s.urgency %>" data-progress="<%= s.progress %>" data-photo="<%= s.photo_url || '' %>"><i class="bi bi-pencil"></i></button>
                   <form method="POST" action="/awal/spareparts/<%= s.id %>/delete" style="display:inline;" class="delete-btn-form">
                     <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                   </form>
                 </td>
               </tr>
               <% }); %>
+              <% if (spareparts.length === 0) { %>
+              <tr><td colspan="10" class="text-center text-muted">Belum ada data</td></tr>
+              <% } %>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="importCsvModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="/awal/spareparts/import-csv" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title">Import CSV Sparepart</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p class="text-muted small">Unduh template CSV terlebih dahulu, lalu isi data dan unggah kembali.</p>
+              <div class="mb-3">
+                <label class="form-label">File CSV</label>
+                <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Import</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -61,7 +99,7 @@
     <div class="modal fade" id="addSparepartModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" action="/awal/spareparts">
+          <form method="POST" action="/awal/spareparts" enctype="multipart/form-data">
             <div class="modal-header">
               <h5 class="modal-title">Tambah Sparepart</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -110,6 +148,11 @@
                   </select>
                 </div>
               </div>
+              <div class="mb-3">
+                <label class="form-label">Foto</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png">
+                <div class="form-text">Format: JPG, JPEG, PNG. Maks 5MB.</div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -123,7 +166,7 @@
     <div class="modal fade" id="editSparepartModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" id="editSparepartForm">
+          <form method="POST" id="editSparepartForm" enctype="multipart/form-data">
             <div class="modal-header">
               <h5 class="modal-title">Edit Sparepart</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -167,6 +210,11 @@
                     <option value="barang_sampai">Barang Sampai</option>
                   </select>
                 </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Ganti Foto</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png">
+                <div class="form-text">Format: JPG, JPEG, PNG. Maks 5MB.</div>
               </div>
             </div>
             <div class="modal-footer">
