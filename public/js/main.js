@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.body.appendChild(backdrop);
 
   let autoHideTimer;
-  const AUTO_HIDE_DELAY = 3000;
+  const AUTO_HIDE_DELAY = 5000;
 
   // ensure sidebar starts hidden on mobile
   if (window.innerWidth <= 768) {
