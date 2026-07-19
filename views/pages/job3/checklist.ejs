@@ -204,10 +204,14 @@
         <div class="card">
           <div class="card-header"><h5>Riwayat Checklist</h5></div>
           <div class="card-body">
-            <div class="table-responsive">
+            <div class="d-flex justify-content-end mb-2">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected('/job3/checklist/delete-multiple')"><i class="bi bi-trash me-1"></i>Hapus Terpilih</button>
+            </div>
+            <div class="table-responsive scrollable-table">
               <table class="table table-sm table-striped">
                 <thead>
                   <tr>
+                    <th><input type="checkbox" class="select-all-checkbox"></th>
                     <th>Tanggal</th>
                     <th>Shift</th>
                     <% if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') { %>
@@ -220,6 +224,7 @@
                 <tbody>
                   <% entries.forEach(function(e) { %>
                   <tr>
+                    <td><input type="checkbox" class="row-checkbox" value="<%= e.id %>"></td>
                     <td><%= e.entry_date %></td>
                     <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
                     <% if (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') { %>
@@ -235,7 +240,7 @@
                   <% }); %>
                   <% if (entries.length === 0) { %>
                   <tr>
-                    <td colspan="<%= (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') ? 5 : 4 %>" class="text-center text-muted">Belum ada data</td>
+                    <td colspan="<%= (category === 'pemakaian_air' || category === 'energi_listrik' || category === 'pemakaian_gas' || category === 'suhu_trafo') ? 6 : 5 %>" class="text-center text-muted">Belum ada data</td>
                   </tr>
                   <% } %>
                 </tbody>

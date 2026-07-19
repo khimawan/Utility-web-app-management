@@ -325,10 +325,14 @@
         <div class="card">
           <div class="card-header"><h5>Riwayat Checklist N2 Generator</h5></div>
           <div class="card-body">
-            <div class="table-responsive">
+            <div class="d-flex justify-content-end mb-2">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected('/job2/checklist/delete-multiple')"><i class="bi bi-trash me-1"></i>Hapus Terpilih</button>
+            </div>
+            <div class="table-responsive scrollable-table">
               <table class="table table-sm table-striped">
                 <thead>
                   <tr>
+                    <th><input type="checkbox" class="select-all-checkbox"></th>
                     <th>Tanggal</th>
                     <th>Shift</th>
                     <th>PIC</th>
@@ -341,6 +345,7 @@
                 <tbody>
                   <% entries.forEach(function(e) { %>
                   <tr>
+                    <td><input type="checkbox" class="row-checkbox" value="<%= e.id %>"></td>
                     <td><%= e.tanggal_monitoring || '-' %></td>
                     <td><span class="badge bg-primary">Shift <%= e.shift %></span></td>
                     <td><%= e.member_name %></td>
@@ -359,7 +364,7 @@
                   </tr>
                   <% }); %>
                   <% if (entries.length === 0) { %>
-                  <tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>
+                  <tr><td colspan="8" class="text-center text-muted">Belum ada data</td></tr>
                   <% } %>
                 </tbody>
               </table>

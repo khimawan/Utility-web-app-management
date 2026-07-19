@@ -152,6 +152,21 @@ router.post('/checklist/:category', isAuthenticated, uploadChecklist.single('fot
   }
 });
 
+router.post('/checklist/delete-multiple', isAuthenticated, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    const idList = Array.isArray(ids) ? ids.map(Number).filter(Boolean) : [];
+    idList.forEach(function(id) {
+      dbRun('DELETE FROM checklist_values WHERE entry_id = ?', [id]);
+      dbRun('DELETE FROM checklist_entries WHERE id = ?', [id]);
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
 router.post('/checklist/entry/:id/delete', isAuthenticated, async (req, res) => {
   try {
     const entry = dbGet('SELECT category FROM checklist_entries WHERE id = ?', [parseInt(req.params.id)]);

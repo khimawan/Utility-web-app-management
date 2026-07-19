@@ -156,6 +156,29 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+document.addEventListener('change', function(e) {
+  if (e.target.matches('.select-all-checkbox')) {
+    const table = e.target.closest('table');
+    if (!table) return;
+    table.querySelectorAll('.row-checkbox').forEach(function(cb) { cb.checked = e.target.checked; });
+  }
+});
+
+function deleteSelected(route) {
+  const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+  if (checkboxes.length === 0) { alert('Pilih minimal satu item'); return; }
+  if (!confirm('Hapus ' + checkboxes.length + ' item yang dipilih?')) return;
+  const ids = Array.from(checkboxes).map(function(cb) { return cb.value; });
+  fetch(route, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: ids })
+  }).then(function(r) {
+    if (r.ok) location.reload();
+    else alert('Gagal menghapus');
+  }).catch(function() { alert('Gagal menghapus'); });
+}
+
 function createLineChart(canvasId, labels, datasets, unit) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return null;
