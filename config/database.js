@@ -32,6 +32,7 @@ async function getDb() {
     migrateUtilityRequests();
     migrateChecklistEntriesPhoto();
     migratePeminjamanPemakaian();
+    migrateQuantityColumnsToReal();
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -207,7 +208,7 @@ function initSchema(db) {
     request_date TEXT NOT NULL,
     item_name TEXT NOT NULL,
     specification TEXT,
-    quantity INTEGER NOT NULL DEFAULT 1,
+    quantity REAL NOT NULL DEFAULT 1,
     category TEXT NOT NULL,
     urgency TEXT NOT NULL DEFAULT 'tidak',
     photo_url TEXT,
@@ -222,7 +223,7 @@ function initSchema(db) {
     category TEXT NOT NULL,
     item_name TEXT NOT NULL,
     specification TEXT,
-    quantity INTEGER NOT NULL DEFAULT 0,
+    quantity REAL NOT NULL DEFAULT 0,
     photo_url TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
@@ -1091,6 +1092,86 @@ function migrateChecklistEntriesPhoto() {
     saveDb();
   } catch (e) {
     // kolom sudah ada, skip
+  }
+}
+
+// Rebuild a table so quantity is REAL. SQLite cannot ALTER a column's type, and
+// stock is shared across inventory/peminjaman/pemakaian/sparepart - leaving one
+// INTEGER column would make SQLite silently store 1.3 as 1.3 in one table and
+// truncate it in another. Generic because inventory_items and spareparts have
+// different columns.
+function makeQuantityReal(table, columns) {
+  const info = db.exec('PRAGMA table_info(' + table + ')');
+  if (!info.length) return false;                       // table absent
+  const quantityCol = info[0].values.filter(function (c) { return c[1] === 'quantity'; })[0];
+  if (!quantityCol) return false;
+  if (String(quantityCol[2]).toUpperCase() === 'REAL') return false;  // already done
+
+  const tmp = table + '_qty_real';
+  const defs = columns.map(function (c) {
+    return c.name === 'quantity' ? 'quantity REAL NOT NULL DEFAULT ' + (c.defaultValue === undefined ? 0 : c.defaultValue) : c.sql;
+  }).join(',\n      ');
+
+  db.run('BEGIN');
+  try {
+    db.run('CREATE TABLE ' + tmp + ' (\n      ' + defs + '\n    )');
+    db.run('INSERT INTO ' + tmp + ' (' + columns.map(function (c) { return c.name; }).join(', ') +
+           ')\n            SELECT ' + columns.map(function (c) { return c.name; }).join(', ') + ' FROM ' + table);
+    db.run('DROP TABLE ' + table);
+    db.run('ALTER TABLE ' + tmp + ' RENAME TO ' + table);
+    db.run('COMMIT');
+    return true;
+  } catch (err) {
+    try { db.run('ROLLBACK'); } catch (e) {}
+    throw err;
+  }
+}
+
+function migrateQuantityColumnsToReal() {
+  const targets = [
+    {
+      table: 'inventory_items',
+      columns: [
+        { name: 'id', sql: 'id INTEGER PRIMARY KEY AUTOINCREMENT' },
+        { name: 'category', sql: 'category TEXT NOT NULL' },
+        { name: 'item_name', sql: 'item_name TEXT NOT NULL' },
+        { name: 'specification', sql: 'specification TEXT' },
+        { name: 'quantity', defaultValue: 0 },
+        { name: 'photo_url', sql: 'photo_url TEXT' },
+        { name: 'created_at', sql: "created_at TEXT DEFAULT (datetime('now'))" },
+        { name: 'updated_at', sql: "updated_at TEXT DEFAULT (datetime('now'))" }
+      ]
+    },
+    {
+      table: 'spareparts',
+      columns: [
+        { name: 'id', sql: 'id INTEGER PRIMARY KEY AUTOINCREMENT' },
+        { name: 'request_date', sql: 'request_date TEXT NOT NULL' },
+        { name: 'item_name', sql: 'item_name TEXT NOT NULL' },
+        { name: 'specification', sql: 'specification TEXT' },
+        { name: 'quantity', defaultValue: 1 },
+        { name: 'category', sql: 'category TEXT NOT NULL' },
+        { name: 'urgency', sql: "urgency TEXT NOT NULL DEFAULT 'tidak'" },
+        { name: 'photo_url', sql: 'photo_url TEXT' },
+        { name: 'progress', sql: "progress TEXT DEFAULT 'belum_dipesan'" },
+        { name: 'input_by', sql: 'input_by INTEGER REFERENCES users(id)' },
+        { name: 'created_at', sql: "created_at TEXT DEFAULT (datetime('now'))" },
+        { name: 'updated_at', sql: "updated_at TEXT DEFAULT (datetime('now'))" }
+      ]
+    }
+  ];
+
+  const changed = [];
+  targets.forEach(function (t) {
+    try {
+      if (makeQuantityReal(t.table, t.columns)) changed.push(t.table);
+    } catch (err) {
+      console.error('Migration ' + t.table + ' quantity error:', err);
+    }
+  });
+  if (changed.length) {
+    saveDb();
+    console.log('Migration: quantity is now REAL on ' + changed.join(', ') + ' (decimal supported)');
   }
 }
 

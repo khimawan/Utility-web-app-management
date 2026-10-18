@@ -13,6 +13,13 @@ function getDateSubdir() {
     String(d.getDate()).padStart(2, '0');
 }
 
+// Decimal-safe, max 1 place. parseInt() here would truncate 1.5 to 1 and
+// quietly corrupt both the request and the inventory stock it moves.
+function parseQty(raw) {
+  const n = Math.round(parseFloat(raw) * 10) / 10;
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
 const sparepartStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = path.join(__dirname, '..', 'public', 'uploads', 'spareparts', getDateSubdir());
@@ -62,7 +69,7 @@ router.post('/', isAuthenticated, uploadSparepart.single('photo'), async (req, r
     dbRun(
       `INSERT INTO spareparts (request_date, item_name, specification, quantity, category, urgency, progress, input_by, photo_url)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [request_date, item_name, specification, parseInt(quantity), category, urgency, progress || 'belum_dipesan', req.session.user.id, photo_url]
+      [request_date, item_name, specification, parseQty(quantity), category, urgency, progress || 'belum_dipesan', req.session.user.id, photo_url]
     );
     res.redirect('/awal/spareparts');
   } catch (err) {
@@ -89,7 +96,7 @@ router.post('/import-csv', isAuthenticated, uploadSparepart.single('csv_file'), 
       if (cols.length < expected.length) continue;
       const item_name = cols[header.indexOf('item_name')];
       const specification = cols[header.indexOf('specification')] || '';
-      const quantity = parseInt(cols[header.indexOf('quantity')]) || 1;
+      const quantity = parseQty(cols[header.indexOf('quantity')]);
       const category = cols[header.indexOf('category')] || 'alat';
       const urgency = cols[header.indexOf('urgency')] || 'tidak';
       const progress = cols[header.indexOf('progress')] || 'belum_dipesan';
@@ -143,10 +150,10 @@ router.post('/:id', isAuthenticated, uploadSparepart.single('photo'), async (req
     }
     if (photo_url) {
       dbRun('UPDATE spareparts SET item_name=?, specification=?, quantity=?, category=?, urgency=?, progress=?, photo_url=? WHERE id=?',
-        [item_name, specification, parseInt(quantity), category, urgency, progress, photo_url, parseInt(id)]);
+        [item_name, specification, parseQty(quantity), category, urgency, progress, photo_url, parseInt(id)]);
     } else {
       dbRun('UPDATE spareparts SET item_name=?, specification=?, quantity=?, category=?, urgency=?, progress=? WHERE id=?',
-        [item_name, specification, parseInt(quantity), category, urgency, progress, parseInt(id)]);
+        [item_name, specification, parseQty(quantity), category, urgency, progress, parseInt(id)]);
     }
     if (progress === 'barang_sampai') {
       const sp = dbGet('SELECT * FROM spareparts WHERE id = ?', [parseInt(id)]);
