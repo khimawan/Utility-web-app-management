@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
   const sidebar = document.getElementById('sidebar');
+
+  // Login page renders no sidebar - bail out instead of throwing below.
+  if (!sidebar) return;
+
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
   const mainContent = document.querySelector('.main-content');
@@ -11,15 +15,32 @@ document.addEventListener('DOMContentLoaded', function() {
   let autoHideTimer;
   const AUTO_HIDE_DELAY = 5000;
 
-  // ensure sidebar starts hidden on mobile
-  if (window.innerWidth <= 768) {
-    sidebar.classList.remove('show');
-    document.body.classList.remove('sidebar-open');
-  }
-
   function isMobile() {
     return window.innerWidth <= 768;
   }
+
+  let isMobileView = isMobile();
+
+  // ensure sidebar starts hidden on mobile
+  if (isMobileView) {
+    sidebar.classList.remove('collapsed', 'show');
+    document.body.classList.remove('sidebar-open');
+    if (mainContent) mainContent.classList.remove('expanded');
+  }
+
+  // The collapsed (70px rail) state is desktop-only. Reset it when crossing the
+  // breakpoint so rotating/resizing never leaves a sliver drawer on mobile.
+  // Only acts on an actual desktop<->mobile switch, not on every resize tick.
+  window.addEventListener('resize', function() {
+    const mobile = isMobile();
+    if (mobile === isMobileView) return;
+    isMobileView = mobile;
+    if (mobile) {
+      sidebar.classList.remove('collapsed');
+      if (mainContent) mainContent.classList.remove('expanded');
+    }
+    hideSidebar();
+  });
 
   function lockBodyScroll(lock) {
     document.body.classList.toggle('sidebar-open', lock);

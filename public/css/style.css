@@ -1,4 +1,13 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
+/* z-index scale - single source of truth.
+   Order: navbar < backdrop < sidebar.
+   The mobile drawer must sit ABOVE the header, and the backdrop must dim the
+   header too, otherwise the header floats over the drawer and clips its top. */
+:root {
+  --z-navbar: 1000;
+  --z-sidebar-backdrop: 1040;
+  --z-sidebar: 1050;
+}
 body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh; }
 .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
 .login-container { width: 100%; max-width: 420px; padding: 20px; }
@@ -10,7 +19,7 @@ body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh;
 .login-header p { color: #6c757d; font-size: 14px; margin-top: 5px; }
 .login-note { margin-top: 20px; padding: 12px; background: #fff3cd; border-radius: 8px; text-align: center; }
 .login-note p { font-size: 12px; color: #856404; margin: 0; }
-.sidebar { position: fixed; top: 0; left: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%); color: white; z-index: 1000; transition: all 0.3s; overflow-y: auto; visibility: visible; }
+.sidebar { position: fixed; top: 0; left: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%); color: white; z-index: var(--z-sidebar); transition: width 0.3s, transform 0.3s, visibility 0.3s; overflow-y: auto; visibility: visible; }
 .sidebar.collapsed { width: 70px; }
 .sidebar.collapsed .sidebar-brand { font-size: 0; width: 0; overflow: hidden; opacity: 0; padding: 0; margin: 0; }
 .sidebar.collapsed .sidebar-header { justify-content: center; padding: 20px 0; }
@@ -39,7 +48,7 @@ body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh;
 .sidebar-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 10px 15px; }
 .main-content { margin-left: 260px; min-height: 100vh; transition: margin 0.3s; }
 .main-content.expanded { margin-left: 70px; }
-.top-navbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: white; border-bottom: 1px solid #dee2e6; position: sticky; top: 0; z-index: 999; }
+.top-navbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: white; border-bottom: 1px solid #dee2e6; position: sticky; top: 0; z-index: var(--z-navbar); }
 .main-nav { border: none; }
 .main-nav .nav-link { color: #495057; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 6px 6px 0 0; }
 .main-nav .nav-link.active { color: #1e3c72; border-bottom: 2px solid #1e3c72; font-weight: 600; }
@@ -62,17 +71,32 @@ body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh;
 .sub-sidebar .nav-link { padding: 8px 20px; font-size: 13px; color: #495057; }
 .sub-sidebar .nav-link.active { background: #e8f0fe; color: #1e3c72; font-weight: 600; border-right: 3px solid #1e3c72; }
 body.sidebar-open { overflow: hidden; }
-body.sidebar-open .top-navbar { z-index: 1001; }
 @media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.show { transform: translateX(0); }
+  /* Mobile: sidebar is an off-canvas drawer layered ON TOP of the header.
+     It must never be clipped by the sticky .top-navbar. */
+  .sidebar,
+  .sidebar.collapsed {
+    width: min(300px, 85vw);
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    visibility: hidden;
+    overscroll-behavior: contain;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .sidebar.show {
+    transform: translateX(0);
+    visibility: visible;
+  }
   .main-content { margin-left: 0 !important; }
   .main-nav { display: none; }
   .page-content { padding: 15px; }
 }
 .sidebar-backdrop {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.4); z-index: 999;
+  background: rgba(0,0,0,0.4); z-index: var(--z-sidebar-backdrop);
   opacity: 0; visibility: hidden; transition: all 0.3s;
 }
 .sidebar-backdrop.active { opacity: 1; visibility: visible; }
