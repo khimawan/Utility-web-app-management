@@ -1,12 +1,24 @@
 <%- include('../../partials/header') %>
   <%- include('../../partials/topnav') %>
   <div class="page-content">
+    <div class="d-none d-print-block mb-3 pb-2 border-bottom">
+      <h5 class="mb-1">Rangkuman Kegiatan Utility</h5>
+      <div class="small text-muted">
+        Tanggal data: <strong><%= selectedDate %></strong> &middot; Dicetak: <%= new Date().toLocaleString('id-ID') %>
+      </div>
+    </div>
+
     <div class="page-header d-flex justify-content-between align-items-center">
       <h4><i class="bi bi-clipboard-data me-2"></i>Rangkuman Kegiatan</h4>
-      <form method="GET" action="/rangkuman" class="d-flex gap-2">
-        <input type="date" name="date" class="form-control form-control-sm" value="<%= selectedDate %>">
-        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
-      </form>
+      <div class="d-flex gap-2 align-items-center d-print-none">
+        <form method="GET" action="/rangkuman" class="d-flex gap-2">
+          <input type="date" name="date" class="form-control form-control-sm" value="<%= selectedDate %>">
+          <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+        </form>
+        <button type="button" class="btn btn-sm btn-success" onclick="window.print()">
+          <i class="bi bi-file-earmark-pdf me-1"></i>Unduh PDF
+        </button>
+      </div>
     </div>
 
     <div class="card mb-4">
@@ -61,7 +73,7 @@
     </div>
 
     <div class="card mb-4">
-      <div class="card-header"><h5>Tabel 2: Detail Pekerjaan Selesai</h5></div>
+      <div class="card-header"><h5>Tabel 2: Detail Pekerjaan</h5></div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-striped table-hover">
@@ -70,22 +82,42 @@
                 <th>Pekerjaan</th>
                 <th>Manpower</th>
                 <th>Waktu</th>
+                <th>Status</th>
                 <th>Progres (%)</th>
                 <th>Catatan</th>
               </tr>
             </thead>
             <tbody>
-              <% works.forEach(function(w) { %>
+              <%
+                // works.status is never written by any route (always 'open'), so
+                // completion is derived from repair_percentage, clamped 0-100.
+                works.forEach(function(w) {
+                  var n = Number(w.repair_percentage);
+                  var pct = isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+                  var st = pct >= 100
+                    ? { label: 'Selesai', cls: 'bg-success', bar: 'bg-success' }
+                    : pct > 0
+                      ? { label: 'Dalam Pengerjaan', cls: 'bg-warning text-dark', bar: 'bg-warning' }
+                      : { label: 'Belum Dikerjakan', cls: 'bg-secondary', bar: 'bg-secondary' };
+              %>
               <tr>
                 <td><strong><%= w.area %></strong> - <%= w.description %></td>
-                <td><%= w.member_names %></td>
+                <td><%= w.member_names || '-' %></td>
                 <td><%= w.work_date %></td>
-                <td><div class="progress" style="height:18px;width:80px;"><div class="progress-bar bg-success" style="width:<%= w.repair_percentage %>%"><%= w.repair_percentage %>%</div></div></td>
+                <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress flex-grow-1" style="height:18px;min-width:90px;">
+                      <div class="progress-bar <%= st.bar %>" style="width:<%= pct %>%"></div>
+                    </div>
+                    <span class="small fw-semibold" style="min-width:38px;"><%= pct %>%</span>
+                  </div>
+                </td>
                 <td><%= w.repair_notes || '-' %></td>
               </tr>
               <% }); %>
               <% if (works.length === 0) { %>
-              <tr><td colspan="5" class="text-center text-muted">Tidak ada pekerjaan selesai pada tanggal ini</td></tr>
+              <tr><td colspan="6" class="text-center text-muted">Tidak ada pekerjaan pada tanggal ini</td></tr>
               <% } %>
             </tbody>
           </table>
@@ -138,6 +170,7 @@
         </ul>
         <div class="tab-content mt-3">
           <div class="tab-pane fade show active" id="pred-wtp">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Predictive Maintenance &mdash; WTP</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -181,6 +214,7 @@
             </div>
           </div>
           <div class="tab-pane fade" id="pred-boiler">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Predictive Maintenance &mdash; Boiler</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -214,6 +248,7 @@
             </div>
           </div>
           <div class="tab-pane fade" id="pred-n2">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Predictive Maintenance &mdash; N2 Generator</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -254,6 +289,7 @@
             </div>
           </div>
           <div class="tab-pane fade" id="pred-kompresor">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Predictive Maintenance &mdash; Kompressor</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -307,6 +343,7 @@
         </ul>
         <div class="tab-content mt-3">
           <div class="tab-pane fade show active" id="prev-wtp">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Preventive Maintenance &mdash; WTP</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -345,6 +382,7 @@
             </div>
           </div>
           <div class="tab-pane fade" id="prev-boiler">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Preventive Maintenance &mdash; Boiler</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -377,6 +415,7 @@
             </div>
           </div>
           <div class="tab-pane fade" id="prev-n2">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Preventive Maintenance &mdash; N2 Generator</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>
@@ -410,6 +449,7 @@
             </div>
           </div>
           <div class="tab-pane fade" id="prev-kompresor">
+            <h6 class="d-none d-print-block border-bottom pb-1 mb-2">Preventive Maintenance &mdash; Kompressor</h6>
             <div class="table-responsive">
               <table class="table table-striped table-sm">
                 <thead>

@@ -110,3 +110,54 @@ body.sidebar-open { overflow: hidden; }
 .scrollable-table { max-height: 420px; overflow-y: auto; }
 .scrollable-table thead th { position: sticky; top: 0; background: white; z-index: 1; }
 .delete-selected-bar { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+
+/* ---- Print / "Unduh PDF" (Rangkuman) ----------------------------------
+   The predictive tables are 17 columns wide, so print landscape. Every
+   .tab-pane is forced visible, otherwise the browser only prints whichever
+   tab happens to be active on screen. */
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+
+  body { background: #fff !important; }
+
+  .sidebar,
+  .top-navbar,
+  .sidebar-backdrop { display: none !important; }
+
+  .main-content,
+  .main-content.expanded { margin-left: 0 !important; }
+  .page-content { padding: 0 !important; }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+    margin-bottom: 8mm;
+    break-inside: avoid;
+  }
+  /* .bg-primary / .bg-success headers are white-on-colour on screen; flatten
+     them so they do not print as a solid ink block. */
+  .card-header,
+  .card-header.bg-primary,
+  .card-header.bg-success {
+    background: #f2f2f2 !important;
+    color: #000 !important;
+    border-bottom: 1px solid #999 !important;
+  }
+
+  /* Print every tab, not just the active one. */
+  .nav-tabs { display: none !important; }
+  .tab-content > .tab-pane { display: block !important; opacity: 1 !important; }
+
+  .table-responsive { overflow: visible !important; }
+  .table { font-size: 10px; }
+  .table th,
+  .table td {
+    border: 1px solid #999 !important;
+    padding: 3px 6px !important;
+    color: #000 !important;
+  }
+  .table thead { display: table-header-group; }
+  .table tr, .progress { break-inside: avoid; }
+
+  a[href]::after { content: none !important; }
+}
