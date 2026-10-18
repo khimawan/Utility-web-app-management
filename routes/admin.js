@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDb, dbAll, dbGet, dbRun } = require('../config/database');
+const { hashPassword } = require('../config/password');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 
 router.use(isAuthenticated, isAdmin);
@@ -25,8 +26,12 @@ router.post('/members', async (req, res) => {
       const members = dbAll('SELECT * FROM users ORDER BY position, name');
       return res.render('pages/admin/index', { members, schedules: [], templates: [], error: 'Username sudah digunakan' });
     }
+    if (!password || password.trim() === '') {
+      const members = dbAll('SELECT * FROM users ORDER BY position, name');
+      return res.render('pages/admin/index', { members, schedules: [], templates: [], error: 'Password tidak boleh kosong' });
+    }
     dbRun('INSERT INTO users (name, username, password, position, job) VALUES (?, ?, ?, ?, ?)',
-      [name, username, password, position || 'member', job || null]);
+      [name, username, hashPassword(password), position || 'member', job || null]);
     res.redirect('/admin');
   } catch (err) {
     console.error(err);
@@ -40,7 +45,7 @@ router.post('/members/:id', async (req, res) => {
     const { name, username, password, position, job } = req.body;
     if (password && password.trim() !== '') {
       dbRun('UPDATE users SET name=?, username=?, password=?, position=?, job=? WHERE id=?',
-        [name, username, password, position, job || null, parseInt(id)]);
+        [name, username, hashPassword(password), position, job || null, parseInt(id)]);
     } else {
       dbRun('UPDATE users SET name=?, username=?, position=?, job=? WHERE id=?',
         [name, username, position, job || null, parseInt(id)]);

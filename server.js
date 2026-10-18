@@ -2,21 +2,35 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const { getDb, saveDb } = require('./config/database');
 const { setLocals } = require('./middleware/auth');
 
 const app = express();
 const PORT = 3000;
 
+// Session secret must come from the environment. A hardcoded secret that is
+// also committed to git lets anyone forge an admin session cookie.
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET is not set — generated a random secret for this process.');
+  console.warn('WARNING: all sessions will be invalidated on restart. Set SESSION_SECRET in .env');
+}
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Traffic arrives via the cloudflared container, so without this every request
+// looks like it comes from the tunnel's own IP and per-client rate limiting
+// would treat all visitors as one caller.
+app.set('trust proxy', true);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 
 app.use(session({
-  secret: 'utility-management-secret-key-2024',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }

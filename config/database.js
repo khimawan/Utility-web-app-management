@@ -1,6 +1,7 @@
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
+const { hashPassword } = require('./password');
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'utility.db');
 
@@ -472,8 +473,8 @@ function initSchema(db) {
   )`);
 
   // Seed data
-  db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Administrator', 'adminaja', 'adminaja', 'admin', NULL)`);
-  db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Member 01', 'member01', 'member01', 'member', 'operator_wtp')`);
+  db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Administrator', 'adminaja', ?, 'admin', NULL)`, [hashPassword('adminaja')]);
+  db.run(`INSERT INTO users (name, username, password, position, job) VALUES ('Member 01', 'member01', ?, 'member', 'operator_wtp')`, [hashPassword('member01')]);
 
   const machines = [
     ['WTP', 'operator_wtp', 'Water Treatment Plant'],
