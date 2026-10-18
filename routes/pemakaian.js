@@ -3,6 +3,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const { getDb, dbAll, dbGet, dbRun } = require('../config/database');
+const stock = require('../config/stock');
 const { isAuthenticated } = require('../middleware/auth');
 
 function getDateSubdir() {
@@ -32,15 +33,31 @@ router.get('/', isAuthenticated, async (req, res) => {
 router.post('/', isAuthenticated, async (req, res) => {
   try {
     const { project_name, member_ids, items } = req.body;
-    const parsedItems = JSON.parse(items);
+    const parsedItems = stock.parseItems(items);
+
+    // Work out what is actually available before deducting. Recording 99 while
+    // only 2 existed and clamping the stock to 0 would leave the record claiming
+    // 99, and deleting it later would hand 99 back - inventing inventory.
+    parsedItems.forEach(function (item) {
+      const want = stock.roundQty(item.qty);
+      if (!item || item.id === undefined || item.id === null || want === null || want <= 0) {
+        item.taken = 0;
+        return;
+      }
+      const have = stock.getStock(item.id);
+      item.taken = Math.min(want, have);
+    });
+
     dbRun(
       `INSERT INTO pemakaian_part (project_name, member_ids, items, input_by)
        VALUES (?, ?, ?, ?)`,
-      [project_name, member_ids, items, req.session.user.id]
+      [project_name, member_ids, JSON.stringify(parsedItems), req.session.user.id]
     );
-    for (const item of parsedItems) {
-      dbRun('UPDATE inventory_items SET quantity = quantity - ? WHERE id = ?', [item.qty, item.id]);
-    }
+
+    parsedItems.forEach(function (item) {
+      if (item.taken > 0) stock.adjustStock(item.id, -item.taken);
+    });
+
     res.redirect('/pemakaian');
   } catch (err) {
     console.error(err);
@@ -55,10 +72,13 @@ router.post('/delete-multiple', isAuthenticated, async (req, res) => {
     idList.forEach(function(id) {
       const rec = dbGet('SELECT items FROM pemakaian_part WHERE id = ?', [id]);
       if (rec && rec.items) {
-        const parsedItems = JSON.parse(rec.items);
-        for (const item of parsedItems) {
-          dbRun('UPDATE inventory_items SET quantity = quantity + ? WHERE id = ?', [item.qty, item.id]);
-        }
+        // Give back exactly what was taken. `taken` was written when the stock
+        // was clamped; legacy rows without it fall back to the recorded qty.
+        stock.parseItems(rec.items).forEach(function (item) {
+          const qty = stock.roundQty(item.taken !== undefined ? item.taken : item.qty);
+          if (!qty || qty <= 0) return;
+          stock.adjustStock(item.id, qty);
+        });
       }
       dbRun('DELETE FROM pemakaian_part WHERE id = ?', [id]);
     });
@@ -73,10 +93,11 @@ router.post('/:id/delete', isAuthenticated, async (req, res) => {
   try {
     const rec = dbGet('SELECT items FROM pemakaian_part WHERE id = ?', [parseInt(req.params.id)]);
     if (rec && rec.items) {
-      const parsedItems = JSON.parse(rec.items);
-      for (const item of parsedItems) {
-        dbRun('UPDATE inventory_items SET quantity = quantity + ? WHERE id = ?', [item.qty, item.id]);
-      }
+      stock.parseItems(rec.items).forEach(function (item) {
+        const qty = stock.roundQty(item.taken !== undefined ? item.taken : item.qty);
+        if (!qty || qty <= 0) return;
+        stock.adjustStock(item.id, qty);
+      });
     }
     dbRun('DELETE FROM pemakaian_part WHERE id = ?', [parseInt(req.params.id)]);
     res.redirect('/pemakaian');

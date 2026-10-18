@@ -3,12 +3,66 @@
   <div class="page-content">
     <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
       <h4><i class="bi bi-box me-2"></i>Alat & Bahan</h4>
-      <div class="d-flex gap-2">
-        <a href="/inventory/download-template" class="btn btn-sm btn-outline-success"><i class="bi bi-download me-1"></i>Download Template CSV</a>
-        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#importCsvModal"><i class="bi bi-upload me-1"></i>Import CSV</button>
+      <div class="d-flex gap-2 flex-wrap">
+        <div class="btn-group btn-group-sm" role="group">
+        <button class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-download me-1"></i>Download Template
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="/inventory/download-template-excel"><i class="bi bi-file-earmark-excel me-2"></i>Excel (.xlsx) &mdash; disarankan</a></li>
+          <li><a class="dropdown-item" href="/inventory/download-template"><i class="bi bi-filetype-csv me-2"></i>CSV (.csv)</a></li>
+        </ul>
+      </div>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#importExcelModal"><i class="bi bi-upload me-1"></i>Import File</button>
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importGuideModal"><i class="bi bi-question-circle me-1"></i>Panduan</button>
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal"><i class="bi bi-plus-circle me-1"></i>Tambah Item</button>
       </div>
     </div>
+
+    <% if (typeof importResult !== 'undefined' && importResult) { %>
+      <% if (importResult.fatal) { %>
+        <div class="alert alert-danger py-2">
+          <i class="bi bi-exclamation-triangle me-1"></i><strong>Import gagal.</strong> <%= importResult.fatal %>
+        </div>
+      <% } else { %>
+        <div class="alert <%= (importResult.added + importResult.updated) > 0 ? 'alert-success' : 'alert-warning' %> py-2">
+          <i class="bi bi-info-circle me-1"></i>
+          <% if (importResult.format) { %>
+            Format terdeteksi: <span class="badge bg-secondary"><%= importResult.format %></span>
+          <% } %>
+          Import selesai: <strong><%= importResult.added %></strong> item baru ditambahkan,
+          <strong><%= importResult.updated %></strong> item diperbarui
+          <% if (importResult.errors.length > 0) { %>
+            , <strong class="text-danger"><%= importResult.errors.length %></strong> baris ditolak (tidak disimpan)
+          <% } %>
+        </div>
+      <% } %>
+    <% } %>
+
+    <% if (typeof importResult !== 'undefined' && importResult && importResult.errors && importResult.errors.length > 0) { %>
+      <div class="card mb-3">
+        <div class="card-header"><h5><i class="bi bi-list-x me-2 text-danger"></i>Baris yang ditolak (<%= importResult.errors.length %>)</h5></div>
+        <div class="card-body">
+          <p class="small text-muted mb-2">
+            Baris di bawah ini <strong>tidak tersimpan</strong>. Perbaiki di file Excel lalu import ulang.
+            Nomor baris mengacu pada baris di sheet &ldquo;Data&rdquo;.
+          </p>
+          <div class="scrollable-table" style="max-height:260px;">
+            <table class="table table-sm table-striped mb-0">
+              <thead><tr><th style="width:90px;">Baris</th><th>Alasan ditolak</th></tr></thead>
+              <tbody>
+                <% importResult.errors.forEach(function(e) { %>
+                <tr><td><span class="badge bg-danger">Baris <%= e.row %></span></td><td><%= e.reason %></td></tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+          <% if (importResult.truncated) { %>
+            <p class="small text-muted mb-0 mt-2"><em>Daftar dipotong pada 100 baris pertama. Perbaiki yang terlihat, lalu import ulang untuk melihat sisanya.</em></p>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
 
     <% if (typeof importCount !== 'undefined' && importCount > 0) { %>
       <div class="alert alert-success py-2"><i class="bi bi-check-circle me-1"></i><%= importCount %> item berhasil diimpor dari CSV.</div>
@@ -59,7 +113,7 @@
                     <td><span class="badge bg-<%= tab.color %>"><%= tab.label %></span></td>
                     <td><strong><%= item.item_name %></strong></td>
                     <td><%= item.specification || '-' %></td>
-                    <td><%= item.quantity %></td>
+                    <td><%= Number.isInteger(Number(item.quantity)) ? Number(item.quantity) : Number(item.quantity).toFixed(1) %></td>
                     <td>
                       <% if (item.photo_url) { %>
                         <img src="<%= item.photo_url %>" width="50" height="50" style="object-fit:cover;border-radius:4px;">
@@ -87,26 +141,151 @@
       <% }); %>
     </div>
 
-    <div class="modal fade" id="importCsvModal" tabindex="-1">
+    <div class="modal fade" id="importExcelModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" action="/inventory/import-csv" enctype="multipart/form-data">
+          <form method="POST" action="/inventory/import" enctype="multipart/form-data">
             <div class="modal-header">
-              <h5 class="modal-title">Import CSV Inventory</h5>
+              <h5 class="modal-title"><i class="bi bi-upload me-2"></i>Import File (Excel atau CSV)</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-              <p class="text-muted small">Unduh template CSV terlebih dahulu, lalu isi data dan unggah kembali.</p>
+              <div class="alert alert-info py-2 small">
+                <i class="bi bi-lightbulb me-1"></i>
+                Belum pernah import? Ambil <a href="/inventory/download-template-excel" class="alert-link">template Excel</a> &mdash; sudah berisi contoh dan panduan. Tekan <strong>Panduan</strong> untuk aturan lengkapnya.
+              </div>
               <div class="mb-3">
-                <label class="form-label">File CSV</label>
-                <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                <label class="form-label">File yang diimpor</label>
+                <input type="file" name="data_file" class="form-control" accept=".xlsx,.xlsm,.csv" required>
+                <div class="form-text">
+                  <strong>Sistem membaca formatnya sendiri</strong> dari isi file &mdash; Anda tidak perlu memilih mode.
+                  Bisa <code>.xlsx</code> (Excel 2007&ndash;2019 / Microsoft 365 / Google Sheets) atau <code>.csv</code>. Maks 5&nbsp;MB.
+                </div>
+              </div>
+              <div class="alert alert-warning py-2 small mb-0">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                File <code>.xls</code> (Excel 97&ndash;2003) tidak didukung &mdash; di Excel pilih <em>Save As &rarr; Excel Workbook (.xlsx)</em>.
+                Import bersifat <strong>memperbarui</strong> item yang sudah ada (spesifikasi &amp; jumlah <strong>diganti</strong>) dan menambah yang belum ada. Boleh diulang, hasilnya sama.
               </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-              <button type="submit" class="btn btn-primary">Import</button>
+              <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i>Import Sekarang</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="importGuideModal" tabindex="-1">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-question-circle me-2"></i>Panduan Import Excel &mdash; Alat &amp; Bahan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+
+            <h6 class="fw-bold text-primary">1. Format file</h6>
+            <div class="alert alert-success py-2 small">
+              <i class="bi bi-check-circle me-1"></i>
+              Cukup <strong>satu tombol Import</strong> untuk keduanya. Format <code>.xlsx</code> maupun <code>.csv</strong> sama-sama bisa, dan sistem
+              <strong>mendeteksi sendiri dari isi file</strong> &mdash; tidak perlu memilih mode di halaman ini.
+            </div>
+            <ul class="small mb-3">
+              <li>Excel: <code>.xlsx</code> (Excel 2007&ndash;2019 / Microsoft 365 / Google Sheets). Isi data pada sheet <strong>&ldquo;Data&rdquo;</strong>; sheet &ldquo;Panduan&rdquo; boleh diabaikan.</li>
+              <li>CSV: baris pertama berisi nama kolom, lalu satu baris per item. Pemisah koma. Kalau spesifikasi memuat koma, apit dengan tanda kutip berganda &mdash; misalnya <code>"ISO VG 46, 1 L"</code>.</li>
+              <li><strong>Jangan diubah, dihapus, atau diketik ulang nama kolom di baris 1.</strong> Sistem mencari header berdasarkan nama kolom, jadi urutannya bebas tapi ejaan harus persis.</li>
+              <li>File <code>.xls</code> (Excel 97&ndash;2003) tidak didukung: buka di Excel lalu <em>Save As &rarr; Excel Workbook (.xlsx)</em>, atau simpan sebagai CSV.</li>
+              <li>Maksimal <strong>2000 baris</strong> per file, maks 5&nbsp;MB. Baris kosong otomatis dilewati.</li>
+            </ul>
+
+            <h6 class="fw-bold text-primary">2. Aturan isi tiap kolom</h6>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr><th>Kolom</th><th>Wajib</th><th>Isi yang benar</th><th>Contoh salah (ditolak)</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>category</code></td><td>Ya</td>
+                    <td><code>alat</code> &middot; <code>part</code> &middot; <code>bahan</code><br><span class="text-muted">Huruf besar-kecil tidak berpengaruh. &ldquo;Peralatan&rdquo; dan &ldquo;Sparepart&rdquo; juga dikenali.</span></td>
+                    <td><code>Alat</code> &nbsp;<span class="badge bg-secondary">ok</span><br><code>PERALATAN</code> <span class="badge bg-secondary">ok</span><br><code>Spare</code> <span class="badge bg-danger">ditolak</span><br><code>alat,</code> <span class="badge bg-danger">ditolak</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>item_name</code></td><td>Ya</td>
+                    <td>Nama barang, maksimal 200 karakter. Spasi di awal/akhir otomatis dibersihkan.</td>
+                    <td><code>&nbsp;&nbsp;</code> (hanya spasi) <span class="badge bg-danger">ditolak</span><br>(kosong) <span class="badge bg-danger">ditolak</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>specification</code></td><td>Tidak</td>
+                    <td>Teks bebas. Boleh dikosongkan. Tanda baca dan koma aman &mdash; ini sel Excel, bukan CSV, jadi koma tidak jadi pemisah kolom.</td>
+                    <td>&mdash;</td>
+                  </tr>
+                  <tr>
+                    <td><code>quantity</code></td><td>Ya</td>
+                    <td>Angka <code>0</code> atau lebih, boleh desimal <strong>maksimal 1 angka di belakang koma</strong>: <code>1.3</code>, <code>0.7</code>. Boleh dikosongkan &mdash; dianggap <code>0</code>.</td>
+                    <td><code>1,000</code> <span class="badge bg-danger">ditolak</span><br><code>5 pcs</code> <span class="badge bg-danger">ditolak</span><br><code>-2</code> <span class="badge bg-danger">ditolak</span><br><code>1.25</code> <span class="badge bg-danger">ditolak</span><br><span class="text-muted">2 digit desimal</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="alert alert-danger py-2 small">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              <strong>Penyebab input paling sering gagal:</strong> Excel memformat angka besar dengan pemisah ribuan sehingga tersimpan sebagai <code>1,000</code> atau <code>2,500</code>.
+              Ubah format sel kolom <code>quantity</code> menjadi <strong>Number &rarr; General</strong> (atau tulis <code>1000</code> tanpa pemisah) sebelum mengimpor.
+            </div>
+            <div class="alert alert-info py-2 small">
+              <i class="bi bi-info-circle me-1"></i>
+              <strong>Jumlah boleh desimal</strong>, maksimal 1 angka di belakang koma &mdash; misalnya <code>1.3</code> liter oli atau <code>0.7</code> kg cat.
+              Nilai seperti <code>1.25</code> ditolak. Koma sebagai pemisah ribuan (<code>1,000</code>) juga ditolak karena ambigu; pakai titik untuk desimal.
+            </div>
+
+            <h6 class="fw-bold text-primary">3. Contoh input</h6>
+            <p class="small mb-1 text-success"><i class="bi bi-check-circle me-1"></i><strong>Benar &mdash; akan tersimpan:</strong></p>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered table-striped mb-0">
+                <thead class="table-light"><tr><th>category</th><th>item_name</th><th>specification</th><th>quantity</th></tr></thead>
+                <tbody>
+                  <tr><td>alat</td><td>Kunci Pas 10mm</td><td>Kunci pas ukuran 10mm</td><td>5</td></tr>
+                  <tr><td>part</td><td>Bearing 6204</td><td>Bearing SKF 6204-2RS</td><td>2</td></tr>
+                  <tr><td>bahan</td><td>Minyak Compressor</td><td>ISO VG 46, 1 L</td><td>3</td></tr>
+                  <tr><td>bahan</td><td>Minyak Hydraulic</td><td>ISO VG 68</td><td>1.3</td></tr>
+                  <tr><td>bahan</td><td>Cat Epoksi</td><td>Aduk 1 kg</td><td>0.7</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small mb-1 text-danger"><i class="bi bi-x-circle me-1"></i><strong>Salah &mdash; akan ditolak, bukan diam-diam hilang:</strong></p>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered table-striped mb-0">
+                <thead class="table-light"><tr><th>category</th><th>item_name</th><th>specification</th><th>quantity</th><th>Pesan error</th></tr></thead>
+                <tbody>
+                  <tr><td>alat</td><td>Kunci Pas</td><td>&mdash;</td><td>1,000</td><td>jumlah &ldquo;1,000&rdquo; ambigu: pemisah ribuan</td></tr>
+                  <tr><td>spare</td><td>Filter Air</td><td>&mdash;</td><td>1</td><td>kategori &ldquo;spare&rdquo; tidak dikenal</td></tr>
+                  <tr><td>alat</td><td>&mdash;</td><td>&mdash;</td><td>1</td><td>item_name kosong</td></tr>
+                  <tr><td>part</td><td>O-ring</td><td>&mdash;</td><td>1.25</td><td>maksimal 1 angka di belakang koma</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small text-muted mb-3">
+              Setiap baris yang ditolak akan muncul di halaman utama dalam tabel
+              &ldquo;Baris yang ditolak&rdquo; lengkap dengan nomor baris dan alasannya &mdash; jadi tidak ada input yang hilang tanpa kabar.
+            </p>
+
+            <h6 class="fw-bold text-primary">4. Perilaku import</h6>
+            <ul class="small mb-0">
+              <li>Item dengan <strong>kategori + nama yang sama</strong> akan <strong>diperbarui</strong>: spesifikasi dan jumlah <strong>diganti</strong> dengan nilai dari file.</li>
+              <li>Item yang belum ada akan <strong>ditambahkan</strong> sebagai baris baru.</li>
+              <li>Import bisa diulang berkali-kali dan hasil akhirnya sama &mdash; tidak akan membuat duplikat.</li>
+              <li>Baris yang gagal validasi <strong>tidak</strong> disimpan; baris lain tetap tersimpan normal.</li>
+            </ul>
+
+          </div>
+          <div class="modal-footer">
+            <a href="/inventory/download-template-excel" class="btn btn-outline-success"><i class="bi bi-download me-1"></i>Download Template</a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            <button type="button" class="btn btn-primary" id="guideToImportBtn">Import Sekarang</button>
+          </div>
         </div>
       </div>
     </div>
@@ -138,7 +317,8 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">Jumlah</label>
-                <input type="number" name="quantity" class="form-control" min="0" value="0" required>
+                <input type="number" name="quantity" class="form-control" min="0" step="0.1" value="0" required>
+                <div class="form-text">Boleh desimal, maksimal 1 angka di belakang koma &mdash; mis. <code>1.3</code> liter atau <code>0.7</code> kg.</div>
               </div>
               <div class="mb-3">
                 <label class="form-label">Foto</label>
@@ -174,7 +354,8 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">Jumlah</label>
-                <input type="number" name="quantity" class="form-control" id="edit_item_qty" min="0" required>
+                <input type="number" name="quantity" class="form-control" id="edit_item_qty" min="0" step="0.1" required>
+                <div class="form-text">Boleh desimal, maksimal 1 angka di belakang koma.</div>
               </div>
               <div class="mb-3">
                 <label class="form-label">Ganti Foto</label>
@@ -202,6 +383,17 @@ document.querySelectorAll('.edit-item').forEach(function(btn) {
     document.getElementById('edit_item_qty').value = this.dataset.qty;
     new bootstrap.Modal(document.getElementById('editItemModal')).show();
   });
+});
+document.getElementById('guideToImportBtn').addEventListener('click', function() {
+  // Wait for the guide's backdrop to be torn down before opening the other
+  // modal; toggling both at once leaves an orphaned backdrop in Bootstrap 5.
+  var guideEl = document.getElementById('importGuideModal');
+  var openImport = function() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('importExcelModal')).show();
+    guideEl.removeEventListener('hidden.bs.modal', openImport);
+  };
+  guideEl.addEventListener('hidden.bs.modal', openImport);
+  bootstrap.Modal.getOrCreateInstance(guideEl).hide();
 });
 </script>
 <%- include('../../partials/footer') %>

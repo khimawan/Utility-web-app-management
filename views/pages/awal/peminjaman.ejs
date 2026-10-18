@@ -1,6 +1,16 @@
 <%- include('../../partials/header') %>
   <%- include('../../partials/topnav') %>
   <div class="page-content">
+    <% if (typeof borrowError !== 'undefined' && borrowError) { %>
+      <div class="alert alert-danger py-2">
+        <i class="bi bi-exclamation-triangle me-1"></i><strong>Peminjaman gagal disimpan.</strong>
+        <ul class="mb-0 mt-1 ps-3">
+          <% (typeof borrowErrors !== 'undefined' && borrowErrors ? borrowErrors : [borrowError]).forEach(function(msg) { %>
+          <li><%= msg %></li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
     <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
       <h4><i class="bi bi-tools me-2"></i>Peminjaman Alat</h4>
       <div class="d-flex gap-2">
@@ -41,12 +51,14 @@
                 <td><%= r.borrow_date %></td>
                 <td>
                   <%
-                    var itemList = JSON.parse(r.items || '[]');
+                    var itemList;
+                    try { itemList = JSON.parse(r.items || '[]'); } catch (e) {}
+                    if (!Array.isArray(itemList)) itemList = [];
                     var names = itemList.map(function(i) { return i.name || i.item_name || ''; }).filter(function(n) { return n; });
                   %>
                   <%= names.join(', ') %>
                 </td>
-                <td><%= r.duration_days %> hari, <%= r.duration_hours %> jam, <%= r.duration_minutes %> menit</td>
+                <td><%= fmtQty(r.duration_days) %> hari, <%= fmtQty(r.duration_hours) %> jam, <%= fmtQty(r.duration_minutes) %> menit</td>
                 <td>
                   <% if (r.status === 'dipinjam') { %>
                     <span class="badge bg-warning text-dark">Dipinjam</span>
@@ -125,11 +137,15 @@
                 <div style="max-height:200px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;padding:8px;">
                   <% items.forEach(function(item) { %>
                   <div class="form-check alat-item" data-name="<%= item.item_name.toLowerCase() %>">
-                    <input class="form-check-input alat-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" onchange="getSelectedItems()">
-                    <label class="form-check-label"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= item.quantity %>)</label>
+                    <div class="d-flex align-items-center gap-2">
+                      <input class="form-check-input alat-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" data-stock="<%= item.quantity %>" onchange="getSelectedItems()">
+                      <label class="form-check-label flex-grow-1"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= fmtQty(item.quantity) %>)</label>
+                      <input type="number" class="form-control form-control-sm alat-qty" style="width:80px;" min="0.1" step="0.1" value="1" placeholder="Jumlah" data-max="<%= item.quantity %>" onchange="getSelectedItems()">
+                    </div>
                   </div>
                   <% }); %>
                 </div>
+                <div class="form-text">Isi jumlah alat yang dipinjam. Jumlah tidak boleh melebihi stok yang tersedia.</div>
                 <input type="hidden" name="items" id="selectedItems" value="[]">
               </div>
               <div class="mb-3">
@@ -204,8 +220,11 @@
                 <div style="max-height:200px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;padding:8px;" id="editAlatContainer">
                   <% items.forEach(function(item) { %>
                   <div class="form-check alat-item" data-name="<%= item.item_name.toLowerCase() %>">
-                    <input class="form-check-input alat-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" onchange="getEditSelectedItems()">
-                    <label class="form-check-label"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= item.quantity %>)</label>
+                    <div class="d-flex align-items-center gap-2">
+                      <input class="form-check-input alat-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" data-stock="<%= item.quantity %>" onchange="getEditSelectedItems()">
+                      <label class="form-check-label flex-grow-1"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= fmtQty(item.quantity) %>)</label>
+                      <input type="number" class="form-control form-control-sm alat-qty" style="width:80px;" min="0.1" step="0.1" value="1" data-max="<%= item.quantity %>" onchange="getEditSelectedItems()">
+                    </div>
                   </div>
                   <% }); %>
                 </div>
@@ -266,20 +285,34 @@ function filterEditAlat(query) {
   });
 }
 
-function getSelectedItems() {
+// Collect checked tools with the quantity typed next to each one, and warn
+// early when the request exceeds stock. The server re-checks this regardless -
+// this is only to save the user a round trip.
+function collectLoans(scopeSelector, hiddenId) {
   var selected = [];
-  document.querySelectorAll('#addPeminjamanModal .alat-checkbox:checked').forEach(function(cb) {
-    selected.push({ id: parseInt(cb.value), name: cb.dataset.itemname });
+  var problems = [];
+  document.querySelectorAll(scopeSelector + ' .alat-checkbox:checked').forEach(function(cb) {
+    var row = cb.closest('.alat-item');
+    var qtyInput = row ? row.querySelector('.alat-qty') : null;
+    var qty = Math.round(parseFloat(qtyInput ? qtyInput.value : 1) * 10) / 10;
+    if (!isFinite(qty) || qty <= 0) qty = 1;
+    var stock = parseFloat(qtyInput ? qtyInput.getAttribute('data-max') : 0);
+    if (isFinite(stock) && qty > stock) {
+      problems.push(cb.dataset.itemname + ': diminta ' + qty + ', stok hanya ' + stock);
+    }
+    selected.push({ id: parseInt(cb.value), name: cb.dataset.itemname, qty: qty });
   });
-  document.getElementById('selectedItems').value = JSON.stringify(selected);
+  document.getElementById(hiddenId).value = JSON.stringify(selected);
+  if (problems.length) alert('Jumlah melebihi stok:\n- ' + problems.join('\n- '));
+  return { selected: selected, problems: problems };
+}
+
+function getSelectedItems() {
+  collectLoans('#addPeminjamanModal', 'selectedItems');
 }
 
 function getEditSelectedItems() {
-  var selected = [];
-  document.querySelectorAll('#editPeminjamanModal .alat-checkbox:checked').forEach(function(cb) {
-    selected.push({ id: parseInt(cb.value), name: cb.dataset.itemname });
-  });
-  document.getElementById('editSelectedItems').value = JSON.stringify(selected);
+  collectLoans('#editPeminjamanModal', 'editSelectedItems');
 }
 
 document.querySelectorAll('.edit-peminjaman').forEach(function(btn) {
@@ -295,13 +328,34 @@ document.querySelectorAll('.edit-peminjaman').forEach(function(btn) {
     document.getElementById('edit_minutes').value = this.dataset.minutes;
     document.getElementById('edit_status').value = this.dataset.status;
 
-    var itemsData = JSON.parse(this.dataset.items || '[]');
+    var itemsData;
+    try { itemsData = JSON.parse(this.dataset.items || '[]'); } catch (e) {}
+    if (!Array.isArray(itemsData)) itemsData = [];
     var editCheckboxes = document.querySelectorAll('#editPeminjamanModal .alat-checkbox');
     editCheckboxes.forEach(function(cb) { cb.checked = false; });
+
+    // While a loan is open its units are already out of inventory, so the
+    // editable ceiling is stock + what this record currently holds.
+    var stillOpen = this.dataset.status === 'dipinjam';
+    var held = {};
+    if (stillOpen) {
+      itemsData.forEach(function(item) {
+        if (typeof item.qty === 'number') held[item.id] = (held[item.id] || 0) + item.qty;
+      });
+    }
+
     itemsData.forEach(function(item) {
       editCheckboxes.forEach(function(cb) {
-        if (parseInt(cb.value) === item.id) {
-          cb.checked = true;
+        if (parseInt(cb.value) !== item.id) return;
+        cb.checked = true;
+        var row = cb.closest('.alat-item');
+        var qtyInput = row ? row.querySelector('.alat-qty') : null;
+        var heldQty = typeof item.qty === 'number' ? item.qty : 1;
+        if (qtyInput) {
+          qtyInput.value = heldQty;
+          if (stillOpen) {
+            qtyInput.setAttribute('data-max', parseFloat(qtyInput.getAttribute('data-max')) + heldQty);
+          }
         }
       });
     });

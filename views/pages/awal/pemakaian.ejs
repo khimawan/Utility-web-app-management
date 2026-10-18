@@ -32,7 +32,10 @@
                 <td><input type="checkbox" class="row-checkbox" value="<%= r.id %>"></td>
                 <td>
                   <%
-                    var memberIds = JSON.parse(r.member_ids || '[]');
+                    // A malformed/legacy row must not 500 the whole page.
+                    var memberIds = [];
+                    try { memberIds = JSON.parse(r.member_ids || '[]'); } catch (e) {}
+                    if (!Array.isArray(memberIds)) memberIds = [];
                     var memberNames = memberIds.map(function(mid) {
                       var found = members.find(function(m) { return m.id === mid; });
                       return found ? found.name : '';
@@ -42,14 +45,17 @@
                 </td>
                 <td>
                   <%
-                    var itemList = JSON.parse(r.items || '[]');
+                    var itemList;
+                    try { itemList = JSON.parse(r.items || '[]'); } catch (e) {}
+                    if (!Array.isArray(itemList)) itemList = [];
                     var itemNames = itemList.map(function(i) { return i.name || ''; }).filter(function(n) { return n; });
                   %>
                   <%= itemNames.join(', ') %>
                 </td>
                 <td>
                   <%
-                    var quantities = itemList.map(function(i) { return i.qty || i.quantity || 0; });
+                    // qty may be a decimal (0.7); format so 0 reads "0", not "0.0"
+                    var quantities = itemList.map(function(i) { return fmtQty(i.qty || i.quantity || 0); });
                   %>
                   <%= quantities.join(', ') %>
                 </td>
@@ -101,8 +107,8 @@
                   <div class="form-check item-pakai" data-name="<%= item.item_name.toLowerCase() %>">
                     <div class="d-flex align-items-center gap-2">
                       <input class="form-check-input item-checkbox" type="checkbox" value="<%= item.id %>" data-itemname="<%= item.item_name %>" onchange="getSelectedItems()">
-                      <label class="form-check-label flex-grow-1"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= item.quantity %>)</label>
-                      <input type="number" class="form-control form-control-sm item-qty" style="width:70px;" min="0" value="1" placeholder="Jumlah" onchange="getSelectedItems()">
+                      <label class="form-check-label flex-grow-1"><%= item.item_name %> - <%= item.specification || '-' %> (stok: <%= fmtQty(item.quantity) %>)</label>
+                      <input type="number" class="form-control form-control-sm item-qty" style="width:70px;" min="0" step="0.1" value="1" placeholder="Jumlah" onchange="getSelectedItems()">
                     </div>
                   </div>
                   <% }); %>
@@ -152,7 +158,7 @@ function getSelectedItems() {
   document.querySelectorAll('#addPemakaianModal .item-checkbox:checked').forEach(function(cb) {
     var container = cb.closest('.item-pakai');
     var qtyInput = container ? container.querySelector('.item-qty') : null;
-    var qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+    var qty = qtyInput ? Math.round(parseFloat(qtyInput.value) * 10) / 10 || 1 : 1;
     selected.push({ id: parseInt(cb.value), qty: qty, name: cb.dataset.itemname });
   });
   document.getElementById('selectedItems').value = JSON.stringify(selected);
