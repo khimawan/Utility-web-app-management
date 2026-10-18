@@ -1,5 +1,4 @@
-tunnel: utility-management-app
-credentials-file: /etc/cloudflared/credentials.json
+tunnel: 9fcd53c1-9a69-4d71-9e0a-ea2df19f18ec
 
 ingress:
   - hostname: utilitymanagementweb.orasaurus.my.id

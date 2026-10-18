@@ -9,8 +9,13 @@ services:
     volumes:
       # Persist database data
       - ./data:/app/data
+      # Persist uploaded photos/files (survives image rebuilds)
+      - ./public/uploads:/app/public/uploads
     environment:
       - NODE_ENV=production
+    env_file:
+      # SESSION_SECRET lives here; .env is gitignored
+      - .env
     restart: unless-stopped
     networks:
       - app-network
@@ -18,10 +23,11 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared-tunnel
-    command: tunnel --config /etc/cloudflared/config.yml run
+    command: tunnel --config /etc/cloudflared/config.yml --no-autoupdate run --token-file /etc/cloudflared/tunnel.token
     volumes:
-      - ./cloudflared/config.yml:/etc/cloudflared/config.yml
-      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json
+      # Token kept outside the repo so it can never be committed
+      - /root/.cloudflared/tunnel.token:/etc/cloudflared/tunnel.token:ro
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
     restart: unless-stopped
     networks:
       - app-network
