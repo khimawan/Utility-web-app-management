@@ -62,7 +62,15 @@ Halaman publik yang dapat diakses tanpa login untuk pengajuan bantuan utility:
 
 | URL | Deskripsi |
 |-----|-----------|
-| `/peminjaman` | Form peminjaman alat dengan multi-select dari inventory (kategori alat), durasi (hari/jam/menit), foto, status (Dipinjam/Sudah Kembali), riwayat tabel dengan scroll, batch delete, edit status |
+| `/peminjaman` | Form peminjaman alat dengan multi-select dari inventory (kategori alat), **jumlah per alat** (desimal), durasi (hari/jam/menit), foto, status (Dipinjam/Sudah Kembali), riwayat tabel dengan scroll, batch delete, edit status |
+
+**Pelacakan stok peminjaman:**
+
+- Stok alat **berkurang saat dipinjam** dan **bertambah lagi saat dikembalikan**.
+- Jumlah yang dipinjam **tidak boleh melebihi stok** yang tersedia — divalidasi di server, bukan hanya di browser.
+- Stok hanya bergerak saat status berpindah (`dipinjam` ↔ `sudah_kembali`), sehingga menyimpan ulang loan yang masih dipinjam tidak memotong stok dua kali.
+- Menghapus record yang masih dipinjam otomatis mengembalikan stok; menghapus record yang sudah kembali tidak berpengaruh.
+- Memperbarui jumlah saat loan masih terbuka akan mengembalikan jumlah lama lalu mengambil yang baru.
 
 ### Pemakaian Part & Bahan
 
@@ -70,11 +78,22 @@ Halaman publik yang dapat diakses tanpa login untuk pengajuan bantuan utility:
 |-----|-----------|
 | `/pemakaian` | Form pemakaian part/bahan dengan multi-select member, multi-select item dari inventory (kategori part/bahan) + jumlah per item, otomatis mengurangi stok inventory, riwayat tabel dengan scroll, batch delete |
 
+**Catatan stok:** stok tidak pernah bisa menjadi negatif — pemakaian melebihi stok akan dijepit di `0`. Record menyimpan jumlah yang benar-benar terambil (`taken`), sehingga menghapus record mengembalikan tepat sejumlah itu, bukan sejumlah yang diminta.
+
 ### Inventory (Alat & Bahan)
 
 | URL | Deskripsi |
 |-----|-----------|
-| `/inventory` | Manajemen stok alat, part, bahan dalam 3 tab; tambah/edit dengan foto; CSV import/export; scrollable table; batch delete |
+| `/inventory` | Manajemen stok alat, part, bahan dalam 3 tab; tambah/edit dengan foto; import Excel & CSV; scrollable table; batch delete |
+
+**Import Excel & CSV:**
+
+- **Satu tombol import** untuk `.xlsx` dan `.csv`. Format dideteksi otomatis dari **isi file** (magic bytes), bukan dari ekstensi — file `.csv` yang di-rename jadi `.xlsx` tetap terbaca sebagai CSV.
+- Template Excel berisi sheet **Data** (header + contoh) dan sheet **Panduan**. Tombol **Panduan** di halaman memuat aturan, contoh input benar, dan contoh yang ditolak beserta alasannya.
+- Setiap baris yang gagal validasi **ditampilkan di halaman utama** lengkap dengan nomor baris dan alasannya. Tidak ada input yang hilang diam-diam.
+- Import bersifat idempotent: item yang sudah ada diperbarui, tidak pernah terduplikasi. Aman diulang.
+- `quantity` boleh desimal maksimal 1 angka di belakang koma (`1.3`, `0.7`). Koma pemisah ribuan (`1,000`) dan 2 angka desimal (`1.25`) ditolak dengan pesan jelas.
+- `.xls` (Excel 97-2003) tidak didukung — simpan ulang sebagai `.xlsx` atau `.csv`.
 
 ### Warning & Work Tracking
 
@@ -90,7 +109,7 @@ Halaman publik yang dapat diakses tanpa login untuk pengajuan bantuan utility:
 
 | URL | Deskripsi |
 |-----|-----------|
-| `/awal/spareparts` | Request barang dengan kategori, urgensi, progress; upload foto; CSV import/export; scrollable table; batch delete; sync ke inventory saat progress = barang_sampai |
+| `/awal/spareparts` | Request barang dengan kategori, urgensi, progress; upload foto; jumlah desimal; CSV import/export; scrollable table; batch delete; sync ke inventory (jumlah ikut desimal) saat progress = barang_sampai |
 
 ### Summary Data
 
@@ -105,9 +124,32 @@ Halaman publik yang dapat diakses tanpa login untuk pengajuan bantuan utility:
 | Feature | Deskripsi |
 |---------|-----------|
 | **Jadwal Utility** | Submit overtime, admin approve/reject, jadwal shift otomatis |
-| **Rangkuman Harian** | Daily activity summary dengan logging |
+| **Rangkuman Harian** | 5+ tabel rekap harian per tanggal; tabel 1 = kegiatan harian, tabel 2 = detail pekerjaan (sudah & belum selesai), tabel 3 = utility request, tabel 4/5 = data predictive & preventive |
+| **Status Pekerjaan** | `works.status` tidak pernah diisi sistem, jadi status di tabel 2 diturunkan dari `repair_percentage`: Selesai (≥100), Dalam Pengerjaan (>0), Belum Dikerjakan (0) |
+| **Unduh PDF** | Tombol print di halaman Rangkuman. A4 landscape, seluruh tab predictive & preventive ikut tercetak, header tabel berulang antar halaman |
 | **Dashboard** | Profil utility, job descriptions, gallery |
 | **Sidebar Auto-Hide** | Sidebar otomatis sembunyi setelah 5 detik di halaman tertentu |
+
+## Keamanan
+
+| Feature | Deskripsi |
+|---------|-----------|
+| **Password hashing** | bcrypt (bcryptjs). Password lama yang masih plaintext naik kelas otomatis saat login berhasil |
+| **Rate limit login** | 5 kali gagal per `ip\|username` dalam 15 menit, lalu dikunci 15 menit. Dihitung per IP asli (lihat `trust proxy` di `server.js`) |
+| **Session secret** | `SESSION_SECRET` dibaca dari environment variable `.env`, tidak ada lagi yang hardcoded di dalam kode |
+| **Upload spreadsheet** | Disimpan di memory, bukan ke `public/`, sehingga file yang diunggah tidak bisa diakses publik |
+| **Upload gagal** | Foto yang terlampir pada request yang ditolak dihapus otomatis, tidak meninggalkan file yatim |
+
+### ⚠️ Password default wajib diganti
+
+Akun seed dibuat otomatis oleh `config/database.js` dengan **password default yang tertulis di dalam kode**. Karena repository ini publik, siapa pun bisa membacanya di sana. **Ganti password admin di `/admin` sebelum aplikasi dipakai produksi** — hashing hanya melindungi database yang bocor, bukan password yang memang dipublikasikan.
+
+Passing environment variable yang wajib ada saat menjalankan:
+
+```bash
+SESSION_SECRET=<random-panjang>   # wajib, tanpa ini semua sessioninvalid saat restart
+BCRYPT_ROUNDS=10                  # opsional, default 10
+```
 
 ## Tech Stack
 
@@ -118,14 +160,10 @@ Halaman publik yang dapat diakses tanpa login untuk pengajuan bantuan utility:
 | **Template Engine** | EJS |
 | **Frontend** | Bootstrap 5, Bootstrap Icons, Google Fonts (Inter) |
 | **File Upload** | Multer (5MB max, JPG/JPEG/PNG) |
+| **Spreadsheet** | ExcelJS 4.4 (baca/tulis `.xlsx`) |
 | **Charts** | Chart.js |
-
-## Default Accounts
-
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | adminaja | adminaja |
-| Member | member01 | member01 |
+| **Password Hashing** | bcryptjs |
+| **Database** | SQLite via sql.js — **disimpan penuh di memori**, di-flush ke file `data/` setiap ada perubahan dan tiap 30 detik |
 
 ## Local Development
 
@@ -142,6 +180,9 @@ npm start
 ## Docker Deployment
 
 ```bash
+# Pastikan SESSION_SECRET tersedia (WAJIB - lihat .env.example)
+cp .env.example .env && nano .env
+
 # Build dan run
 docker compose up -d
 
@@ -155,15 +196,19 @@ docker compose down
 
 SQLite database tersimpan di `./data` directory (persist via Docker volume mount).
 
+> **Catatan:** `SESSION_SECRET` tidak ada default yang aman. Tanpa environment variable itu, server berjalan dengan secret acak yang berbeda tiap restart sehingga semua session langsung logout — dan session cookie bisa dipalsukan bila secret-nya bocor.
+
 ## Project Structure
 
 ```
 utility-management-webapp/
 ├── server.js                    # Express server entry point
 ├── config/
-│   └── database.js              # SQLite setup, schema, migrations, helpers
+│   ├── database.js              # SQLite setup, schema, migrations, helpers
+│   └── stock.js                 # Aritmetika stok bersama (klamp 0, pembulatan desimal)
 ├── middleware/
-│   └── auth.js                  # Authentication & setLocals
+│   ├── auth.js                  # Authentication & setLocals
+│   └── rateLimit.js             # Rate limit login (in-process)
 ├── routes/
 │   ├── auth.js                  # Login/logout
 │   ├── awal.js                  # Home, summary, warnings, works, utility requests, landing admin, spareparts
@@ -225,10 +270,10 @@ utility-management-webapp/
 | 17 | warning_members | Warning-member junction |
 | 18 | works | Facility work jobs |
 | 19 | work_members | Work-member junction |
-| 20 | spareparts | Sparepart requests |
-| 21 | inventory_items | Inventory stock (alat/part/bahan) |
-| 22 | peminjaman_alat | Peminjaman alat tracking |
-| 23 | pemakaian_part | Pemakaian part & bahan |
+| 20 | spareparts | Sparepart requests — `quantity` bertipe **REAL** (desimal) |
+| 21 | inventory_items | Inventory stock (alat/part/bahan) — `quantity` bertipe **REAL** (desimal) |
+| 22 | peminjaman_alat | Peminjaman alat — `items` JSON, tiap item membawa `qty` yang sedang dipegang |
+| 23 | pemakaian_part | Pemakaian part & bahan — `items` JSON, tiap item membawa `taken` (jumlah yang benar-benar terambil) |
 | 24 | working_instructions | Working instructions |
 | 25 | gallery_photos | Photo gallery |
 | 26 | activity_logs | Activity logs |
@@ -257,8 +302,8 @@ utility-management-webapp/
 | `/awal/spareparts` | List Sparepart (CSV import/export, foto, batch delete) |
 | `/awal/utility-requests` | Manajemen Utility Requests |
 | `/awal/admin/landing-content` | Edit Landing Page (admin only) |
-| `/peminjaman` | Peminjaman Alat |
-| `/pemakaian` | Pemakaian Part & Bahan |
+| `/peminjaman` | Peminjaman Alat (jumlah per alat, stok otomatis keluar/kembali) |
+| `/pemakaian` | Pemakaian Part & Bahan (jumlah desimal, stok tidak bisa negatif) |
 | `/job1` | Dashboard Job 1 - Operator WTP |
 | `/job1/checklist/wtp` | Checklist WTP |
 | `/job1/checklist/boiler` | Checklist Boiler |
@@ -273,8 +318,8 @@ utility-management-webapp/
 | `/job3/checklist/pemakaian_gas` | Checklist Pemakaian Gas |
 | `/job3/checklist/suhu_trafo` | Checklist Suhu Trafo |
 | `/job3/checklist/energi_listrik` | Checklist Energi Listrik |
-| `/rangkuman` | Rangkuman Harian |
-| `/inventory` | Alat & Bahan (CSV import/export, foto, batch delete) |
+| `/rangkuman` | Rangkuman Harian (filter tanggal, unduh PDF) |
+| `/inventory` | Alat & Bahan (import Excel/CSV otomatis, quantity desimal, foto, batch delete) |
 | `/admin` | Admin Panel (admin only) |
 
 ## License
